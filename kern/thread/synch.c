@@ -153,8 +153,18 @@ lock_create(const char *name)
 		kfree(lock);
 		return NULL;
 	}
-
-	// add stuff here as needed
+	
+	lock->lk_wchan = wchan_create(lock->lk_name);
+	if (lock->lk_wchan == NULL) {
+		kfree(lock);
+		return NULL;
+	}
+	
+	spinlock_init(&lock->lk_spinlock);
+	
+	// A lock is similar to a semaphore with only one slot
+	lock->lock_count = 1;
+	
 
 	return lock;
 }
@@ -164,16 +174,30 @@ lock_destroy(struct lock *lock)
 {
 	KASSERT(lock != NULL);
 
-	// add stuff here as needed
-
+	// Free all memory contained in lock struct
+	spinlock_cleanup(&lock->lk_spinlock);
+	wchan_destroy(lock->lk_wchan);
 	kfree(lock->lk_name);
 	kfree(lock);
 }
 
 void
 lock_acquire(struct lock *lock)
-{
-	// Write this
+{	
+	KASSERT(lock != NULL);	
+	spinlock_acquire(&lock->lk_spinlock);
+	
+	while(lock->lock_count == 0){
+		// While there are no slots for the lock, wait on		
+		// held wait channel
+		wchan_sleep(lock->lk_wchan, &lock->lk_spinlock);
+	}
+	
+	KASSERT(lock->lock_count > 0);
+
+	// Decrease lock count to 0 to hold it
+	lock->lock_count--;
+	spinlock_release(&lock->lk_spinlock);	
 
 	(void)lock;  // suppress warning until code gets written
 }
@@ -181,7 +205,18 @@ lock_acquire(struct lock *lock)
 void
 lock_release(struct lock *lock)
 {
-	// Write this
+
+	KASSERT(lock != NULL);
+	// Acquire Spinlock
+	spinlock_acquire(&lock->lk_spinlock);		
+	
+	// Increase counter, notify done using lock via wakeup on wait channel
+	lock->lock_count++;
+	KASSERT(lock->lock_count > 0);	// But first make sure it was a success!
+	wchan_wakeone(lock->lk_wchan, &lock->lk_spinlock);
+	
+	// Release spinlock
+	spinlock_release(&lock->lk_spinlock);
 
 	(void)lock;  // suppress warning until code gets written
 }
@@ -189,9 +224,21 @@ lock_release(struct lock *lock)
 bool
 lock_do_i_hold(struct lock *lock)
 {
-	// Write this
+	/* THIS METHOD DOES NOT WORK. SY3 ASSERTION FAILED */
+	
+	KASSERT(lock != NULL);
+	
+	//Tried not grabbing lock first and crashed the sys161...
+	spinlock_acquire(&lock->lk_spinlock);	
 
-	(void)lock;  // suppress warning until code gets written
+	//Unique identifier is the lock's pointer to the CPU that holds it -> not sure anymore :(
+	if((&lock->lk_spinlock)->splk_holder == NULL){
+		return false;
+	}
+	
+	spinlock_release(&lock->lk_spinlock);
+		
+	//(void)lock;  // suppress warning until code gets written
 
 	return true; // dummy until code gets written
 }
@@ -218,6 +265,11 @@ cv_create(const char *name)
 	}
 
 	// add stuff here as needed
+	cv->cv_wchan = wchan_create(cv->cv_name);
+	if (cv->cv_wchan==NULL) {
+		kfree(cv);
+		return NULL;
+	}
 
 	return cv;
 }
@@ -230,6 +282,7 @@ cv_destroy(struct cv *cv)
 	// add stuff here as needed
 
 	kfree(cv->cv_name);
+	kfree(cv->cv_wchan);
 	kfree(cv);
 }
 
@@ -237,6 +290,12 @@ void
 cv_wait(struct cv *cv, struct lock *lock)
 {
 	// Write this
+	KASSERT(cv != NULL);
+	
+	lock_release(lock);
+	wchan_sleep(cv->cv_wchan, &lock->lk_spinlock);
+	lock_acquire(lock);
+
 	(void)cv;    // suppress warning until code gets written
 	(void)lock;  // suppress warning until code gets written
 }
@@ -245,6 +304,10 @@ void
 cv_signal(struct cv *cv, struct lock *lock)
 {
 	// Write this
+	
+	KASSERT(cv != NULL);		
+	wchan_wakeone(cv->cv_wchan, &lock->lk_spinlock);
+	
 	(void)cv;    // suppress warning until code gets written
 	(void)lock;  // suppress warning until code gets written
 }
@@ -253,6 +316,8 @@ void
 cv_broadcast(struct cv *cv, struct lock *lock)
 {
 	// Write this
+	KASSERT(cv != NULL);
+	wchan_wakeall(cv->cv_wchan, &lock->lk_spinlock);
 	(void)cv;    // suppress warning until code gets written
 	(void)lock;  // suppress warning until code gets written
 }

@@ -74,6 +74,9 @@ void V(struct semaphore *);
  */
 struct lock {
         char *lk_name;
+	struct wchan *lk_wchan;
+	struct spinlock lk_spinlock;
+	volatile unsigned lock_count;
         // add what you need here
         // (don't forget to mark things volatile as needed)
 };
@@ -113,6 +116,7 @@ bool lock_do_i_hold(struct lock *);
 
 struct cv {
         char *cv_name;
+	struct wchan *cv_wchan; 
         // add what you need here
         // (don't forget to mark things volatile as needed)
 };
