@@ -213,6 +213,7 @@ lock_release(struct lock *lock)
 {
 
 	KASSERT(lock != NULL);
+	
 	// Acquire Spinlock
 	spinlock_acquire(&lock->lk_spinlock);		
 	
@@ -233,25 +234,18 @@ lock_release(struct lock *lock)
 
 bool
 lock_do_i_hold(struct lock *lock)
-{
-	/* THIS METHOD DOES NOT WORK. SY3 ASSERTION FAILED */
-		
+{		
 	
-	KASSERT(lock != NULL);
-	
-	//Tried not grabbing lock first and crashed the sys161...
-	spinlock_acquire(&lock->lk_spinlock);	
+	KASSERT(lock != NULL);	
 
 	//Unique identifier is the lock's pointer to the CPU that holds it -> not sure anymore :(
-	if((struct thread *)(lock->lk_holder) != (struct thread *)curthread){
+	if((lock->lk_holder) != curthread){
 		return false;
-	}
+	}		
 	
-	spinlock_release(&lock->lk_spinlock);		
-	
-	(void)lock;  // suppress warning until code gets written
+	//(void)lock;
 
-	return true; // dummy until code gets written
+	return true;
 }
 
 ////////////////////////////////////////////////////////////
