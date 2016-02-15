@@ -165,6 +165,8 @@ lock_create(const char *name)
 	// A lock is similar to a semaphore with only one slot
 	lock->lock_count = 1;
 	
+	// Initialize holder to have no holder
+	lock->lk_holder = NULL;	
 
 	return lock;
 }
@@ -177,6 +179,7 @@ lock_destroy(struct lock *lock)
 	// Free all memory contained in lock struct
 	spinlock_cleanup(&lock->lk_spinlock);
 	wchan_destroy(lock->lk_wchan);
+	lock->lk_holder = NULL;
 	kfree(lock->lk_name);
 	kfree(lock);
 }
@@ -194,6 +197,9 @@ lock_acquire(struct lock *lock)
 	}
 	
 	KASSERT(lock->lock_count > 0);
+
+	// Assign holder
+	lock->lk_holder = curthread;	
 
 	// Decrease lock count to 0 to hold it
 	lock->lock_count--;
@@ -213,6 +219,10 @@ lock_release(struct lock *lock)
 	// Increase counter, notify done using lock via wakeup on wait channel
 	lock->lock_count++;
 	KASSERT(lock->lock_count > 0);	// But first make sure it was a success!
+	
+	// Remove holder
+	lock->lk_holder = NULL;
+
 	wchan_wakeone(lock->lk_wchan, &lock->lk_spinlock);
 	
 	// Release spinlock
@@ -225,6 +235,7 @@ bool
 lock_do_i_hold(struct lock *lock)
 {
 	/* THIS METHOD DOES NOT WORK. SY3 ASSERTION FAILED */
+		
 	
 	KASSERT(lock != NULL);
 	
@@ -232,13 +243,13 @@ lock_do_i_hold(struct lock *lock)
 	spinlock_acquire(&lock->lk_spinlock);	
 
 	//Unique identifier is the lock's pointer to the CPU that holds it -> not sure anymore :(
-	if((&lock->lk_spinlock)->splk_holder == NULL){
+	if((struct thread *)(lock->lk_holder) != (struct thread *)curthread){
 		return false;
 	}
 	
-	spinlock_release(&lock->lk_spinlock);
-		
-	//(void)lock;  // suppress warning until code gets written
+	spinlock_release(&lock->lk_spinlock);		
+	
+	(void)lock;  // suppress warning until code gets written
 
 	return true; // dummy until code gets written
 }

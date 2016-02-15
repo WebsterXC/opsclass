@@ -76,6 +76,7 @@ struct lock {
         char *lk_name;
 	struct wchan *lk_wchan;
 	struct spinlock lk_spinlock;
+	struct thread *lk_holder;	// Pointer to thread holding the lock; only the POINTER is unique
 	volatile unsigned lock_count;
         // add what you need here
         // (don't forget to mark things volatile as needed)
