@@ -310,9 +310,12 @@ cv_signal(struct cv *cv, struct lock *lock)
 {
 	// Write this
 	
-	KASSERT(cv != NULL);		
-	wchan_wakeone(cv->cv_wchan, &lock->lk_spinlock);
+	KASSERT(cv != NULL);
 	
+	lock_release(lock);	
+	wchan_wakeone(cv->cv_wchan, &lock->lk_spinlock);
+	lock_acquire(lock);	
+
 	(void)cv;    // suppress warning until code gets written
 	(void)lock;  // suppress warning until code gets written
 }
@@ -322,7 +325,11 @@ cv_broadcast(struct cv *cv, struct lock *lock)
 {
 	// Write this
 	KASSERT(cv != NULL);
+
+	lock_release(lock);
 	wchan_wakeall(cv->cv_wchan, &lock->lk_spinlock);
+	lock_acquire(lock);	
+
 	(void)cv;    // suppress warning until code gets written
 	(void)lock;  // suppress warning until code gets written
 }
