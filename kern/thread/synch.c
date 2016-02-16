@@ -179,7 +179,9 @@ lock_destroy(struct lock *lock)
 	// Free all memory contained in lock struct
 	spinlock_cleanup(&lock->lk_spinlock);
 	wchan_destroy(lock->lk_wchan);
-	lock->lk_holder = NULL;
+	
+	// When lock is destroyed, no thread should be holding it
+	KASSERT(lock->lk_holder == NULL);
 	kfree(lock->lk_name);
 	kfree(lock);
 }
@@ -187,16 +189,19 @@ lock_destroy(struct lock *lock)
 void
 lock_acquire(struct lock *lock)
 {	
-	KASSERT(lock != NULL);	
-	spinlock_acquire(&lock->lk_spinlock);
-	
+	KASSERT(lock != NULL);	 
+
+	spinlock_acquire(&lock->lk_spinlock);	
+
+	//spinlock_acquire(&lock->lk_spinlock);
 	while(lock->lock_count == 0){
 		// While there are no slots for the lock, wait on		
 		// held wait channel
+		//spinlock_release(&lock->lk_spinlock);
 		wchan_sleep(lock->lk_wchan, &lock->lk_spinlock);
 	}
 	
-	KASSERT(lock->lock_count > 0);
+	KASSERT(lock->lock_count == 1);
 
 	// Assign holder
 	lock->lk_holder = curthread;	
@@ -205,15 +210,18 @@ lock_acquire(struct lock *lock)
 	lock->lock_count--;
 	spinlock_release(&lock->lk_spinlock);	
 
-	(void)lock;  // suppress warning until code gets written
+	//(void)lock;  // suppress warning until code gets written
 }
 
 void
 lock_release(struct lock *lock)
 {
-
+	// Make sure lock isn't NULL
 	KASSERT(lock != NULL);
 	
+	// Only the thread holding the lock may do this
+	KASSERT(lock_do_i_hold(lock));	
+
 	// Acquire Spinlock
 	spinlock_acquire(&lock->lk_spinlock);		
 	
@@ -229,7 +237,7 @@ lock_release(struct lock *lock)
 	// Release spinlock
 	spinlock_release(&lock->lk_spinlock);
 
-	(void)lock;  // suppress warning until code gets written
+	//(void)lock;  // suppress warning until code gets written
 }
 
 bool
