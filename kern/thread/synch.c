@@ -293,7 +293,7 @@ cv_destroy(struct cv *cv)
 	KASSERT(cv != NULL);
 
 	// add stuff here as needed
-
+	
 	kfree(cv->cv_name);
 	kfree(cv->cv_wchan);
 	kfree(cv);
@@ -320,9 +320,9 @@ cv_signal(struct cv *cv, struct lock *lock)
 	
 	KASSERT(cv != NULL);
 	
-	lock_release(lock);	
-	wchan_wakeone(cv->cv_wchan, &lock->lk_spinlock);
-	lock_acquire(lock);	
+	//lock_acquire(lock);
+	wchan_wakeone(cv->cv_wchan, &lock->lk_spinlock);	
+	//lock_release(lock);
 
 	(void)cv;    // suppress warning until code gets written
 	(void)lock;  // suppress warning until code gets written
@@ -334,9 +334,9 @@ cv_broadcast(struct cv *cv, struct lock *lock)
 	// Write this
 	KASSERT(cv != NULL);
 
-	lock_release(lock);
+	//lock_acquire(lock);
 	wchan_wakeall(cv->cv_wchan, &lock->lk_spinlock);
-	lock_acquire(lock);	
+	//lock_release(lock);	
 
 	(void)cv;    // suppress warning until code gets written
 	(void)lock;  // suppress warning until code gets written
