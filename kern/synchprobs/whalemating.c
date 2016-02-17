@@ -40,11 +40,22 @@
 #include <test.h>
 #include <synch.h>
 
+#define MAX_MATERS 64
+
+struct semaphore *male_semaphore;
+struct semaphore *fem_semaphore;
+struct lock *whale_lock;
+
 /*
  * Called by the driver during initialization.
  */
 
 void whalemating_init() {
+	// Init all synch primitives, semaphores with 0 keys
+	male_semaphore = sem_create("male_sem", 0);
+	fem_semaphore = sem_create("female_sem", 0);	
+	whale_lock = lock_create("whalelock");	
+
 	return;
 }
 
@@ -54,38 +65,48 @@ void whalemating_init() {
 
 void
 whalemating_cleanup() {
+	// On destroy, nobody should be holding the lock & both sems should be 0
+	KASSERT(!lock_do_i_hold(whale_lock));
+	KASSERT( (male_semaphore->sem_count == 0) && (fem_semaphore->sem_count == 0));	
+
+	lock_destroy(whale_lock);
+	sem_destroy(male_semaphore);
+	sem_destroy(fem_semaphore);
+
 	return;
 }
 
 void
 male(uint32_t index)
 {
-	(void)index;
-	/*
-	 * Implement this function by calling male_start and male_end when
-	 * appropriate.
-	 */
+	// Calling male means a new male has entered, ++1 possible
+	// whales to mate with
+	male_start(index);
+	P(male_semaphore);
+	male_end(index);
+
 	return;
 }
 
 void
 female(uint32_t index)
 {
-	(void)index;
-	/*
-	 * Implement this function by calling female_start and female_end when
-	 * appropriate.
-	 */
+	female_start(index);
+	P(fem_semaphore);
+	female_end(index);	
+
 	return;
 }
 
 void
 matchmaker(uint32_t index)
 {
-	(void)index;
-	/*
-	 * Implement this function by calling matchmaker_start and matchmaker_end
-	 * when appropriate.
-	 */
+	// Lock required so semaphores aren't altered simultaneously
+	lock_acquire(whale_lock);
+	matchmaker_start(index);
+	V(male_semaphore); V(fem_semaphore);
+	matchmaker_end(index);
+	lock_release(whale_lock);	
+	
 	return;
 }

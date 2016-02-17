@@ -153,7 +153,12 @@ void cv_broadcast(struct cv *cv, struct lock *lock);
  */
 
 struct rwlock {
-        char *rwlock_name;
+        char *rw_name;
+	struct cv *rw_conditional;
+	struct lock *rw_lock;
+
+	volatile unsigned int rw_num_readers;
+	volatile bool is_writer_waiting;
         // add what you need here
         // (don't forget to mark things volatile as needed)
 };

@@ -307,7 +307,7 @@ cv_wait(struct cv *cv, struct lock *lock)
 	// Write this
 	KASSERT(cv != NULL);
 		
-	// cv->cv_spinlock | 	
+	// Lock ownership required 	
 	spinlock_acquire(&cv->cv_spinlock);
 	lock_release(lock);
 	wchan_sleep(lock->lk_wchan, &cv->cv_spinlock);
@@ -345,4 +345,128 @@ cv_broadcast(struct cv *cv, struct lock *lock)
 
 	(void)cv;    // suppress warning until code gets written
 	(void)lock;  // suppress warning until code gets written
+}
+///////////////////////////////////////////////////////////////////
+//
+// Read - Write Locks
+
+struct rwlock *
+rwlock_create(const char *name){
+	
+	struct rwlock *rwlock;
+	rwlock = kmalloc(sizeof(*rwlock));
+
+	rwlock->rw_name = kstrdup(name);
+	if (rwlock->rw_name == NULL) {
+		kfree(rwlock);
+		return NULL;
+	}
+
+	rwlock->rw_conditional = cv_create(rwlock->rw_name);
+	if (&rwlock->rw_conditional == NULL) {
+		kfree(rwlock);
+		return NULL;
+	}
+
+	rwlock->rw_lock = lock_create(rwlock->rw_name);	
+	if (&rwlock->rw_lock == NULL) {
+		kfree(rwlock);
+		return NULL;
+	}	
+	
+	// Set current number of readers to 0; no writers waiting
+	rwlock->rw_num_readers = 0;
+	rwlock->is_writer_waiting = false;
+
+	return rwlock;	
+}
+
+void
+rwlock_destroy(struct rwlock *rwlock){
+	//KASSERTS	
+	
+	KASSERT(rwlock != NULL);
+	KASSERT(!lock_do_i_hold(rwlock->rw_lock));
+	
+	kfree(rwlock->rw_name);
+	lock_destroy(rwlock->rw_lock);
+	cv_destroy(rwlock->rw_conditional);	
+	kfree(rwlock);
+	
+	return;
+}
+
+void
+rwlock_acquire_read(struct rwlock *rwlock){
+	
+	KASSERT(rwlock != NULL);
+	
+	lock_acquire(rwlock->rw_lock); 
+	
+	// If writers are waiting, wait. Waits until all readers hit this if-statement and num_readers is 0
+	if(rwlock->is_writer_waiting){
+		//rwlock->rw_num_readers--;	//Safe because currently holding lock
+		cv_wait(rwlock->rw_conditional, rwlock->rw_lock);
+	}	
+
+	rwlock->rw_num_readers++;
+	lock_release(rwlock->rw_lock);
+
+	//(void)rwlock;
+	return;	
+}
+
+void
+rwlock_release_read(struct rwlock *rwlock){
+	
+	KASSERT(rwlock->rw_num_readers > 0);
+	
+	lock_acquire(rwlock->rw_lock);
+	rwlock->rw_num_readers--;
+	lock_release(rwlock->rw_lock);
+	
+
+	//(void)rwlock;
+	return;
+}
+
+void
+rwlock_acquire_write(struct rwlock *rwlock){
+	
+	KASSERT(rwlock != NULL);
+	
+	// Set flag to declare waiting. Readers will cv_wait if this flag is true
+	lock_acquire(rwlock->rw_lock);
+	rwlock->is_writer_waiting = true;
+	lock_release(rwlock->rw_lock);
+	
+	// Loop until all readers are on cv_wait. Then proceed.
+	while(rwlock->rw_num_readers > 0){
+		//Busy wait			
+	}
+	KASSERT(rwlock->rw_num_readers == 0);	
+	
+	// Writer now exclusively owns access, readers are all on cv_wait
+
+	//(void)rwlock;
+	return;
+}
+
+void
+rwlock_release_write(struct rwlock *rwlock){
+	
+	KASSERT(rwlock != NULL);
+
+	// Swap flag back to false when done writing
+	lock_acquire(rwlock->rw_lock);
+	rwlock->is_writer_waiting = false;
+	
+	// Let readers on cv_wait know they can resume reading the resource
+	cv_broadcast(rwlock->rw_conditional, rwlock->rw_lock);
+	
+	lock_release(rwlock->rw_lock);	
+
+
+	//(void)rwlock;
+	return;
 }
