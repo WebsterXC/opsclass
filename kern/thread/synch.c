@@ -210,7 +210,6 @@ lock_acquire(struct lock *lock)
 	lock->lock_count--;
 	spinlock_release(&lock->lk_spinlock);	
 
-	//(void)lock;  // suppress warning until code gets written
 }
 
 void
@@ -237,7 +236,6 @@ lock_release(struct lock *lock)
 	// Release spinlock
 	spinlock_release(&lock->lk_spinlock);
 
-	//(void)lock;  // suppress warning until code gets written
 }
 
 bool
@@ -246,12 +244,10 @@ lock_do_i_hold(struct lock *lock)
 	
 	KASSERT(lock != NULL);	
 
-	//Unique identifier is the lock's pointer to the CPU that holds it -> not sure anymore :(
+	// Verify thread holder in struct is the current thread
 	if((lock->lk_holder) != curthread){
 		return false;
 	}		
-	
-	//(void)lock;
 
 	return true;
 }
@@ -277,9 +273,7 @@ cv_create(const char *name)
 		return NULL;
 	}
 
-	// add stuff here as needed
-	spinlock_init(&cv->cv_spinlock);
-	
+	spinlock_init(&cv->cv_spinlock);	
 	if (&cv->cv_spinlock==NULL) {
 		kfree(cv);
 		return NULL;
@@ -293,7 +287,7 @@ cv_destroy(struct cv *cv)
 {
 	KASSERT(cv != NULL);
 
-	// add stuff here as needed	
+	// Ensure nobody holds the spinlock before imminent destruction	
 	KASSERT(!spinlock_do_i_hold(&cv->cv_spinlock));
 	
 	kfree(cv->cv_name);
@@ -314,14 +308,11 @@ cv_wait(struct cv *cv, struct lock *lock)
 	spinlock_release(&cv->cv_spinlock);
 	lock_acquire(lock);
 
-	(void)cv;    // suppress warning until code gets written
-	(void)lock;  // suppress warning until code gets written
 }
 
 void
 cv_signal(struct cv *cv, struct lock *lock)
 {
-	// Write this
 	
 	KASSERT(cv != NULL);
 	KASSERT(lock_do_i_hold(lock));	
@@ -329,26 +320,22 @@ cv_signal(struct cv *cv, struct lock *lock)
 	wchan_wakeone(lock->lk_wchan, &cv->cv_spinlock);	
 	spinlock_release(&cv->cv_spinlock);
 
-	(void)cv;    // suppress warning until code gets written
-	(void)lock;  // suppress warning until code gets written
 }
 
 void
 cv_broadcast(struct cv *cv, struct lock *lock)
 {
-	// Write this
+
 	KASSERT(cv != NULL);
 	KASSERT(lock_do_i_hold(lock));
 	spinlock_acquire(&cv->cv_spinlock);
 	wchan_wakeall(lock->lk_wchan, &cv->cv_spinlock);
 	spinlock_release(&cv->cv_spinlock);	
 
-	(void)cv;    // suppress warning until code gets written
-	(void)lock;  // suppress warning until code gets written
 }
 ///////////////////////////////////////////////////////////////////
 //
-// Read - Write Locks
+// Read - Write Locks (2/18 8:30AM -> Untested)
 
 struct rwlock *
 rwlock_create(const char *name){
