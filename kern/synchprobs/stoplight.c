@@ -73,46 +73,146 @@
  * Called by the driver during initialization.
  */
 
+struct cv *wait_intersection;
+struct lock *intersection_lockdown;
+struct lock *lock0;
+struct lock *lock1;
+struct lock *lock2;
+struct lock *lock3;
+
+bool is_intersection_occupied;
+
+/* HELPER FUNCTIONS */
+struct lock * lock_i_need(unsigned int);
+
+
+// Intent: pass modulus operation to return the specified lock
+struct lock *
+lock_i_need(unsigned int quadrant)
+{
+	switch(quadrant){
+		
+		case 0: return lock0;
+		case 1: return lock1;
+		case 2: return lock2;
+		case 3: return lock3;	
+
+	}
+	
+	return NULL;
+}
+
+
+/* SUPPLIED FUNCTIONS, REQUIRED FOR OPERATION */
+
 void
 stoplight_init() {
+	
+	// Create conditional to signify intersection is clear
+	wait_intersection = cv_create("vehicle cv");
+	intersection_lockdown = lock_create("biglock");
+
+	// Create lock for each quadrant
+	lock0 = lock_create("quadrant0");
+	lock1 = lock_create("quadrant1");
+	lock2 = lock_create("quadrant2");
+	lock3 = lock_create("quadrant3");
+	
+	// Intersection needs to begin open!
+	is_intersection_occupied = false;	
+
 	return;
 }
 
 /*
  * Called by the driver during teardown.
+ * Cleanup, cleanup, everybody do their share!
  */
 
 void stoplight_cleanup() {
+	
+	cv_destroy(wait_intersection);
+	lock_destroy(intersection_lockdown);	
+	lock_destroy(lock0);	
+	lock_destroy(lock1);	
+	lock_destroy(lock2);	
+	lock_destroy(lock3);	
+	
 	return;
 }
 
 void
 turnright(uint32_t direction, uint32_t index)
 {
-	(void)direction;
-	(void)index;
-	/*
-	 * Implement this function.
-	 */
+	
+	// Simplest car function. Passes through quadrant: [X]	
+	lock_acquire(lock_i_need(direction));	// Straight and Left will wait for this lock
+
+	inQuadrant(direction, index);
+	leaveIntersection(index);
+
+	lock_release(lock_i_need(direction));			
+
+
 	return;
 }
 void
 gostraight(uint32_t direction, uint32_t index)
 {
-	(void)direction;
-	(void)index;
-	/*
-	 * Implement this function.
-	 */
+
+	// Wait for intersection to be free
+	lock_acquire(intersection_lockdown);
+	while(is_intersection_occupied == true){
+		cv_wait(wait_intersection, intersection_lockdown);
+	}
+	is_intersection_occupied = true;
+	
+	// Car passes through quadrants: [X] -> [(X+3)%4]	
+	lock_acquire(lock_i_need(direction));
+	lock_acquire(lock_i_need( (direction+3) % 4 ));
+	
+	inQuadrant(direction, index);
+	inQuadrant( (direction+3)%4 , index);
+	leaveIntersection(index);
+	
+	lock_release(lock_i_need(direction));
+	lock_release(lock_i_need( (direction+3) % 4 ));
+	
+	// Signal done with intersection and free resources
+	is_intersection_occupied = false;
+	cv_signal(wait_intersection, intersection_lockdown);
+	lock_release(intersection_lockdown);
+
 	return;
 }
 void
 turnleft(uint32_t direction, uint32_t index)
 {
-	(void)direction;
-	(void)index;
-	/*
-	 * Implement this function.
-	 */
+
+	// Wait for intersection to be free
+	lock_acquire(intersection_lockdown);
+	while(is_intersection_occupied == true){
+		cv_wait(wait_intersection, intersection_lockdown);
+	}
+	is_intersection_occupied = true;
+
+	// Car passes through quadrants: [X] -> [(X+3)%4] -> [(X+2)%4]		
+	lock_acquire(lock_i_need(direction));
+	lock_acquire(lock_i_need( (direction+3) % 4 ));
+	lock_acquire(lock_i_need( (direction+2) % 4 ));
+	
+	inQuadrant(direction, index);
+	inQuadrant( (direction+3)%4 , index);
+	inQuadrant( (direction+2)%4 , index);	
+	leaveIntersection(index);
+	
+	lock_release(lock_i_need(direction));
+	lock_release(lock_i_need( (direction+3) % 4 ));
+	lock_release(lock_i_need( (direction+2) % 4 ));
+
+	is_intersection_occupied = false;
+	cv_signal(wait_intersection, intersection_lockdown);	
+	lock_release(intersection_lockdown);	
+
 	return;
 }

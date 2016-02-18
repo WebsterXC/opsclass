@@ -451,6 +451,7 @@ static
 void
 initialize_car_thread(uint32_t index, uint32_t direction, uint32_t turn) {
 	initialize_thread(car_threads, index);
+	//kprintf("(T:%d,D:%d)",index,direction);		//REMOVE
 	car_directions[index] = direction;
 	car_turns[index] = turn;
 	car_turn_times[index] = 0;
