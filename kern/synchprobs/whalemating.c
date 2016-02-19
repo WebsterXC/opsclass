@@ -40,11 +40,11 @@
 #include <test.h>
 #include <synch.h>
 
-#define MAX_MATERS 64
+#define MAX_MATCHMAKERS 4
 
 struct semaphore *male_semaphore;
 struct semaphore *fem_semaphore;
-struct lock *whale_lock;
+struct semaphore *mm_semaphore;
 
 /*
  * Called by the driver during initialization.
@@ -53,8 +53,8 @@ struct lock *whale_lock;
 void whalemating_init() {
 	// Init all synch primitives, semaphores with 0 keys
 	male_semaphore = sem_create("male_sem", 0);
-	fem_semaphore = sem_create("female_sem", 0);	
-	whale_lock = lock_create("whalelock");	
+	fem_semaphore = sem_create("female_sem", 0);
+	mm_semaphore = sem_create("matchmaker_sem", MAX_MATCHMAKERS); // 2 matchmakers at a time.
 
 	return;
 }
@@ -66,12 +66,11 @@ void whalemating_init() {
 void
 whalemating_cleanup() {
 	// On destroy, nobody should be holding the lock & both sems should be 0
-	KASSERT(!lock_do_i_hold(whale_lock));
 	KASSERT( (male_semaphore->sem_count == 0) && (fem_semaphore->sem_count == 0));	
 
-	lock_destroy(whale_lock);
 	sem_destroy(male_semaphore);
 	sem_destroy(fem_semaphore);
+	sem_destroy(mm_semaphore);
 
 	return;
 }
@@ -101,12 +100,18 @@ female(uint32_t index)
 void
 matchmaker(uint32_t index)
 {
-	// Lock required so semaphores aren't altered simultaneously
-	lock_acquire(whale_lock);
+	// Lock no longer needed: concurrent matchmakers
+	P(mm_semaphore);
+
+	// Matchmaker concurrency update: reverse order semaphore
+	// (with respect to male & female)
+	// Max # of matchmakers set in preprocessor (see top of file)
+
 	matchmaker_start(index);
 	V(male_semaphore); V(fem_semaphore);
 	matchmaker_end(index);
-	lock_release(whale_lock);	
+
+	V(mm_semaphore);
 	
 	return;
 }
