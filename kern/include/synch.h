@@ -117,6 +117,7 @@ bool lock_do_i_hold(struct lock *);
 
 struct cv {
         char *cv_name;
+	struct wchan *cv_wchan;	
 	struct spinlock cv_spinlock; 
         // add what you need here
         // (don't forget to mark things volatile as needed)
@@ -152,15 +153,23 @@ void cv_broadcast(struct cv *cv, struct lock *lock);
  * (should be) made internally.
  */
 
+/* Implementation by: William Burgin (waburgin)
+ * My implementation uses conditional variables, rather than semaphores so
+ * that there is no cap on the number of readers and/or writers. Two different
+ * CV's are used between the four different R/W methods. In addition, volatile
+ * counters are used to assist the rwlock in identifying cases of starvation
+ * and fixing them. See below.
+ */
+
 struct rwlock {
         char *rw_name;
-	struct cv *rw_conditional;
-	struct lock *rw_lock;
+	struct cv *conditional_read;	// BROADCASTED to by write
+	struct cv *conditional_write;	// SIGNALED to by read
+	struct lock *rw_lock;			
 
-	volatile unsigned int rw_num_readers;
-	volatile bool is_writer_waiting;
-        // add what you need here
-        // (don't forget to mark things volatile as needed)
+	volatile unsigned int rw_num_readers;	// Current number of active readers
+	volatile unsigned int anti_starvation;  // Number of read_acquires since last write
+	volatile bool is_writer_waiting;	// Flag representing if a writer is waiting for access
 };
 
 struct rwlock * rwlock_create(const char *);

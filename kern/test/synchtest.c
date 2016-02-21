@@ -665,12 +665,18 @@ sleeperthread(void *junk1, unsigned long junk2) {
 	random_yielder(4);
 	lock_acquire(testlock);
 	random_yielder(4);
+	
+	KASSERT(testval1 == 0);	//
+
 	failif((testval1 != 0));
 	testval1 = 1;
 	cv_signal(testcv, testlock);
 
 	random_yielder(4);
 	cv_wait(testcv, testlock);
+
+	KASSERT(testval1 == 3);	//
+
 	failif((testval1 != 3));
 	testval1 = 4;
 	random_yielder(4);
@@ -688,8 +694,11 @@ wakerthread(void *junk1, unsigned long junk2) {
 
 	random_yielder(4);
 	lock_acquire(testlock2);
+
+	KASSERT(testval1 == 2);	//	
+
 	failif((testval1 != 2));
-	testval1 = 3;
+	testval1 = 3;	
 
 	random_yielder(4);
 	cv_signal(testcv, testlock2);
@@ -742,7 +751,7 @@ cvtest5(int nargs, char **args) {
 	}
 
 	random_yielder(4);
-	cv_wait(testcv, testlock);
+	cv_wait(testcv, testlock); KASSERT(testval1 == 1);
 	failif((testval1 != 1));
 	testval1 = 2;
 	random_yielder(4);
@@ -751,7 +760,7 @@ cvtest5(int nargs, char **args) {
 	lock_release(testlock2);
 
 	P(exitsem);
-	P(exitsem);
+	P(exitsem);			KASSERT(testval1 == 4);
 	failif((testval1 != 4));
 
 	sem_destroy(exitsem);

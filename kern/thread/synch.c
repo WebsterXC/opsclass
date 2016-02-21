@@ -136,7 +136,7 @@ V(struct semaphore *sem)
 
 ////////////////////////////////////////////////////////////
 //
-// Lock.
+// Locks. Written by: William Burgin (waburgin)
 
 struct lock *
 lock_create(const char *name)
@@ -254,7 +254,7 @@ lock_do_i_hold(struct lock *lock)
 
 ////////////////////////////////////////////////////////////
 //
-// CV
+// CV (Conditional Variables). Written by: William Burgin (waburgin)
 
 
 struct cv *
@@ -279,6 +279,12 @@ cv_create(const char *name)
 		return NULL;
 	}
 
+	cv->cv_wchan = wchan_create(name);
+	if (cv->cv_wchan == NULL) {
+		kfree(cv);
+		return NULL;
+	}
+
 	return cv;
 }
 
@@ -291,20 +297,29 @@ cv_destroy(struct cv *cv)
 	KASSERT(!spinlock_do_i_hold(&cv->cv_spinlock));
 	
 	kfree(cv->cv_name);
+	wchan_destroy(cv->cv_wchan);
 	spinlock_cleanup(&cv->cv_spinlock);
 	kfree(cv);
 }
 
+/* CVT5 Update: Previously, CV's were waiting on the passed lock's wait channel. This conflicted
+ * when trying to pass a different lock but same cv (different wait channel pointers). The top
+ * statement is incorrect, but kept for reference in case it's relevant in later debugging.
+ */
+
 void
 cv_wait(struct cv *cv, struct lock *lock)
 {
-	// Write this
+
 	KASSERT(cv != NULL);
 		
 	// Lock ownership required 	
 	spinlock_acquire(&cv->cv_spinlock);
 	lock_release(lock);
-	wchan_sleep(lock->lk_wchan, &cv->cv_spinlock);
+	
+	//wchan_sleep(lock->lk_wchan, &cv->cv_spinlock);	//INCORRECT
+	wchan_sleep(cv->cv_wchan, &cv->cv_spinlock);
+	
 	spinlock_release(&cv->cv_spinlock);
 	lock_acquire(lock);
 
@@ -317,7 +332,10 @@ cv_signal(struct cv *cv, struct lock *lock)
 	KASSERT(cv != NULL);
 	KASSERT(lock_do_i_hold(lock));	
 	spinlock_acquire(&cv->cv_spinlock);
-	wchan_wakeone(lock->lk_wchan, &cv->cv_spinlock);	
+	
+	//wchan_wakeone(lock->lk_wchan, &cv->cv_spinlock);	//INCORRECT
+	wchan_wakeone(cv->cv_wchan, &cv->cv_spinlock);	
+	
 	spinlock_release(&cv->cv_spinlock);
 
 }
@@ -329,13 +347,16 @@ cv_broadcast(struct cv *cv, struct lock *lock)
 	KASSERT(cv != NULL);
 	KASSERT(lock_do_i_hold(lock));
 	spinlock_acquire(&cv->cv_spinlock);
-	wchan_wakeall(lock->lk_wchan, &cv->cv_spinlock);
+	
+	//wchan_wakeall(lock->lk_wchan, &cv->cv_spinlock);	//INCORRECT
+	wchan_wakeall(cv->cv_wchan, &cv->cv_spinlock);
+
 	spinlock_release(&cv->cv_spinlock);	
 
 }
 ///////////////////////////////////////////////////////////////////
 //
-// Read - Write Locks (2/18 8:30AM -> Untested)
+// Read - Write Locks. Written by: William Burgin (waburgin)
 
 struct rwlock *
 rwlock_create(const char *name){
@@ -349,8 +370,14 @@ rwlock_create(const char *name){
 		return NULL;
 	}
 
-	rwlock->rw_conditional = cv_create(rwlock->rw_name);
-	if (&rwlock->rw_conditional == NULL) {
+	rwlock->conditional_read = cv_create(rwlock->rw_name);
+	if (&rwlock->conditional_read == NULL) {
+		kfree(rwlock);
+		return NULL;
+	}
+	
+	rwlock->conditional_write = cv_create(rwlock->rw_name);
+	if (&rwlock->conditional_write == NULL) {
 		kfree(rwlock);
 		return NULL;
 	}
@@ -361,23 +388,24 @@ rwlock_create(const char *name){
 		return NULL;
 	}	
 	
-	// Set current number of readers to 0; no writers waiting
+	// Set current number of readers & anti-starvation guard to 0. No writers waiting at start.
 	rwlock->rw_num_readers = 0;
+	rwlock->anti_starvation = 0;
 	rwlock->is_writer_waiting = false;
 
 	return rwlock;	
 }
 
 void
-rwlock_destroy(struct rwlock *rwlock){
-	//KASSERTS	
+rwlock_destroy(struct rwlock *rwlock){	
 	
 	KASSERT(rwlock != NULL);
 	KASSERT(!lock_do_i_hold(rwlock->rw_lock));
 	
 	kfree(rwlock->rw_name);
 	lock_destroy(rwlock->rw_lock);
-	cv_destroy(rwlock->rw_conditional);	
+	cv_destroy(rwlock->conditional_read);
+	cv_destroy(rwlock->conditional_write);	
 	kfree(rwlock);
 	
 	return;
@@ -390,16 +418,18 @@ rwlock_acquire_read(struct rwlock *rwlock){
 	
 	lock_acquire(rwlock->rw_lock); 
 	
-	// If writers are waiting, wait. Waits until all readers hit this if-statement and num_readers is 0
-	if(rwlock->is_writer_waiting){
-		//rwlock->rw_num_readers--;	//Safe because currently holding lock
-		cv_wait(rwlock->rw_conditional, rwlock->rw_lock);
+	// If there is a writer awaiting access, yield to it via cv_wait.
+	// OR, if enough readers have been looking at buffer, allow a writer through.
+	while(rwlock->is_writer_waiting || rwlock->anti_starvation > 8){
+
+		cv_wait(rwlock->conditional_read, rwlock->rw_lock);
 	}	
 
+	// Lock acquired. Increment number of readers.
 	rwlock->rw_num_readers++;
+	rwlock->anti_starvation++;	// Read "successful".
 	lock_release(rwlock->rw_lock);
 
-	//(void)rwlock;
 	return;	
 }
 
@@ -409,11 +439,16 @@ rwlock_release_read(struct rwlock *rwlock){
 	KASSERT(rwlock->rw_num_readers > 0);
 	
 	lock_acquire(rwlock->rw_lock);
-	rwlock->rw_num_readers--;
-	lock_release(rwlock->rw_lock);
+	rwlock->rw_num_readers--;	// Release reader from pool by decrementing total readers
 	
+	// If this is the last reader to release, signal to writer it can proceed
+	if( rwlock->rw_num_readers == 0 ){
+	
+		cv_signal(rwlock->conditional_write, rwlock->rw_lock);
+	}
 
-	//(void)rwlock;
+	lock_release(rwlock->rw_lock);
+
 	return;
 }
 
@@ -421,21 +456,23 @@ void
 rwlock_acquire_write(struct rwlock *rwlock){
 	
 	KASSERT(rwlock != NULL);
+	KASSERT(rwlock->rw_num_readers == 0);
 	
-	// Set flag to declare waiting. Readers will cv_wait if this flag is true
+	// Set flag to declare waiting; so readers know they should yield either now, or soon.
 	lock_acquire(rwlock->rw_lock);
 	rwlock->is_writer_waiting = true;
-	lock_release(rwlock->rw_lock);
 	
 	// Loop until all readers are on cv_wait. Then proceed.
 	while(rwlock->rw_num_readers > 0){
-		//Busy wait			
+		
+		cv_wait(rwlock->conditional_write, rwlock->rw_lock);	
 	}
+
 	KASSERT(rwlock->rw_num_readers == 0);	
 	
 	// Writer now exclusively owns access, readers are all on cv_wait
+	lock_release(rwlock->rw_lock);
 
-	//(void)rwlock;
 	return;
 }
 
@@ -448,12 +485,16 @@ rwlock_release_write(struct rwlock *rwlock){
 	lock_acquire(rwlock->rw_lock);
 	rwlock->is_writer_waiting = false;
 	
+	// Writer got a chance to proceed, reset anti-starvation guard.
+	rwlock->anti_starvation = 0;
+
 	// Let readers on cv_wait know they can resume reading the resource
-	cv_broadcast(rwlock->rw_conditional, rwlock->rw_lock);
-	
+	// There may be (and probably is) more than one writer on the wait channel
+	// so broadcast to all of them since access isn't limited to one reader.
+	cv_broadcast(rwlock->conditional_read, rwlock->rw_lock);
+	//cv_signal(rwlock->conditional_read, rwlock->rw_lock);	
+
 	lock_release(rwlock->rw_lock);	
 
-
-	//(void)rwlock;
 	return;
 }
