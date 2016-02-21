@@ -83,7 +83,7 @@ static void readerthread(void *unused, long unsigned int id){
 
 	// Ensure what was read matches up with the predicted output.
 	if(testchar != ultimate_buffer[0]){
-		success(FAIL, SECRET, "rw3"); 
+		success(FAIL, SECRET, "Test Fail. Reader Fault."); 
 	}
 
 	cur_num_readers--;
@@ -112,10 +112,10 @@ static void writerthread(void *unused, long unsigned int id){
 
 	// Ensure writer is by itself
 	if(cur_num_readers > 0){
-		success(FAIL, SECRET, "rw3");
+		success(FAIL, SECRET, "Test Fail. Writer Fault.");
 	}
 
-	kprintf("Writer writing %c.\n", current_char);
+	kprintf("Writer writing: %c\n", current_char);
 	for(int i = 0; i < 64; i++){
 		ultimate_buffer[i] = current_char;
 	}
@@ -136,6 +136,7 @@ int rwtest3(int nargs, char **args) {
 	// Initialize resources and other fun stuff
 	// See above for current_char description
 	current_char = 'A';
+	writercount = 0;
 	ultimate_buffer = kmalloc(sizeof(char)*64);
 	for(int i = 0; i < 64; i++){
 		ultimate_buffer[i] = current_char;
@@ -175,29 +176,133 @@ int rwtest3(int nargs, char **args) {
 	for(int k = 0; k < N_THREADS; k++){
 		P(exitsem);
 	}
-	//while(readers_running->sem_count > 0){ }	
-	//kprintf_n("rwt3 unimplemented\n");
+
+	// Cleanup because we're good programmers!
+
+	lock_destroy(printlock);
+	rwlock_destroy(test_rwlk);
+	sem_destroy(exitsem);
+
 	success(SUCCESS, SECRET, "rwt3");
 
 	return 0;
 }
 
+/*
+ * R/W Lock Test 4: William Burgin
+ * Forks N_THREADS/2 threads, all of which are writers except for one reader.
+ * This test is meant to demonstrate that a reader is still allowed into
+ * a resource despite the writers having priority and constantly pounding
+ * the buffer. This test uses a 64 slot buffer.
+ */
+
 int rwtest4(int nargs, char **args) {
 	(void)nargs;
 	(void)args;
 
-	kprintf_n("rwt4 unimplemented\n");
-	success(FAIL, SECRET, "rwt4");
+	// Initialize resources
+	current_char = 'A';
+	writercount = 0;
+	ultimate_buffer = kmalloc(sizeof(char)*64);
+	for(int i = 0; i < 64; i++){
+		ultimate_buffer[i] = current_char;
+	}
+
+	// Init primitives for testing & be sure they exist
+	exitsem = sem_create("exitsem", 0);
+	test_rwlk = rwlock_create("test_read_write_lk");
+	printlock = lock_create("kprintf_lk");
+	
+	if( printlock == NULL || test_rwlk == NULL || exitsem == NULL ){
+		panic("rwtest4: failed to create synch primitives");
+	}
+
+	int err;
+	kprintf("Begin.");
+	for(int j = 0; j < N_THREADS/2; j++){
+		if( j == 20 || j == 30 ){	// Threads 20 & 30 are readers
+			err = thread_fork("rwtest4", NULL, readerthread, NULL, j);
+		}else{
+			err = thread_fork("rwtest4", NULL, writerthread, NULL, j);
+		}
+		
+		if(err){
+			panic("rwtest4 thread fork failure");
+		}
+
+	}
+	
+	for(int k = 0; k < N_THREADS/2; k++){
+		P(exitsem);
+	}
+
+		
+	lock_destroy(printlock);
+	rwlock_destroy(test_rwlk);
+	sem_destroy(exitsem);
+
+	success(SUCCESS, SECRET, "rwt4");
 
 	return 0;
 }
+
+/*
+ * R/W Lock Test 5: William Burgin
+ * Some pretty aweful punishment of the buffer and R/W locks. Forks
+ * N_THREADS*4 threads, odd numbers being writers and evens being readers.
+ * Same stuff as before: 64 slot buffer. Despite the number of iterations
+ * being more than the ASCII table, we can be sure that the failure is
+ * thrown properly because the threads do direct comparison of the 
+ * expected character to the read character.
+ */
 
 int rwtest5(int nargs, char **args) {
 	(void)nargs;
 	(void)args;
 
-	kprintf_n("rwt5 unimplemented\n");
-	success(FAIL, SECRET, "rwt5");
+	
+	// Initialize resources
+	current_char = 'A';
+	writercount = 0;
+	ultimate_buffer = kmalloc(sizeof(char)*64);
+	for(int i = 0; i < 64; i++){
+		ultimate_buffer[i] = current_char;
+	}
+
+	// Init primitives for testing & be sure they exist
+	exitsem = sem_create("exitsem", 0);
+	test_rwlk = rwlock_create("test_read_write_lk");
+	printlock = lock_create("kprintf_lk");
+	
+	if( printlock == NULL || test_rwlk == NULL || exitsem == NULL ){
+		panic("rwtest5: failed to create synch primitives");
+	}
+
+	int err;
+	kprintf("Begin.");
+	for(int j = 0; j < N_THREADS*4; j++){
+		if( (j%2) == 0){
+			err = thread_fork("rwtest5", NULL, readerthread, NULL, j);
+		}else{
+			err = thread_fork("rwtest5", NULL, writerthread, NULL, j);
+		}
+
+		if(err){
+			panic("rwtest5 thread fork failure");
+		}	
+		
+	}
+
+	for(int k = 0; k < N_THREADS*4; k++){
+		P(exitsem);		
+	}
+
+		
+	lock_destroy(printlock);
+	rwlock_destroy(test_rwlk);
+	sem_destroy(exitsem);
+
+	success(SUCCESS, SECRET, "rwt5");
 
 	return 0;
 }

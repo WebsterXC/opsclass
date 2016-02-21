@@ -420,7 +420,7 @@ rwlock_acquire_read(struct rwlock *rwlock){
 	
 	// If there is a writer awaiting access, yield to it via cv_wait.
 	// OR, if enough readers have been looking at buffer, allow a writer through.
-	while(rwlock->is_writer_waiting || rwlock->anti_starvation > 8){
+	while(rwlock->is_writer_waiting || rwlock->anti_starvation > 6){
 
 		cv_wait(rwlock->conditional_read, rwlock->rw_lock);
 	}	
