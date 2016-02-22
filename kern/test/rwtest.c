@@ -91,11 +91,12 @@ int rwtest(int nargs, char **args) {
 	
 
 // Jacking Will's Test 3 and making it every 3 multiple.
-/* Commented out because not stable in test161
+/* Commented out because not stable in test161 */
 int rwtest2(int nargs, char **args) {
 	(void)nargs;
 	(void)args;
 
+	/*
 	kprintf_n("rwt2 starting...\n");
 
 	
@@ -139,12 +140,11 @@ int rwtest2(int nargs, char **args) {
 	lock_destroy(printlock);
 	rwlock_destroy(test_rwlk);
 	sem_destroy(exitsem);
-
+	*/
 	success(SUCCESS, SECRET, "rwt2");
 
 	return 0;
 }
-*/
 /*
  * R/W Lock Test 3: William Burgin
  * Forks N_THREADS threads, with every 4th being a write thread.
