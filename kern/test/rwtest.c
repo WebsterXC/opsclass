@@ -26,26 +26,121 @@ static struct lock *printlock = NULL;
 static volatile char current_char;
 static volatile char *ultimate_buffer = NULL;
 static volatile char cur_num_readers;
+static volatile int writercount = 0;
 
 static void readerthread(void*, long unsigned int);
 static void writerthread(void*, long unsigned int);
 
+
+
+// Testing what heppens if they are all writers. Just making sure it works and doesn't Hang.
 int rwtest(int nargs, char **args) {
 	(void)nargs;
 	(void)args;
 
-	kprintf_n("rwt1 unimplemented\n");
-	success(FAIL, SECRET, "rwt1");
+	kprintf_n("rwt1 starting...\n");
+
+	
+	// Steal all of Will's stuff.
+	current_char = 'A';
+	writercount = 0;
+	ultimate_buffer = kmalloc(sizeof(char)*64);
+	for(int i = 0; i < 64; i++){
+		ultimate_buffer[i] = current_char;
+	}
+
+	// Init primitives for testing & be sure they exist
+	exitsem = sem_create("exitsem", 0);
+	test_rwlk = rwlock_create("test_read_write_lk");
+	printlock = lock_create("kprintf_lk");
+	
+	if( printlock == NULL || test_rwlk == NULL || exitsem == NULL ){
+		panic("rwtest1: failed to create synch primitives");
+	}
+
+	
+	int err;
+	// Create threads and fork them
+		for(int j = 0; j < N_THREADS; j++){
+			if(true){
+				err = thread_fork("rwtest1", NULL, writerthread, NULL, j);
+			}else{	
+				err = thread_fork("rwtest1", NULL, readerthread, NULL, j);
+			}
+			random_yielder(2);
+			if(err){
+				panic("rwtest1 thread fork failure.");
+			}
+		}
+
+	for(int k = 0; k < N_THREADS; k++){
+		P(exitsem);
+	}
+
+	// Clean up. 
+
+	lock_destroy(printlock);
+	rwlock_destroy(test_rwlk);
+	sem_destroy(exitsem);
+
+	success(SUCCESS, SECRET, "rwt1");
 
 	return 0;
+
 }
+	
+
+// Jacking Will's Test 3 and making it every 3 multiple.
 
 int rwtest2(int nargs, char **args) {
 	(void)nargs;
 	(void)args;
 
-	kprintf_n("rwt2 unimplemented\n");
-	success(FAIL, SECRET, "rwt2");
+	kprintf_n("rwt2 starting...\n");
+
+	
+	// Initialize all that good stuff.
+	current_char = 'A';
+	writercount = 0;
+	ultimate_buffer = kmalloc(sizeof(char)*64);
+	for(int i = 0; i < 64; i++){
+		ultimate_buffer[i] = current_char;
+	}
+
+	// Init primitives for testing & be sure they exist
+	exitsem = sem_create("exitsem", 0);
+	test_rwlk = rwlock_create("test_read_write_lk");
+	printlock = lock_create("kprintf_lk");
+	
+	if( printlock == NULL || test_rwlk == NULL || exitsem == NULL ){
+		panic("rwtest2: failed to create synch primitives");
+	}
+
+	
+	int err;
+	// Create threads and fork them
+		for(int j = 0; j < N_THREADS; j++){
+			if((j%3) == 0){ 
+				err = thread_fork("rwtest1", NULL, writerthread, NULL, j);
+			}else{	
+				err = thread_fork("rwtest1", NULL, readerthread, NULL, j);
+			}
+			random_yielder(2);
+			if(err){
+				panic("rwtest1 thread fork failure.");
+			}
+		}
+
+	for(int k = 0; k < N_THREADS; k++){
+		P(exitsem);
+	}
+
+	// Deicide!
+	lock_destroy(printlock);
+	rwlock_destroy(test_rwlk);
+	sem_destroy(exitsem);
+
+	success(SUCCESS, SECRET, "rwt2");
 
 	return 0;
 }
@@ -62,7 +157,8 @@ int rwtest2(int nargs, char **args) {
  * Reader thread expects to see a buffer full of the current_char and then prints
  * what's in the buffer. If they don't equal, the test will fail.
  */
-static volatile int writercount = 0;
+
+//static volatile int writercount = 0; ----- Added it to the very top. Hope this doens't break anything.
 static void readerthread(void *unused, long unsigned int id){		
 	random_yielder(4);	// Scrambled eggs & ham
 
