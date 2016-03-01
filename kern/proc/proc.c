@@ -82,6 +82,10 @@ proc_create(const char *name)
 	/* VFS fields */
 	proc->p_cwd = NULL;
 
+	// False for now
+	proc->has_parent = false;
+	proc->is_running = false;
+
 	return proc;
 }
 

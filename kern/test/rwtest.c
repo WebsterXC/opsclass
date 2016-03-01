@@ -12,6 +12,9 @@
 #include <kern/secret.h>
 #include <spinlock.h>
 
+#include <proc.h>
+#include <pr_table.h>
+
 #define N_THREADS 128
 
 /*
@@ -90,58 +93,27 @@ int rwtest(int nargs, char **args) {
 }
 	
 
-// Jacking Will's Test 3 and making it every 3 multiple.
-/* Commented out because not stable in test161 */
+// Jacking rwtest2 for various tests for ASST2
+// Current status: generate 50 fake processes. Test LL functionality.
 int rwtest2(int nargs, char **args) {
 	(void)nargs;
 	(void)args;
-
-	/*
-	kprintf_n("rwt2 starting...\n");
-
 	
-	// Initialize all that good stuff.
-	current_char = 'A';
-	writercount = 0;
-	ultimate_buffer = kmalloc(sizeof(char)*64);
-	for(int i = 0; i < 64; i++){
-		ultimate_buffer[i] = current_char;
-	}
-
-	// Init primitives for testing & be sure they exist
-	exitsem = sem_create("exitsem", 0);
-	test_rwlk = rwlock_create("test_read_write_lk");
-	printlock = lock_create("kprintf_lk");
+	int number_of_loops = 50;
 	
-	if( printlock == NULL || test_rwlk == NULL || exitsem == NULL ){
-		panic("rwtest2: failed to create synch primitives");
+	kprintf("Bootstrap.\n");
+	gpll_bootstrap();
+	kprintf("Entering process loop.\n");
+	for(int i = 0; i < number_of_loops; i++){
+			
+		struct proc *fakeprocess; 
+		fakeprocess = kmalloc(sizeof(struct proc));
+		proc_assign(fakeprocess, NULL);
 	}
+	kprintf("Generated %d parent processes.", number_of_loops);
+	gpll_dump();
 
-	
-	int err;
-	// Create threads and fork them
-		for(int j = 0; j < N_THREADS; j++){
-			if((j%3) == 0){ 
-				err = thread_fork("rwtest1", NULL, writerthread, NULL, j);
-			}else{	
-				err = thread_fork("rwtest1", NULL, readerthread, NULL, j);
-			}
-			random_yielder(2);
-			if(err){
-				panic("rwtest1 thread fork failure.");
-			}
-		}
-
-	for(int k = 0; k < N_THREADS; k++){
-		P(exitsem);
-	}
-
-	// Deicide!
-	lock_destroy(printlock);
-	rwlock_destroy(test_rwlk);
-	sem_destroy(exitsem);
-	*/
-	success(SUCCESS, SECRET, "rwt2");
+	success(SUCCESS, SECRET, "rwt2+");
 
 	return 0;
 }

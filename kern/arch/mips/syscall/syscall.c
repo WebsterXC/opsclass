@@ -154,6 +154,8 @@ syscall(struct trapframe *tf)
  *
  * Thus, you can trash it and do things another way if you prefer.
  */
+
+// Called from sys_fork
 void
 enter_forked_process(struct trapframe *tf)
 {
