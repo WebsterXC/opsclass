@@ -63,7 +63,6 @@ struct proc {
 	char *p_name;			/* Name of this process */
 	struct spinlock p_lock;		/* Lock for this structure */
 	unsigned p_numthreads;		/* Number of threads in this process */
-	pid_t pid;			/* Unique process ID */
 
 	/* VM */
 	struct addrspace *p_addrspace;	/* virtual address space */
@@ -71,14 +70,7 @@ struct proc {
 	/* VFS */
 	struct vnode *p_cwd;		/* current working directory */
 
-	/* Parent vs. Child */
-	bool has_parent;
-	
-	/* Have I exited yet? */
-	bool is_running;
-
-	/* Data to hold exit code */
-	int data_return;
+	/* add more material here as needed */
 };
 
 /* This is the process structure for the kernel and for kernel-only threads. */
