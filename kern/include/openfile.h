@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2001, 2002, 2003, 2004, 2005, 2008, 2009
+ * Copyright (c) 2000, 2001, 2002, 2003, 2004, 2005, 2008, 2009, 2014
  *	The President and Fellows of Harvard College.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,50 +27,45 @@
  * SUCH DAMAGE.
  */
 
-#ifndef _SYSCALL_H_
-#define _SYSCALL_H_
-
-
-#include <cdefs.h> /* for __DEAD */
-struct trapframe; /* from <machine/trapframe.h> */
-
 /*
- * The system call dispatcher.
+ * File handles.
  */
 
-void syscall(struct trapframe *tf);
+#ifndef _OPENFILE_H_
+#define _OPENFILE_H_
 
-/*
- * Support functions.
- */
-
-/* Helper for fork(). You write this. */
-void enter_forked_process(struct trapframe *tf);
-
-/* Enter user mode. Does not return. */
-__DEAD void enter_new_process(int argc, userptr_t argv, userptr_t env,
-		       vaddr_t stackptr, vaddr_t entrypoint);
+#include <spinlock.h>
 
 
 /*
- * Prototypes for IN-KERNEL entry points for system call implementations.
+ * Structure for open files.
  *
- * Note that we use userptr_t's for userspace pointers, so that there
- * isn't any confusion about what space the pointers are in.
+ * This is pretty much just a wrapper around a vnode; the important
+ * additional things we keep here are the open mode and the file's
+ * seek position.
+ *
+ * Open files are reference-counted because they get shared via fork
+ * and dup2 calls. And they need locking because that sharing can be
+ * among multiple concurrent processes.
  */
+struct openfile {
+	struct vnode *of_vnode;
+	int of_accmode;	/* from open: O_RDONLY, O_WRONLY, or O_RDWR */
 
-int sys_reboot(int code);
-int sys___time(userptr_t user_seconds, userptr_t user_nanoseconds);
+	struct lock *of_offsetlock;	/* lock for of_offset */
+	off_t of_offset;
 
-int sys_open(const_userptr_t filename, int flags, mode_t mode, int *retval);
-int sys_dup2(int oldfd, int newfd, int *retval);
-int sys_close(int fd);
-int sys_read(int fd, userptr_t buf, size_t size, int *retval);
-int sys_write(int fd, userptr_t buf, size_t size, int *retval);
-int sys_lseek(int fd, off_t offset, int code, off_t *retval);
+	struct spinlock of_reflock;	/* lock for of_refcount */
+	int of_refcount;
+};
 
-int sys_chdir(const_userptr_t path);
-int sys___getcwd(userptr_t buf, size_t buflen, int *retval);
+/* open a file (args must be kernel pointers; destroys filename) */
+int openfile_open(char *filename, int openflags, mode_t mode,
+		  struct openfile **ret);
+
+/* adjust the refcount on an openfile */
+void openfile_incref(struct openfile *);
+void openfile_decref(struct openfile *);
 
 
-#endif /* _SYSCALL_H_ */
+#endif /* _OPENFILE_H_ */

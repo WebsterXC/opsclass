@@ -69,6 +69,7 @@ struct proc {
 
 	/* VFS */
 	struct vnode *p_cwd;		/* current working directory */
+	struct filetable *p_filetable;	/* table of open files */
 
 	/* add more material here as needed */
 };
@@ -81,6 +82,9 @@ void proc_bootstrap(void);
 
 /* Create a fresh process for use by runprogram(). */
 struct proc *proc_create_runprogram(const char *name);
+
+/* Create a fresh process for use by fork() */
+int proc_fork(struct proc **ret);
 
 /* Destroy a process. */
 void proc_destroy(struct proc *proc);

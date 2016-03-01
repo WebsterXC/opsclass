@@ -43,11 +43,13 @@
  */
 
 #include <types.h>
+#include <kern/errno.h>
 #include <spl.h>
 #include <proc.h>
 #include <current.h>
 #include <addrspace.h>
 #include <vnode.h>
+#include <filetable.h>
 
 /*
  * The process for the kernel; this holds all the kernel-only threads.
@@ -81,6 +83,7 @@ proc_create(const char *name)
 
 	/* VFS fields */
 	proc->p_cwd = NULL;
+	proc->p_filetable = NULL;
 
 	return proc;
 }
@@ -115,6 +118,10 @@ proc_destroy(struct proc *proc)
 	if (proc->p_cwd) {
 		VOP_DECREF(proc->p_cwd);
 		proc->p_cwd = NULL;
+	}
+	if (proc->p_filetable) {
+		filetable_destroy(proc->p_filetable);
+		proc->p_filetable = NULL;
 	}
 
 	/* VM fields */
@@ -189,6 +196,9 @@ proc_bootstrap(void)
  *
  * It will have no address space and will inherit the current
  * process's (that is, the kernel menu's) current directory.
+ *
+ * It will be given no filetable. The filetable will be initialized in
+ * runprogram().
  */
 struct proc *
 proc_create_runprogram(const char *name)
@@ -219,6 +229,55 @@ proc_create_runprogram(const char *name)
 	spinlock_release(&curproc->p_lock);
 
 	return newproc;
+}
+
+/*
+ * Clone the current process.
+ *
+ * The new thread is given a copy of the caller's file handles if RET
+ * is not null. (If RET is null, what we're creating is a kernel-only
+ * thread and it doesn't need an address space or file handles.)
+ * However, the new thread always inherits its current working
+ * directory from the caller. The new thread is given no address space
+ * (the caller decides that).
+ */
+int
+proc_fork(struct proc **ret)
+{
+	struct proc *proc;
+	struct filetable *tbl;
+	int result;
+
+	proc = proc_create(curproc->p_name);
+	if (proc == NULL) {
+		return ENOMEM;
+	}
+
+	/* VM fields */
+	/* do not clone address space -- let caller decide on that */
+
+	/* VFS fields */
+	tbl = curproc->p_filetable;
+	if (tbl != NULL) {
+		result = filetable_copy(tbl, &proc->p_filetable);
+		if (result) {
+			as_destroy(proc->p_addrspace);
+			proc->p_addrspace = NULL;
+			proc_destroy(proc);
+			return result;
+		}
+	}
+
+	spinlock_acquire(&curproc->p_lock);
+	/* we don't need to lock proc->p_lock as we have the only reference */
+	if (curproc->p_cwd != NULL) {
+		VOP_INCREF(curproc->p_cwd);
+		proc->p_cwd = curproc->p_cwd;
+	}
+	spinlock_release(&curproc->p_lock);
+
+	*ret = proc;
+	return 0;
 }
 
 /*
