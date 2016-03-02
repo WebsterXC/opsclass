@@ -9,7 +9,7 @@
 #include <thread.h>
 #include <synch.h>
 #include <test.h>
-#include <kern/secret.h>
+#include <kern/test161.h>
 #include <spinlock.h>
 
 #include <pid.h>
@@ -42,6 +42,7 @@ int rwtest(int nargs, char **args) {
 	(void)nargs;
 	(void)args;
 
+<<<<<<< HEAD
 	kprintf_n("rwt1 starting...\n");
 
 	
@@ -88,6 +89,10 @@ int rwtest(int nargs, char **args) {
 	sem_destroy(exitsem);
 
 	success(SUCCESS, SECRET, "rwt1");
+=======
+	kprintf_n("rwt1 unimplemented\n");
+	success(TEST161_FAIL, SECRET, "rwt1");
+>>>>>>> ca4b4de58bd6ac4822cf62a93475e87e65ce0d42
 
 	return 0;
 
@@ -120,6 +125,7 @@ int rwtest2(int nargs, char **args) {
 		fakeprocess->p_cwd = NULL;
 		fakeprocess->p_filetable = NULL;	
 
+<<<<<<< HEAD
 		if(i == 40){
 			proc_assign(fakeprocess, parent1);
 		}else if(i == 45){
@@ -133,6 +139,10 @@ int rwtest2(int nargs, char **args) {
 	gpll_dump();
 
 	success(SUCCESS, SECRET, "rwt2+");
+=======
+	kprintf_n("rwt2 unimplemented\n");
+	success(TEST161_FAIL, SECRET, "rwt2");
+>>>>>>> ca4b4de58bd6ac4822cf62a93475e87e65ce0d42
 
 	return 0;
 }
@@ -264,6 +274,7 @@ int rwtest3(int nargs, char **args) {
 		P(exitsem);
 	}
 
+<<<<<<< HEAD
 	// Cleanup because we're good programmers!
 
 	lock_destroy(printlock);
@@ -271,6 +282,10 @@ int rwtest3(int nargs, char **args) {
 	sem_destroy(exitsem);
 
 	success(SUCCESS, SECRET, "rwt3");
+=======
+	kprintf_n("rwt3 unimplemented\n");
+	success(TEST161_FAIL, SECRET, "rwt3");
+>>>>>>> ca4b4de58bd6ac4822cf62a93475e87e65ce0d42
 
 	return 0;
 }
@@ -287,6 +302,7 @@ int rwtest4(int nargs, char **args) {
 	(void)nargs;
 	(void)args;
 
+<<<<<<< HEAD
 	// Initialize resources
 	current_char = 'A';
 	writercount = 0;
@@ -329,6 +345,10 @@ int rwtest4(int nargs, char **args) {
 	sem_destroy(exitsem);
 
 	success(SUCCESS, SECRET, "rwt4");
+=======
+	kprintf_n("rwt4 unimplemented\n");
+	success(TEST161_FAIL, SECRET, "rwt4");
+>>>>>>> ca4b4de58bd6ac4822cf62a93475e87e65ce0d42
 
 	return 0;
 }
@@ -347,6 +367,7 @@ int rwtest5(int nargs, char **args) {
 	(void)nargs;
 	(void)args;
 
+<<<<<<< HEAD
 	
 	// Initialize resources
 	current_char = 'A';
@@ -390,6 +411,10 @@ int rwtest5(int nargs, char **args) {
 	sem_destroy(exitsem);
 
 	success(SUCCESS, SECRET, "rwt5");
+=======
+	kprintf_n("rwt5 unimplemented\n");
+	success(TEST161_FAIL, SECRET, "rwt5");
+>>>>>>> ca4b4de58bd6ac4822cf62a93475e87e65ce0d42
 
 	return 0;
 }
