@@ -12,6 +12,7 @@
 #include <kern/secret.h>
 #include <spinlock.h>
 
+#include <pid.h>
 #include <proc.h>
 #include <pr_table.h>
 
@@ -104,11 +105,29 @@ int rwtest2(int nargs, char **args) {
 	kprintf("Bootstrap.\n");
 	gpll_bootstrap();
 	kprintf("Entering process loop.\n");
+	struct proc *parent1;
+	struct proc *parent2;
+	parent1 = kmalloc(sizeof(struct proc));
+	parent2 = kmalloc(sizeof(struct proc));
+	
 	for(int i = 0; i < number_of_loops; i++){
-			
-		struct proc *fakeprocess; 
-		fakeprocess = kmalloc(sizeof(struct proc));
-		proc_assign(fakeprocess, NULL);
+		struct proc *fakeprocess;
+		fakeprocess = kmalloc(sizeof(*fakeprocess));
+		fakeprocess->p_name = kstrdup("name");
+		fakeprocess->p_numthreads = 0;
+		spinlock_init(&fakeprocess->p_lock);
+		fakeprocess->p_addrspace = NULL;
+		fakeprocess->p_cwd = NULL;
+		fakeprocess->p_filetable = NULL;	
+
+		if(i == 40){
+			proc_assign(fakeprocess, parent1);
+		}else if(i == 45){
+			proc_assign(fakeprocess, parent2);
+		}else{
+			proc_assign(fakeprocess, NULL);
+		}
+
 	}
 	kprintf("Generated %d parent processes.", number_of_loops);
 	gpll_dump();

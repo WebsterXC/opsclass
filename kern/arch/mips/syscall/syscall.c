@@ -194,7 +194,11 @@ syscall(struct trapframe *tf)
 		break;
 
 
-	    /* Even more system calls will go here */
+	    /* Process system calls go here */
+	    case SYS_fork:
+		err = sys_fork(tf, &retval);
+		
+		break;	
 
 
 	    default:
@@ -245,5 +249,16 @@ syscall(struct trapframe *tf)
 void
 enter_forked_process(struct trapframe *tf)
 {
-	(void)tf;
+	struct trapframe tf_stack;	
+
+	// Alter trap frame to show a success. Increment counter as per instructions.
+	tf->tf_v0 = 0;
+	tf->tf_a3 = 0;
+	tf->tf_epc += 4;
+	
+	// Copy over to stack
+	memcpy(&tf_stack, tf, sizeof(*tf));	
+
+	mips_usermode(&tf_stack);
+	
 }

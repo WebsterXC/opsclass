@@ -62,7 +62,9 @@ struct vnode;
 struct proc {
 	char *p_name;			/* Name of this process */
 	struct spinlock p_lock;		/* Lock for this structure */
+	//struct cv p_cv;			/* CV to control when processes begin running */
 	unsigned p_numthreads;		/* Number of threads in this process */
+	pid_t pid;			/* Unique process ID */
 
 	/* VM */
 	struct addrspace *p_addrspace;	/* virtual address space */

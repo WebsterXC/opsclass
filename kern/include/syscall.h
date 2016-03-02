@@ -33,6 +33,11 @@
 
 #include <cdefs.h> /* for __DEAD */
 struct trapframe; /* from <machine/trapframe.h> */
+struct forkimage{
+	struct trapframe *trap;
+	struct addrspace *addr;
+	struct filetable *filetab;
+};
 
 /*
  * The system call dispatcher.
@@ -72,5 +77,7 @@ int sys_lseek(int fd, off_t offset, int code, off_t *retval);
 int sys_chdir(const_userptr_t path);
 int sys___getcwd(userptr_t buf, size_t buflen, int *retval);
 
+void child(void * fk_img, long unsigned int data2);
+int sys_fork(struct trapframe *tf, int32_t *childpid);
 
 #endif /* _SYSCALL_H_ */

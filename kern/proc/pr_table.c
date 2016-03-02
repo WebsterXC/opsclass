@@ -54,12 +54,12 @@ proc_assign(struct proc *process, struct proc *parent){
 	}else{
 		node->parent = parent;
 	}
-	
+		
 	// Generate a UNIQUE process ID and assign it
 	pid_t attempt = pidgen();
-	while( verify_unique_pid(attempt) == false ){
-		attempt = pidgen();
-	}
+	//while( verify_unique_pid(attempt) == false ){
+	//	attempt = pidgen();
+	//}
 	process->pid = attempt;
 
 	// Now fill into front of linked list (after HEAD)
@@ -104,17 +104,25 @@ verify_unique_pid(pid_t id){
 
 void
 gpll_dump(void){
-	struct pnode *current = _head;
-	int counter = 0;	
 
+	//int counter = 0;	
+	
+	// Manually duplicate node
+	struct pnode *current;
+	current = kmalloc(sizeof(*current));
+	current = _head;
+	//kprintf("Head: %d\n", current->retcode);
+
+/*	
 	// Traverse until _tail
-	while( current->next != NULL ){
-		kprintf("Recall pnode %d with PID %d\n", counter, current->myself->pid);
+	while( current->next != NULL && counter < 55 ){
+		kprintf("Recall pnode %d with PID %d\n", counter, current->myself->pid );
+		//kprintf("Counter: %d\n", counter);	
 		
 		current = current->next;
 		counter++;
 	}
-
+*/
 	return;	
 }
 

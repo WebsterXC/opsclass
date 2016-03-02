@@ -55,10 +55,10 @@
  * The process for the kernel; this holds all the kernel-only threads.
  */
 struct proc *kproc;
-
 /*
  * Create a proc structure.
  */
+
 static
 struct proc *
 proc_create(const char *name)
@@ -77,6 +77,11 @@ proc_create(const char *name)
 
 	proc->p_numthreads = 0;
 	spinlock_init(&proc->p_lock);
+	//proc->p_cv = cv_create("proc_cv");
+	//if (proc->p_cv == NULL) {
+	//	kfree(proc);
+	//	return NULL;
+	//}
 
 	/* VM fields */
 	proc->p_addrspace = NULL;
@@ -254,7 +259,8 @@ proc_fork(struct proc **ret)
 	}
 
 	/* VM fields */
-	/* do not clone address space -- let caller decide on that */
+	/* do not clone address space -- let caller decide on that */ 
+	
 
 	/* VFS fields */
 	tbl = curproc->p_filetable;
