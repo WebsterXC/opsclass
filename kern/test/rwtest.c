@@ -42,7 +42,6 @@ int rwtest(int nargs, char **args) {
 	(void)nargs;
 	(void)args;
 
-<<<<<<< HEAD
 	kprintf_n("rwt1 starting...\n");
 
 	
@@ -88,11 +87,8 @@ int rwtest(int nargs, char **args) {
 	rwlock_destroy(test_rwlk);
 	sem_destroy(exitsem);
 
-	success(SUCCESS, SECRET, "rwt1");
-=======
 	kprintf_n("rwt1 unimplemented\n");
 	success(TEST161_FAIL, SECRET, "rwt1");
->>>>>>> ca4b4de58bd6ac4822cf62a93475e87e65ce0d42
 
 	return 0;
 
@@ -106,43 +102,36 @@ int rwtest2(int nargs, char **args) {
 	(void)args;
 	
 	int number_of_loops = 50;
-	
+	pid_t mypid;	
+
 	kprintf("Bootstrap.\n");
 	gpll_bootstrap();
 	kprintf("Entering process loop.\n");
-	struct proc *parent1;
-	struct proc *parent2;
-	parent1 = kmalloc(sizeof(struct proc));
-	parent2 = kmalloc(sizeof(struct proc));
 	
 	for(int i = 0; i < number_of_loops; i++){
 		struct proc *fakeprocess;
-		fakeprocess = kmalloc(sizeof(*fakeprocess));
-		fakeprocess->p_name = kstrdup("name");
-		fakeprocess->p_numthreads = 0;
-		spinlock_init(&fakeprocess->p_lock);
-		fakeprocess->p_addrspace = NULL;
-		fakeprocess->p_cwd = NULL;
-		fakeprocess->p_filetable = NULL;	
+		fakeprocess = proc_create_runprogram("fakeprocess");
+		proc_assign(fakeprocess);
 
-<<<<<<< HEAD
-		if(i == 40){
-			proc_assign(fakeprocess, parent1);
-		}else if(i == 45){
-			proc_assign(fakeprocess, parent2);
-		}else{
-			proc_assign(fakeprocess, NULL);
+		if( i == 30 ){
+			mypid = proc_getpid(fakeprocess);
 		}
-
 	}
-	kprintf("Generated %d parent processes.", number_of_loops);
+	kprintf("Generated %d parent processes.\n", number_of_loops);
 	gpll_dump();
 
-	success(SUCCESS, SECRET, "rwt2+");
-=======
+	kprintf("PID Grab Test: %d\n", (int)mypid);
+	
+	struct proc *fakeproc2;
+	fakeproc2 = proc_getptr(mypid);
+	
+	int newpid;
+	newpid = proc_getpid(fakeproc2);
+
+	kprintf("PTR Grab Test: %d\n", (int)newpid);	
+
 	kprintf_n("rwt2 unimplemented\n");
 	success(TEST161_FAIL, SECRET, "rwt2");
->>>>>>> ca4b4de58bd6ac4822cf62a93475e87e65ce0d42
 
 	return 0;
 }
@@ -180,7 +169,7 @@ static void readerthread(void *unused, long unsigned int id){
 
 	// Ensure what was read matches up with the predicted output.
 	if(testchar != ultimate_buffer[0]){
-		success(FAIL, SECRET, "Test Fail. Reader Fault."); 
+		//success(FAIL, SECRET, "Test Fail. Reader Fault."); 
 	}
 
 	cur_num_readers--;
@@ -209,7 +198,7 @@ static void writerthread(void *unused, long unsigned int id){
 
 	// Ensure writer is by itself
 	if(cur_num_readers > 0){
-		success(FAIL, SECRET, "Test Fail. Writer Fault.");
+		//success(FAIL, SECRET, "Test Fail. Writer Fault.");
 	}
 
 	kprintf("Writer writing: %c\n", current_char);
@@ -274,18 +263,14 @@ int rwtest3(int nargs, char **args) {
 		P(exitsem);
 	}
 
-<<<<<<< HEAD
 	// Cleanup because we're good programmers!
 
 	lock_destroy(printlock);
 	rwlock_destroy(test_rwlk);
 	sem_destroy(exitsem);
 
-	success(SUCCESS, SECRET, "rwt3");
-=======
 	kprintf_n("rwt3 unimplemented\n");
 	success(TEST161_FAIL, SECRET, "rwt3");
->>>>>>> ca4b4de58bd6ac4822cf62a93475e87e65ce0d42
 
 	return 0;
 }
@@ -301,8 +286,7 @@ int rwtest3(int nargs, char **args) {
 int rwtest4(int nargs, char **args) {
 	(void)nargs;
 	(void)args;
-
-<<<<<<< HEAD
+	
 	// Initialize resources
 	current_char = 'A';
 	writercount = 0;
@@ -344,11 +328,8 @@ int rwtest4(int nargs, char **args) {
 	rwlock_destroy(test_rwlk);
 	sem_destroy(exitsem);
 
-	success(SUCCESS, SECRET, "rwt4");
-=======
 	kprintf_n("rwt4 unimplemented\n");
 	success(TEST161_FAIL, SECRET, "rwt4");
->>>>>>> ca4b4de58bd6ac4822cf62a93475e87e65ce0d42
 
 	return 0;
 }
@@ -367,7 +348,6 @@ int rwtest5(int nargs, char **args) {
 	(void)nargs;
 	(void)args;
 
-<<<<<<< HEAD
 	
 	// Initialize resources
 	current_char = 'A';
@@ -410,11 +390,8 @@ int rwtest5(int nargs, char **args) {
 	rwlock_destroy(test_rwlk);
 	sem_destroy(exitsem);
 
-	success(SUCCESS, SECRET, "rwt5");
-=======
 	kprintf_n("rwt5 unimplemented\n");
 	success(TEST161_FAIL, SECRET, "rwt5");
->>>>>>> ca4b4de58bd6ac4822cf62a93475e87e65ce0d42
 
 	return 0;
 }

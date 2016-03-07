@@ -46,6 +46,7 @@
 #include <kern/errno.h>
 #include <spl.h>
 #include <proc.h>
+#include <pr_table.h>
 #include <current.h>
 #include <addrspace.h>
 #include <vnode.h>
@@ -77,11 +78,19 @@ proc_create(const char *name)
 
 	proc->p_numthreads = 0;
 	spinlock_init(&proc->p_lock);
-	//proc->p_cv = cv_create("proc_cv");
-	//if (proc->p_cv == NULL) {
-	//	kfree(proc);
-	//	return NULL;
-	//}
+	
+	proc->p_cv = cv_create("proc_cv");
+	if (proc->p_cv == NULL) {
+		kfree(proc);
+		return NULL;
+	}
+	proc->p_cv_lock = lock_create("proc cv lock");
+	if (proc->p_cv_lock == NULL){
+		kfree(proc);
+		return NULL;
+	}
+
+	proc->isactive = false;
 
 	/* VM fields */
 	proc->p_addrspace = NULL;
@@ -89,6 +98,8 @@ proc_create(const char *name)
 	/* VFS fields */
 	proc->p_cwd = NULL;
 	proc->p_filetable = NULL;
+	
+	proc->parent = NULL;
 
 	return proc;
 }
@@ -177,9 +188,13 @@ proc_destroy(struct proc *proc)
 		as_destroy(as);
 	}
 
+
 	KASSERT(proc->p_numthreads == 0);
 	spinlock_cleanup(&proc->p_lock);
 
+	// Remove from process list
+	proc_nuke(proc);
+	
 	kfree(proc->p_name);
 	kfree(proc);
 }
@@ -233,6 +248,9 @@ proc_create_runprogram(const char *name)
 	}
 	spinlock_release(&curproc->p_lock);
 
+	// Add to process list
+	proc_assign(newproc);
+
 	return newproc;
 }
 
@@ -260,7 +278,7 @@ proc_fork(struct proc **ret)
 
 	/* VM fields */
 	/* do not clone address space -- let caller decide on that */ 
-	
+		
 
 	/* VFS fields */
 	tbl = curproc->p_filetable;
@@ -282,7 +300,14 @@ proc_fork(struct proc **ret)
 	}
 	spinlock_release(&curproc->p_lock);
 
+	// Assign parent to new forked process
+	proc->parent = curproc;
+
 	*ret = proc;
+	
+	// Add to process list
+	proc_assign(*ret);
+	
 	return 0;
 }
 

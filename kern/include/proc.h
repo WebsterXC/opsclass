@@ -37,6 +37,7 @@
  */
 
 #include <spinlock.h>
+#include <synch.h>
 
 struct addrspace;
 struct thread;
@@ -62,9 +63,12 @@ struct vnode;
 struct proc {
 	char *p_name;			/* Name of this process */
 	struct spinlock p_lock;		/* Lock for this structure */
-	//struct cv p_cv;			/* CV to control when processes begin running */
+	struct lock *p_cv_lock;
+	struct cv *p_cv;			/* CV to control when processes begin running */
 	unsigned p_numthreads;		/* Number of threads in this process */
-	pid_t pid;			/* Unique process ID */
+	bool isactive;
+
+	struct proc *parent;
 
 	/* VM */
 	struct addrspace *p_addrspace;	/* virtual address space */

@@ -8,11 +8,8 @@
 /* Define nodes for linked list */
 struct pnode{
 	/* Process this node represents. */
-	struct proc *myself;
-
-	/* Parent process. Proc struct contains has_parent flag. */
-	struct proc *parent;
-	
+	struct proc *myself;	
+	pid_t pid;
 
 	int retcode;	// Exit code here. HEAD contains 32766, TAIL contains 32767
 
@@ -31,8 +28,13 @@ bool verify_unique_pid(pid_t);
 
 /* External Methods */
 void gpll_bootstrap(void);
-void proc_assign(struct proc *process, struct proc *parent);
+void proc_assign(struct proc *process);
 void proc_exited(struct proc *process);
 void proc_nuke(struct proc *process);
+
+struct proc * proc_getptr(pid_t id);
+pid_t proc_getpid(struct proc *process);
+struct pnode * proc_get_pnode(struct proc *process);
+
 
 void gpll_dump(void);

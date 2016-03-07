@@ -39,6 +39,11 @@ struct forkimage{
 	struct filetable *filetab;
 };
 
+struct arg{
+	char *str;
+	int len;
+};
+
 /*
  * The system call dispatcher.
  */
@@ -79,5 +84,11 @@ int sys___getcwd(userptr_t buf, size_t buflen, int *retval);
 
 void child(void * fk_img, long unsigned int data2);
 int sys_fork(struct trapframe *tf, int32_t *childpid);
+int sys_execv(char * program, userptr_t **args, int *retval);
+
+int sys_waitpid(pid_t pid, int *status, int options, int *childpid);
+int sys__exit(int exitcode);
+
+int sys_getpid(int32_t *retval);
 
 #endif /* _SYSCALL_H_ */
