@@ -7,6 +7,7 @@
  *
  */
 
+#include <kern/errno.h>
 #include <types.h>
 #include <proc.h>
 #include <pid.h>
@@ -14,7 +15,7 @@
 
 unsigned int num_processes;
 
-/* Initialize process table. Called in: */
+/* Initialize process table. Called in: main.c */
 void
 gpll_bootstrap(void){			// Stands for global-processes linked list
 	_tail = kmalloc(sizeof(struct pnode));
@@ -53,7 +54,11 @@ proc_assign(struct proc *process){
 	// Create pnode and fill it with some information
 	node = kmalloc(sizeof(*node));
 	node->retcode = 0;
-		
+	if( node == NULL ){
+		kfree(node);
+		return;
+	}
+	
 	// Generate a UNIQUE process ID and assign it
 	pid_t attempt = pidgen();
 	while( verify_unique_pid(attempt) == false ){
@@ -73,6 +78,8 @@ proc_assign(struct proc *process){
 	nptr = _head->next;
 	_head->next = node;
 	node->next = nptr;
+
+	//num_processes++;
 
 	return;
 }
@@ -134,6 +141,8 @@ proc_nuke(struct proc *process){
 	current->next = NULL;
 	kfree(current);
 	
+	//num_processes--;
+	
 	return;
 }
 
@@ -169,7 +178,7 @@ proc_getpid(struct proc *process){
 		current = current->next;
 	}
 
-	return 0;
+	return -1;
 }
 
 /* Gets a pointer to the pnode that contains the given process */
@@ -187,6 +196,11 @@ proc_get_pnode(struct proc *process){
 	}
 
 	return NULL;
+}
+/* Returns the current number of user processes */
+unsigned int
+proc_rollcall(void){
+	return num_processes;
 }
 
 /* Compares a PID to the enitre process list and returns false 

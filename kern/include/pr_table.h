@@ -35,6 +35,6 @@ void proc_nuke(struct proc *process);
 struct proc * proc_getptr(pid_t id);
 pid_t proc_getpid(struct proc *process);
 struct pnode * proc_get_pnode(struct proc *process);
-
+unsigned int proc_rollcall(void);
 
 void gpll_dump(void);
