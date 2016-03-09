@@ -1,265 +1,208 @@
-arch/mips/include/current.h: *   both the kernel stack and curthread.
-arch/mips/include/current.h: *   curthread there.
-arch/mips/include/current.h:register struct thread *curthread __asm("$23");	/* s7 register */
-arch/mips/include/current.h:#error "Don't know how to declare curthread in this compiler"
-arch/mips/include/current.h:/* For how we've defined it, curthread gets set first, then curcpu. */
-arch/mips/include/current.h:#define INIT_CURCPU(cpu, thread) (curthread = (thread), curcpu = (cpu))
-arch/mips/include/trapframe.h: * Arrays used to load the kernel stack and curthread on trap entry.
-arch/mips/locore/exception-mips1.S:    *      k0 contains the value for curthread, to go into s7.
-arch/mips/locore/exception-mips1.S:    * Load the curthread register if coming from user mode.
-arch/mips/locore/exception-mips1.S:   lw s7, %lo(cputhreads)(k0)	/* Load curthread value */
-arch/mips/locore/trap.c:kill_curthread(vaddr_t epc, unsigned code, vaddr_t vaddr)
-arch/mips/locore/trap.c:	if (curthread != NULL && curthread->t_stack != NULL) {
-arch/mips/locore/trap.c:		KASSERT((vaddr_t)tf > (vaddr_t)curthread->t_stack);
-arch/mips/locore/trap.c:		KASSERT((vaddr_t)tf < (vaddr_t)(curthread->t_stack
-arch/mips/locore/trap.c:		old_in = curthread->t_in_interrupt;
-arch/mips/locore/trap.c:		curthread->t_in_interrupt = 1;
-arch/mips/locore/trap.c:		if (curthread->t_curspl == 0) {
-arch/mips/locore/trap.c:			KASSERT(curthread->t_curspl == 0);
-arch/mips/locore/trap.c:			KASSERT(curthread->t_iplhigh_count == 0);
-arch/mips/locore/trap.c:			curthread->t_curspl = IPL_HIGH;
-arch/mips/locore/trap.c:			curthread->t_iplhigh_count++;
-arch/mips/locore/trap.c:			KASSERT(curthread->t_curspl == IPL_HIGH);
-arch/mips/locore/trap.c:			KASSERT(curthread->t_iplhigh_count == 1);
-arch/mips/locore/trap.c:			curthread->t_iplhigh_count--;
-arch/mips/locore/trap.c:			curthread->t_curspl = 0;
-arch/mips/locore/trap.c:		curthread->t_in_interrupt = old_in;
-arch/mips/locore/trap.c:		KASSERT(curthread->t_curspl == 0);
-arch/mips/locore/trap.c:		KASSERT(curthread->t_iplhigh_count == 0);
-arch/mips/locore/trap.c:		kill_curthread(tf->tf_epc, code, tf->tf_vaddr);
-arch/mips/locore/trap.c:	if (curthread != NULL &&
-arch/mips/locore/trap.c:	    curthread->t_machdep.tm_badfaultfunc != NULL) {
-arch/mips/locore/trap.c:		tf->tf_epc = (vaddr_t) curthread->t_machdep.tm_badfaultfunc;
-arch/mips/locore/trap.c:	if (curthread->t_stack == NULL) {
-arch/mips/locore/trap.c:	cputhreads[curcpu->c_number] = (vaddr_t)curthread;
-arch/mips/locore/trap.c:	cpustacks[curcpu->c_number] = (vaddr_t)curthread->t_stack + STACK_SIZE;
-arch/mips/locore/trap.c:	 *   (1) curthread->t_stack is corrupted, or
-arch/mips/locore/trap.c:	cputhreads[curcpu->c_number] = (vaddr_t)curthread;
-arch/mips/locore/trap.c:	cpustacks[curcpu->c_number] = (vaddr_t)curthread->t_stack + STACK_SIZE;
-arch/mips/syscall/syscall.c:	KASSERT(curthread != NULL);
-arch/mips/syscall/syscall.c:	KASSERT(curthread->t_curspl == 0);
-arch/mips/syscall/syscall.c:	KASSERT(curthread->t_iplhigh_count == 0);
-arch/mips/syscall/syscall.c:	KASSERT(curthread->t_curspl == 0);
-arch/mips/syscall/syscall.c:	KASSERT(curthread->t_iplhigh_count == 0);
-arch/mips/thread/cpu.c: * curthread from cputhreads[] by parallel indexing.
-arch/mips/thread/cpu.c:	if (c->c_curthread->t_stack == NULL) {
-arch/mips/thread/cpu.c:		stackpointer = (vaddr_t) c->c_curthread->t_stack;
-arch/mips/thread/cpu.c:		cputhreads[c->c_number] = (vaddr_t)c->c_curthread;
-arch/mips/thread/switch.S:    * use it to hold curthread saving it would interfere with the way
-arch/mips/thread/switch.S:    * curthread is managed by thread.c. So we'll just let thread.c
-arch/mips/vm/dumbvm.c:		KASSERT(curthread->t_in_interrupt == 0);
-arch/sys161/dev/lamebus_machdep.c:	KASSERT(curthread->t_curspl > 0);
-arch/sys161/dev/lamebus_machdep.c:	KASSERT(curthread->t_curspl > 0);
-arch/sys161/main/start.S:    * Load NULL into the register we use for curthread.
-arch/sys161/main/start.S:    * Now fetch curthread out of cputhreads[].
-arch/sys161/main/start.S:   lw s7, %lo(cputhreads)(t0)	/* load curthread register */
-Binary file compile/ASST1/spl.o matches
+arch/mips/syscall/syscall.c:	    case SYS_waitpid:
+arch/mips/syscall/syscall.c:		err = sys_waitpid(tf->tf_a0, (int*)tf->tf_a1, tf->tf_a2, &retval);
+arch/mips/thread/cpu.c:wait(void)
+arch/mips/thread/cpu.c:		"wait;"			/* suspend until interrupted */
+arch/mips/thread/cpu.c:	wait();
+arch/mips/thread/cpu.c:		wait();
+arch/mips/vm/tlb-mips161.S:    * Pipeline hazard: must wait between setting entryhi/lo and
+arch/mips/vm/tlb-mips161.S:   ssnop		/* wait for pipeline hazard */
+arch/mips/vm/tlb-mips161.S:    * Pipeline hazard: must wait between setting entryhi/lo and
+arch/mips/vm/tlb-mips161.S:   ssnop		/* wait for pipeline hazard */
+arch/mips/vm/tlb-mips161.S:    * Pipeline hazard: must wait between setting c0_index and
+arch/mips/vm/tlb-mips161.S:   ssnop		/* wait for pipeline hazard */
+arch/mips/vm/tlb-mips161.S:   ssnop		/* wait for pipeline hazard */
+arch/mips/vm/tlb-mips161.S:    * Pipeline hazard: must wait between setting c0_entryhi/lo and
+arch/mips/vm/tlb-mips161.S:   ssnop		/* wait for pipeline hazard */
+arch/mips/vm/tlb-mips161.S:   ssnop		/* wait for pipeline hazard */
+arch/mips/vm/tlb-mips161.S:   ssnop			/* wait for pipeline hazard */
+arch/mips/vm/tlb-mips161.S:   ssnop			/* wait for pipeline hazard */
+arch/mips/vm/tlb-mips161.S:   ssnop			/* wait for pipeline hazard */
+Binary file compile/ASST1/stoplight.o matches
 Binary file compile/ASST1/synch.o matches
 Binary file compile/ASST1/synchprobs.o matches
-Binary file compile/ASST1/syscall.o matches
-Binary file compile/ASST1/thread.o matches
-Binary file compile/ASST1/trap.o matches
-Binary file compile/ASST1/uio.o matches
-Binary file compile/ASST1/vfscwd.o matches
-Binary file compile/ASST1/clock.o matches
-Binary file compile/ASST1/console.o matches
-Binary file compile/ASST1/copyinout.o matches
+Binary file compile/ASST1/synchtest.o matches
+Binary file compile/ASST1/tt3.o matches
 Binary file compile/ASST1/cpu.o matches
-Binary file compile/ASST1/dumbvm.o matches
 Binary file compile/ASST1/emu.o matches
-Binary file compile/ASST1/emu_att.o matches
-Binary file compile/ASST1/hmacunit.o matches
-compile/ASST1/includelinks/machine/current.h: *   both the kernel stack and curthread.
-compile/ASST1/includelinks/machine/current.h: *   curthread there.
-compile/ASST1/includelinks/machine/current.h:register struct thread *curthread __asm("$23");	/* s7 register */
-compile/ASST1/includelinks/machine/current.h:#error "Don't know how to declare curthread in this compiler"
-compile/ASST1/includelinks/machine/current.h:/* For how we've defined it, curthread gets set first, then curcpu. */
-compile/ASST1/includelinks/machine/current.h:#define INIT_CURCPU(cpu, thread) (curthread = (thread), curcpu = (cpu))
-compile/ASST1/includelinks/machine/trapframe.h: * Arrays used to load the kernel stack and curthread on trap entry.
-compile/ASST1/includelinks/mips/current.h: *   both the kernel stack and curthread.
-compile/ASST1/includelinks/mips/current.h: *   curthread there.
-compile/ASST1/includelinks/mips/current.h:register struct thread *curthread __asm("$23");	/* s7 register */
-compile/ASST1/includelinks/mips/current.h:#error "Don't know how to declare curthread in this compiler"
-compile/ASST1/includelinks/mips/current.h:/* For how we've defined it, curthread gets set first, then curcpu. */
-compile/ASST1/includelinks/mips/current.h:#define INIT_CURCPU(cpu, thread) (curthread = (thread), curcpu = (cpu))
-compile/ASST1/includelinks/mips/trapframe.h: * Arrays used to load the kernel stack and curthread on trap entry.
 Binary file compile/ASST1/kernel matches
-Binary file compile/ASST1/kprintf.o matches
-Binary file compile/ASST1/lamebus.o matches
-Binary file compile/ASST1/lamebus_machdep.o matches
-Binary file compile/ASST1/lhd.o matches
-Binary file compile/ASST1/lhd_att.o matches
-Binary file compile/ASST1/loadelf.o matches
-Binary file compile/ASST1/lrandom_att.o matches
-Binary file compile/ASST1/lser.o matches
-Binary file compile/ASST1/lser_att.o matches
-Binary file compile/ASST1/ltimer_att.o matches
-Binary file compile/ASST1/ltrace_att.o matches
-Binary file compile/ASST1/main.o matches
-Binary file compile/ASST1/proc.o matches
-Binary file compile/ASST1/runprogram.o matches
+Binary file compile/ASST1/rwtest.o matches
 Binary file compile/ASST1/semfs_vnops.o matches
 Binary file compile/ASST1/semunit.o matches
-Binary file compile/ASST1/spinlock.o matches
-Binary file compile/ASST2/spinlock.o matches
-Binary file compile/ASST2/spl.o matches
 Binary file compile/ASST2/synch.o matches
+Binary file compile/ASST2/synchtest.o matches
 Binary file compile/ASST2/syscall.o matches
-Binary file compile/ASST2/thread.o matches
-Binary file compile/ASST2/trap.o matches
-Binary file compile/ASST2/uio.o matches
-Binary file compile/ASST2/vfscwd.o matches
-Binary file compile/ASST2/clock.o matches
-Binary file compile/ASST2/console.o matches
-Binary file compile/ASST2/copyinout.o matches
+Binary file compile/ASST2/tt3.o matches
 Binary file compile/ASST2/cpu.o matches
-Binary file compile/ASST2/dumbvm.o matches
 Binary file compile/ASST2/emu.o matches
-Binary file compile/ASST2/emu_att.o matches
-Binary file compile/ASST2/file_syscalls.o matches
-Binary file compile/ASST2/hmacunit.o matches
-compile/ASST2/includelinks/machine/current.h: *   both the kernel stack and curthread.
-compile/ASST2/includelinks/machine/current.h: *   curthread there.
-compile/ASST2/includelinks/machine/current.h:register struct thread *curthread __asm("$23");	/* s7 register */
-compile/ASST2/includelinks/machine/current.h:#error "Don't know how to declare curthread in this compiler"
-compile/ASST2/includelinks/machine/current.h:/* For how we've defined it, curthread gets set first, then curcpu. */
-compile/ASST2/includelinks/machine/current.h:#define INIT_CURCPU(cpu, thread) (curthread = (thread), curcpu = (cpu))
-compile/ASST2/includelinks/machine/trapframe.h: * Arrays used to load the kernel stack and curthread on trap entry.
-compile/ASST2/includelinks/mips/current.h: *   both the kernel stack and curthread.
-compile/ASST2/includelinks/mips/current.h: *   curthread there.
-compile/ASST2/includelinks/mips/current.h:register struct thread *curthread __asm("$23");	/* s7 register */
-compile/ASST2/includelinks/mips/current.h:#error "Don't know how to declare curthread in this compiler"
-compile/ASST2/includelinks/mips/current.h:/* For how we've defined it, curthread gets set first, then curcpu. */
-compile/ASST2/includelinks/mips/current.h:#define INIT_CURCPU(cpu, thread) (curthread = (thread), curcpu = (cpu))
-compile/ASST2/includelinks/mips/trapframe.h: * Arrays used to load the kernel stack and curthread on trap entry.
 Binary file compile/ASST2/kernel matches
-Binary file compile/ASST2/kprintf.o matches
-Binary file compile/ASST2/lamebus.o matches
-Binary file compile/ASST2/lamebus_machdep.o matches
-Binary file compile/ASST2/lhd.o matches
-Binary file compile/ASST2/lhd_att.o matches
-Binary file compile/ASST2/loadelf.o matches
-Binary file compile/ASST2/lrandom_att.o matches
-Binary file compile/ASST2/lser.o matches
-Binary file compile/ASST2/lser_att.o matches
-Binary file compile/ASST2/ltimer_att.o matches
-Binary file compile/ASST2/ltrace_att.o matches
-Binary file compile/ASST2/main.o matches
-Binary file compile/ASST2/proc.o matches
 Binary file compile/ASST2/proc_syscalls.o matches
-Binary file compile/ASST2/runprogram.o matches
+Binary file compile/ASST2/rwtest.o matches
 Binary file compile/ASST2/semfs_vnops.o matches
 Binary file compile/ASST2/semunit.o matches
-dev/generic/console.c:	else if (curthread->t_in_interrupt ||
-dev/generic/console.c:		 curthread->t_curspl > 0 ||
-dev/generic/console.c:	KASSERT(!curthread->t_in_interrupt && curthread->t_iplhigh_count == 0);
-gdbscripts/wchan:	set $t = $c->c_curthread
-include/cpu.h:	struct thread *c_curthread;	/* Current thread on cpu */
-include/current.h: * Definition of curcpu and curthread.
-include/current.h: * The machine-dependent header should define either curcpu or curthread
-include/current.h: * better/easier to keep track of curcpu and make curthread be
-include/current.h: * curcpu->c_curthread, and on others to keep track of curthread and
-include/current.h: * make curcpu be curthread->t_cpu.
-include/current.h: * Either way we don't want retrieving curthread or curcpu to be
-include/current.h: * not a very good idea. So we want to keep either curthread or curcpu
-include/current.h: * reserve a register to hold curthread, and update it during context
-include/current.h:#define curthread curcpu->c_curthread
-include/current.h:#define curcpu curthread->t_cpu
-include/current.h:#define CURCPU_EXISTS() (curthread != NULL)
-include/current.h:#define curproc (curthread->t_proc)
-include/thread.h: * Note: curthread is defined by <current.h>.
-lib/kprintf.c:		&& curthread->t_in_interrupt == false
-lib/kprintf.c:		&& curthread->t_curspl == 0
-main/main.c:	KASSERT(curthread->t_curspl > 0);
-main/main.c:	KASSERT(curthread->t_curspl == 0);
-test/semunit.c:	 * curthread->t_in_interrupt.
-test/semunit.c:		KASSERT(curthread->t_in_interrupt == false);
-test/semunit.c:		curthread->t_in_interrupt = true;
-test/semunit.c:		KASSERT(curthread->t_in_interrupt == true);
-test/semunit.c:		curthread->t_in_interrupt = false;
-test/semunit.c:		KASSERT(curthread->t_in_interrupt == false);
-test/semunit.c:		curthread->t_in_interrupt = true;
-test/semunit.c:		KASSERT(curthread->t_in_interrupt == true);
-test/semunit.c:		curthread->t_in_interrupt = false;
-test/semunit.c:		KASSERT(curthread->t_in_interrupt == false);
-test/semunit.c:		curthread->t_in_interrupt = true;
-test/semunit.c:		KASSERT(curthread->t_in_interrupt == true);
-test/semunit.c:		curthread->t_in_interrupt = false;
-test/semunit.c:	semu17_thread = curthread;
-test/semunit.c:	curthread->t_in_interrupt = true;
-test/semunit.c:	curthread->t_in_interrupt = true;
-test/synchprobs.c:	threads[index] = curthread->t_stack;
-test/synchprobs.c:	failif((threads[index] != curthread->t_stack), "failed: incorrect thread type");
-test/synchprobs.c:	kprintf_n("%s starting\n", curthread->t_name);
-test/synchprobs.c:	kprintf_n("%s ending\n", curthread->t_name);
-test/synchprobs.c:	kprintf_n("%s starting\n", curthread->t_name);
-test/synchprobs.c:	kprintf_n("%s ending\n", curthread->t_name);
-test/synchprobs.c:	kprintf_n("%s starting\n", curthread->t_name);
-test/synchprobs.c:	kprintf_n("%s ending\n", curthread->t_name);
-test/synchprobs.c:	kprintf_n("%s in quadrant %d\n", curthread->t_name, quadrant);
-test/synchprobs.c:	kprintf_n("%s left the intersection\n", curthread->t_name);
-thread/spl.c: * curthread->t_iplhigh_count is used to track this.
-thread/spl.c:	struct thread *cur = curthread;
-thread/spl.c:	struct thread *cur = curthread;
-thread/spl.c:	struct thread *cur = curthread;
-thread/synch.c:	KASSERT(curthread->t_in_interrupt == false);
-thread/synch.c:	lock->lk_holder = curthread;	
-thread/synch.c:	if((lock->lk_holder) != curthread){
-thread/thread.c:	c->c_curthread = NULL;
-thread/thread.c:	c->c_curthread = thread_create(namebuf);
-thread/thread.c:	if (c->c_curthread == NULL) {
-thread/thread.c:	c->c_curthread->t_cpu = c;
-thread/thread.c:		 * Leave c->c_curthread->t_stack NULL for the boot
-thread/thread.c:		/*c->c_curthread->t_stack = ... */
-thread/thread.c:		c->c_curthread->t_stack = kmalloc(STACK_SIZE);
-thread/thread.c:		if (c->c_curthread->t_stack == NULL) {
-thread/thread.c:		thread_checkstack_init(c->c_curthread);
-thread/thread.c:	 * If there is no curcpu (or curthread) yet, we are creating
-thread/thread.c:	 * the first (boot) cpu. Initialize curcpu and curthread as
-thread/thread.c:		 * Initializing curcpu and curthread is
-thread/thread.c:		 * curthread might be defined in terms of the other.
-thread/thread.c:		INIT_CURCPU(c, c->c_curthread);
-thread/thread.c:		 * Now make sure both t_cpu and c_curthread are
-thread/thread.c:		curthread->t_cpu = curcpu;
-thread/thread.c:		curcpu->c_curthread = curthread;
-thread/thread.c:	result = proc_addthread(kproc, c->c_curthread);
-thread/thread.c:	KASSERT(thread != curthread);
-thread/thread.c:		KASSERT(z != curthread);
-thread/thread.c:	KASSERT(curthread != NULL);
-thread/thread.c:	KASSERT(curthread->t_proc != NULL);
-thread/thread.c:	KASSERT(curthread->t_proc == kproc);
-thread/thread.c: * New CPUs come here once MD initialization is finished. curthread
-thread/thread.c:	KASSERT(curthread != NULL);
-thread/thread.c:	newthread->t_cpu = curthread->t_cpu;
-thread/thread.c:		proc = curthread->t_proc;
-thread/thread.c:	DEBUGASSERT(curcpu->c_curthread == curthread);
-thread/thread.c:	DEBUGASSERT(curthread->t_cpu == curcpu->c_self);
-thread/thread.c:	cur = curthread;
-thread/thread.c:	 * Note that curcpu->c_curthread may be the same variable as
-thread/thread.c:	 * curthread and it may not be, depending on how curthread and
-thread/thread.c:	curcpu->c_curthread = next;
-thread/thread.c:	curthread = next;
-thread/thread.c:	cur = curthread;
-thread/thread.c:	cur = curthread;
-thread/thread.c:			 * Ordinarily, curthread will not appear on
-thread/thread.c:			 *     remained curthread;
-thread/thread.c:			 * curthread. However, *migrating* curthread
-thread/thread.c:			if (t == curthread) {
-thread/thread.c:	KASSERT(!curthread->t_in_interrupt);
-vm/copyinout.c:	longjmp(curthread->t_machdep.tm_copyjmp, 1);
-vm/copyinout.c:	curthread->t_machdep.tm_badfaultfunc = copyfail;
-vm/copyinout.c:	result = setjmp(curthread->t_machdep.tm_copyjmp);
-vm/copyinout.c:		curthread->t_machdep.tm_badfaultfunc = NULL;
-vm/copyinout.c:	curthread->t_machdep.tm_badfaultfunc = NULL;
-vm/copyinout.c:	curthread->t_machdep.tm_badfaultfunc = copyfail;
-vm/copyinout.c:	result = setjmp(curthread->t_machdep.tm_copyjmp);
-vm/copyinout.c:		curthread->t_machdep.tm_badfaultfunc = NULL;
-vm/copyinout.c:	curthread->t_machdep.tm_badfaultfunc = NULL;
-vm/copyinout.c:	curthread->t_machdep.tm_badfaultfunc = copyfail;
-vm/copyinout.c:	result = setjmp(curthread->t_machdep.tm_copyjmp);
-vm/copyinout.c:		curthread->t_machdep.tm_badfaultfunc = NULL;
-vm/copyinout.c:	curthread->t_machdep.tm_badfaultfunc = NULL;
-vm/copyinout.c:	curthread->t_machdep.tm_badfaultfunc = copyfail;
-vm/copyinout.c:	result = setjmp(curthread->t_machdep.tm_copyjmp);
-vm/copyinout.c:		curthread->t_machdep.tm_badfaultfunc = NULL;
-vm/copyinout.c:	curthread->t_machdep.tm_badfaultfunc = NULL;
+compile/ASST2/.depend: ../../include/synch.h ../../include/kern/wait.h \
+compile/ASST2/.depend.proc_syscalls.c: ../../include/synch.h ../../include/kern/wait.h \
+dev/generic/console.c: * We use two locks so readers waiting for input don't lock out writers.
+dev/generic/console.c: * Print a character, using polling instead of interrupts to wait for
+dev/generic/console.c: * Print a character, using interrupts to wait for I/O completion.
+dev/generic/console.c: * Read a character, using interrupts to wait for I/O completion.
+dev/lamebus/emu.c:emu_waitdone(struct emu_softc *sc)
+dev/lamebus/emu.c:	result = emu_waitdone(sc);
+dev/lamebus/emu.c:		result = emu_waitdone(sc);
+dev/lamebus/emu.c:	result = emu_waitdone(sc);
+dev/lamebus/emu.c:	result = emu_waitdone(sc);
+dev/lamebus/emu.c:	result = emu_waitdone(sc);
+dev/lamebus/emu.c:	result = emu_waitdone(sc);
+dev/lamebus/lhd.c:		/* Now wait until the interrupt handler tells us we're done. */
+fs/semfs/semfs.h:	struct cv *sems_cv;			/* CV to wait */
+fs/semfs/semfs_vnops.c:			cv_wait(sem->sems_cv, sem->sems_lock);
+include/kern/fcntl.h:#define F_SETLKW        9       /* acquire record locks and wait */
+include/kern/syscall.h:#define SYS_waitpid      4
+include/kern/syscall.h://#define SYS_wait4      34
+include/kern/wait.h: * Definitions for wait().
+include/kern/wait.h:/* Flags for waitpid() and equivalent. */
+include/kern/wait.h:/* Special "pids" to wait for. */
+include/kern/wait.h:/* Encoding macros, used by the kernel to generate the wait result. */
+include/synch.h: * to wait until a variable meets a particular condition, but there's no
+include/synch.h: *    cv_wait      - Release the supplied lock, go to sleep, and, after
+include/synch.h:void cv_wait(struct cv *cv, struct lock *lock);
+include/synch.h:	volatile bool is_writer_waiting;	// Flag representing if a writer is waiting for access
+include/syscall.h:int sys_waitpid(pid_t pid, int *status, int options, int *childpid);
+include/thread.h:	const char *t_wchan_name;	/* Name of wait channel, if sleeping */
+include/wchan.h: * Create a wait channel. Use NAME as a symbolic name for the channel.
+include/wchan.h: * Destroy a wait channel. Must be empty and unlocked.
+include/wchan.h: * Go to sleep on a wait channel. The current thread is suspended
+include/wchan.h: * Wake up one thread, or all threads, sleeping on a wait channel.
+main/main.c: * Kernel main. Boot up, then fork the menu thread; wait for a reboot
+main/menu.c: * Note that this does not wait for the subprogram to finish, but
+main/menu.c: * so you should have it call your system-calls-assignment waitpid
+proc/proc.c: * Note: nothing currently calls this. Your wait/exit code will
+proc/proc.c:	 * your wait/exit design calls for the process structure to
+proc/proc.c:	 * hang around beyond process exit. Some wait/exit designs
+proc/pr_table.c: * list are children who have exited, but are still waiting on their parent to collect the exit
+synchprobs/stoplight.c:struct cv *wait_intersection;
+synchprobs/stoplight.c:	wait_intersection = cv_create("vehicle cv");
+synchprobs/stoplight.c:	cv_destroy(wait_intersection);
+synchprobs/stoplight.c:	lock_acquire(lock_i_need(direction));	// Straight and Left will wait for this lock
+synchprobs/stoplight.c:		cv_wait(wait_intersection, intersection_lockdown);
+synchprobs/stoplight.c:	cv_signal(wait_intersection, intersection_lockdown);
+synchprobs/stoplight.c:		cv_wait(wait_intersection, intersection_lockdown);
+synchprobs/stoplight.c:	cv_signal(wait_intersection, intersection_lockdown);	
+syscall/proc_syscalls.c:#include <kern/wait.h>
+syscall/proc_syscalls.c:sys_waitpid(pid_t pid, int *status, int options, int *childpid){
+syscall/proc_syscalls.c:	/* If status is NULL, waitpid behaves the same just doesn't give
+syscall/proc_syscalls.c:	/* Get waiter process pnode */
+syscall/proc_syscalls.c:	struct proc *waiterprocess;
+syscall/proc_syscalls.c:	waiterprocess = proc_getptr(pid);
+syscall/proc_syscalls.c:	node = proc_get_pnode(waiterprocess);
+syscall/proc_syscalls.c:	/* Determine if waiter process exists */
+syscall/proc_syscalls.c:	if( waiterprocess == NULL || node == NULL ){
+syscall/proc_syscalls.c:	/* Determine if waiter process has finished */
+syscall/proc_syscalls.c:	if( waiterprocess->isactive == true ){
+syscall/proc_syscalls.c:		// Waiter process is still running, wait for it to finish
+syscall/proc_syscalls.c:		lock_acquire(waiterprocess->p_cv_lock);
+syscall/proc_syscalls.c:		cv_wait( waiterprocess->p_cv, waiterprocess->p_cv_lock );
+syscall/proc_syscalls.c:		lock_release(waiterprocess->p_cv_lock);
+syscall/proc_syscalls.c:		lock_acquire(waiterprocess->p_cv_lock);
+syscall/proc_syscalls.c:		lock_release(waiterprocess->p_cv_lock); 	
+syscall/proc_syscalls.c:	proc_destroy(waiterprocess);	// Call proc_destroy?
+syscall/proc_syscalls.c:		// Process has parent; could be waited on so call proc_exited
+test/automationtest.c:#include <kern/wait.h>
+test/semunit.c:static unsigned waiters_running = 0;
+test/semunit.c:static struct spinlock waiters_lock = SPINLOCK_INITIALIZER;
+test/semunit.c: * A thread that just waits on a semaphore.
+test/semunit.c:waiter(void *vsem, unsigned long junk)
+test/semunit.c:	spinlock_acquire(&waiters_lock);
+test/semunit.c:	KASSERT(waiters_running > 0);
+test/semunit.c:	waiters_running--;
+test/semunit.c:	spinlock_release(&waiters_lock);
+test/semunit.c: * Set up a waiter.
+test/semunit.c:makewaiter(struct semaphore *sem)
+test/semunit.c:	spinlock_acquire(&waiters_lock);
+test/semunit.c:	waiters_running++;
+test/semunit.c:	spinlock_release(&waiters_lock);
+test/semunit.c:	result = thread_fork("semunit waiter", NULL, waiter, sem, 0);
+test/semunit.c:	kprintf("Sleeping for waiter to run\n");
+test/semunit.c: * 6. Passing a semaphore with a waiting thread to sem_destroy asserts
+test/semunit.c:	makewaiter(sem);
+test/semunit.c:	panic("semu6: wchan_destroy with waiters succeeded\n");
+test/semunit.c: * 8/9. After calling V on a semaphore with no threads waiting:
+test/semunit.c: * 10/11. After calling V on a semaphore with one thread waiting, and giving
+test/semunit.c:	makewaiter(sem);
+test/semunit.c:	spinlock_acquire(&waiters_lock);
+test/semunit.c:	KASSERT(waiters_running == 1);
+test/semunit.c:	spinlock_release(&waiters_lock);
+test/semunit.c:	/* give the waiter time to exit */
+test/semunit.c:	spinlock_acquire(&waiters_lock);
+test/semunit.c:	KASSERT(waiters_running == 0);
+test/semunit.c:	spinlock_release(&waiters_lock);
+test/semunit.c: * 12/13. After calling V on a semaphore with two threads waiting, and
+test/semunit.c:	makewaiter(sem);
+test/semunit.c:	makewaiter(sem);
+test/semunit.c:	spinlock_acquire(&waiters_lock);
+test/semunit.c:	KASSERT(waiters_running == 2);
+test/semunit.c:	spinlock_release(&waiters_lock);
+test/semunit.c:	/* give the waiter time to exit */
+test/semunit.c:	spinlock_acquire(&waiters_lock);
+test/semunit.c:	KASSERT(waiters_running == 1);
+test/semunit.c:	spinlock_release(&waiters_lock);
+test/semunit.c:	spinlock_acquire(&waiters_lock);
+test/semunit.c:	KASSERT(waiters_running == 0);
+test/semunit.c:	spinlock_release(&waiters_lock);
+test/semunit.c:	kprintf("semu19: waiting for parent to sleep\n");
+test/synchprobs.c:	 * Release a random number of matchmakers and wait for them and their
+test/synchprobs.c:	 * Release the rest of the matchmakers and wait for everyone to finish.
+test/synchprobs.c:		cv_wait(startcv, testlock);
+test/synchprobs.c:		cv_wait(startcv, testlock);
+test/synchprobs.c:		cv_wait(startcv, testlock);
+test/synchtest.c:			cv_wait(testcv, testlock);
+test/synchtest.c:				kprintf_n("cv_wait took only %u ns\n", ts2.tv_nsec);
+test/synchtest.c:		 * time waiting on the cv.
+test/synchtest.c:			cv_wait(testcvs[i], testlocks[i]);
+test/synchtest.c:	cv_wait(testcv, testlock);
+test/synchtest.c:	cv_wait(testcv, testlock);
+test/synchtest.c:	cv_wait(testcv, testlock); KASSERT(testval1 == 1);
+test/tt3.c:/* N distinct wait channels */
+test/tt3.c:static struct wchan *waitchans[NWAITCHANS];
+test/tt3.c:			waitchans[i] = wchan_create(kstrdup(tmp));
+test/tt3.c:			wc = waitchans[n];
+test/tt3.c:			wc = waitchans[n];
+thread/clock.c: * Once a second, everything waiting on lbolt is awakened by CPU 0.
+thread/spinlock.c: * atomic operation to wait for the lock to be free.
+thread/synch.c:	/* wchan_cleanup will assert if anyone's waiting on it */
+thread/synch.c:		 * threads are waiting. Apparently according to some
+thread/synch.c:		// While there are no slots for the lock, wait on		
+thread/synch.c:		// held wait channel
+thread/synch.c:	// Increase counter, notify done using lock via wakeup on wait channel
+thread/synch.c:/* CVT5 Update: Previously, CV's were waiting on the passed lock's wait channel. This conflicted
+thread/synch.c: * when trying to pass a different lock but same cv (different wait channel pointers). The top
+thread/synch.c:cv_wait(struct cv *cv, struct lock *lock)
+thread/synch.c:	// Set current number of readers & anti-starvation guard to 0. No writers waiting at start.
+thread/synch.c:	rwlock->is_writer_waiting = false;
+thread/synch.c:	// If there is a writer awaiting access, yield to it via cv_wait.
+thread/synch.c:	while(rwlock->is_writer_waiting || rwlock->anti_starvation > 6){
+thread/synch.c:		cv_wait(rwlock->conditional_read, rwlock->rw_lock);
+thread/synch.c:	// Set flag to declare waiting; so readers know they should yield either now, or soon.
+thread/synch.c:	rwlock->is_writer_waiting = true;
+thread/synch.c:	// Loop until all readers are on cv_wait. Then proceed.
+thread/synch.c:		cv_wait(rwlock->conditional_write, rwlock->rw_lock);	
+thread/synch.c:	// Writer now exclusively owns access, readers are all on cv_wait
+thread/synch.c:	rwlock->is_writer_waiting = false;
+thread/synch.c:	// Let readers on cv_wait know they can resume reading the resource
+thread/synch.c:	// There may be (and probably is) more than one writer on the wait channel
+thread/thread.c:	struct threadlist wc_threads;	/* list of waiting threads */
+thread/thread.c:/* Used to wait for secondary CPUs to come online. */
+thread/thread.c:	 * We could wait for them to stop, except that they might not.
+thread/thread.c:	 * ourselves couldn't sleep to wait for an I/O completion
+thread/thread.c:	 * We should probably wait for them to stop and shut them off
+thread/thread.c: * If NEWSTATE is S_SLEEP, the thread is queued on the wait channel
+thread/thread.c:		 * Add the thread to the list in the wait channel, and
+thread/thread.c:	/* Clear the wait channel and set the thread state. */
+thread/thread.c:	/* Clear the wait channel and set the thread state. */
+thread/thread.c: * should be cleaned up right away. The rest has to wait until
+thread/thread.c:	 * around, depending on how your wait/exit works.
+thread/thread.c: * Create a wait channel. NAME is a symbolic string name for it.
+thread/thread.c: * arrangements should be made to free it after the wait channel is
+thread/thread.c: * Destroy a wait channel. Must be empty and unlocked.
+thread/thread.c: * wait channel WC, whose associated spinlock is LK. Calling wakeup on
+thread/thread.c: * Wake up one thread sleeping on a wait channel.
+thread/thread.c: * Wake up all threads sleeping on a wait channel.

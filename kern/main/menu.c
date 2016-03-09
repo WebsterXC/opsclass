@@ -31,12 +31,14 @@
 #include <kern/errno.h>
 #include <kern/reboot.h>
 #include <kern/unistd.h>
+#include <kern/syscall.h>
 #include <limits.h>
 #include <lib.h>
 #include <uio.h>
 #include <clock.h>
 #include <thread.h>
 #include <proc.h>
+#include <pr_table.h>
 #include <vfs.h>
 #include <sfs.h>
 #include <syscall.h>
@@ -93,9 +95,11 @@ cmd_progthread(void *ptr, unsigned long nargs)
 	if (result) {
 		kprintf("Running program %s failed: %s\n", args[0],
 			strerror(result));
+		sys__exit(1);
 		return;
 	}
 
+	sys__exit(0);
 	/* NOTREACHED: runprogram only returns on error. */
 }
 
@@ -115,8 +119,15 @@ static
 int
 common_prog(int nargs, char **args)
 {
+	struct pnode *pnode;
 	struct proc *proc;
+	int *childexit; 
+	int *retval;
 	int result;
+
+	childexit = kmalloc(sizeof(int));
+	retval = kmalloc(sizeof(int));
+	result = 0;
 
 	/* Create a process for the new program to run in. */
 	proc = proc_create_runprogram(args[0] /* name */);
@@ -124,12 +135,31 @@ common_prog(int nargs, char **args)
 		return ENOMEM;
 	}
 
+	pnode = proc_get_pnode(proc);
+	if (pnode == NULL){
+		kprintf("Error grabbing process node.\n");
+		return result;
+	}	
+
+	/* New process is a child, simulate having a parent */
+	//struct proc *parentproc;
+	//parentproc = kmalloc(sizeof(*parentproc));
+	//proc->parent = parentproc;
+
 	result = thread_fork(args[0] /* thread name */,
 			proc /* new process */,
 			cmd_progthread /* thread function */,
 			args /* thread arg */, nargs /* thread arg */);
 	if (result) {
 		kprintf("thread_fork failed: %s\n", strerror(result));
+		proc_destroy(proc);
+		return result;
+	}
+	
+	kprintf("Forked: %d\n", pnode->pid);	
+	sys_waitpid(pnode->pid, childexit, 0, retval); 
+	if(result){
+		kprintf("Thread wait failed at menu fork.\n");
 		proc_destroy(proc);
 		return result;
 	}

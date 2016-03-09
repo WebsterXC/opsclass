@@ -51,6 +51,7 @@ proc_assign(struct proc *process){
 
 	struct pnode *node;
 	
+	//kprintf("Assign.\n");
 	// Create pnode and fill it with some information
 	node = kmalloc(sizeof(*node));
 	node->retcode = 0;
@@ -65,6 +66,7 @@ proc_assign(struct proc *process){
 		attempt = pidgen();
 	}
 	node->pid = attempt;
+	kprintf("Created: %d\n", attempt);
 
 	/* Other assignments go here */
 	process->isactive = true;	
@@ -79,7 +81,7 @@ proc_assign(struct proc *process){
 	_head->next = node;
 	node->next = nptr;
 
-	//num_processes++;
+	num_processes++;
 
 	return;
 }
@@ -95,7 +97,7 @@ void
 proc_exited(struct proc *process){
 
 	struct pnode *node;
-	
+	//kprintf("Exiting.\n");
 	node = proc_get_pnode(process);
 	if( node == NULL ){
 		return;
@@ -117,6 +119,7 @@ proc_nuke(struct proc *process){
 	// Find the pnode the process is in
 	struct pnode *current;
 	struct pnode *last;
+	//kprintf("Nuking.\n");
 	
 	current = kmalloc(sizeof(*current));
 	last = kmalloc(sizeof(*last));
@@ -133,6 +136,9 @@ proc_nuke(struct proc *process){
 		current = current->next;
 	}
 
+	//current->myself->isactive = false;
+	proc_exited(process);
+	
 	// Reassign pointers
 	last->next = current->next;
 
@@ -141,7 +147,9 @@ proc_nuke(struct proc *process){
 	current->next = NULL;
 	kfree(current);
 	
-	//num_processes--;
+	//proc_destroy(process);
+
+	num_processes--;
 	
 	return;
 }
