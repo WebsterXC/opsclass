@@ -121,12 +121,12 @@ common_prog(int nargs, char **args)
 {
 	struct pnode *pnode;
 	struct proc *proc;
-	int *childexit; 
-	int *retval;
+	//int childexit; 
+	//int retval;
 	int result;
 
-	childexit = kmalloc(sizeof(int));
-	retval = kmalloc(sizeof(int));
+	//childexit = kmalloc(sizeof(int));
+	//retval = kmalloc(sizeof(int));
 	result = 0;
 
 	/* Create a process for the new program to run in. */
@@ -157,7 +157,7 @@ common_prog(int nargs, char **args)
 	}
 	
 	kprintf("Forked: %d\n", pnode->pid);	
-	sys_waitpid(pnode->pid, childexit, 0, retval); 
+	//sys_waitpid(pnode->pid, &childexit, 0, &retval); 
 	if(result){
 		kprintf("Thread wait failed at menu fork.\n");
 		proc_destroy(proc);

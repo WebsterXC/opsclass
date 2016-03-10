@@ -30,6 +30,8 @@ gpll_bootstrap(void){			// Stands for global-processes linked list
 	_head->retcode = 32766;
 	_head->next = _tail;
 
+	gpll_lock = lock_create("GPLL Lock");
+
 	num_processes = 0;
 
 	KASSERT(_tail != NULL);
@@ -66,7 +68,7 @@ proc_assign(struct proc *process){
 		attempt = pidgen();
 	}
 	node->pid = attempt;
-	kprintf("Created: %d\n", attempt);
+	//kprintf("Created: %d\n", attempt);
 
 	/* Other assignments go here */
 	process->isactive = true;	

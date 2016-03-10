@@ -22,6 +22,7 @@ struct pnode{
 /* Linked List Frame */
 struct pnode *_tail;
 struct pnode *_head;
+struct lock *gpll_lock;
 
 /* Internal Methods */
 bool verify_unique_pid(pid_t);

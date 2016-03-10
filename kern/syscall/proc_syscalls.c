@@ -25,7 +25,7 @@
 #include <copyinout.h>
 #include <kern/fcntl.h>
 
-static int rev_and_append(char*, char*, int);
+//static int rev_and_append(char*, char*, int);
 
 /* Wrapper for the child process.
  * Data1: Struct holding a trapframe and addrspace pointer
@@ -141,7 +141,7 @@ sys_waitpid(pid_t pid, int *status, int options, int *childpid){
 	
 	/* Determine if waiter process has finished */
 	if( waiterprocess->isactive == true ){
-		kprintf("Waiting on: %d\n", node->pid);
+		//kprintf("Waiting on: %d\n", node->pid);
 		// Waiter process is still running, wait for it to finish
 		lock_acquire(waiterprocess->p_cv_lock);
 		cv_wait( waiterprocess->p_cv, waiterprocess->p_cv_lock );
@@ -188,14 +188,14 @@ sys__exit(int exitcode){
 		kprintf("Signal to: %d\n", current->pid);
 		// Process has parent; could be waited on so call proc_exited
 		lock_acquire( curproc->p_cv_lock );
-		current->retcode = exitcode;
+		current->retcode = _MKWAIT_EXIT(exitcode);
 		proc_exited(curproc);
 		cv_signal( curproc->p_cv, curproc->p_cv_lock );
 		lock_release( curproc->p_cv_lock );
 	}else{
 		// Process is a parent, record exit code and proc_nuke
 		lock_acquire( curproc->p_cv_lock );
-		current->retcode = exitcode;
+		current->retcode = _MKWAIT_EXIT(exitcode);
 		//proc_destroy(curproc);
 		proc_nuke(curproc);
 		lock_release( curproc->p_cv_lock );
@@ -212,6 +212,7 @@ sys__exit(int exitcode){
  * (denoted by need) and then places the return in **ret. Returns the length of the new string including leading '\0'
  * NOTE: need should never be 0; even str%4==0 requires a null terminator to begin with
  */
+/*
 static int
 rev_and_append(char *src, char *ret, int need){
 	int retcounter = 0;
@@ -240,7 +241,7 @@ rev_and_append(char *src, char *ret, int need){
 
 	return retcounter;
 }
-
+*/
 int
 sys_execv(char *program, userptr_t **args, int *retval){
 	struct addrspace *as;
@@ -248,42 +249,42 @@ sys_execv(char *program, userptr_t **args, int *retval){
 	vaddr_t entrypoint, stackptr;
 	int result;
 	int num_args;
+	size_t pr_length;
+
+	char *pr_name;
+	pr_name = kmalloc(PATH_MAX * sizeof(char));
+
+	lock_acquire(gpll_lock);
 	
 	// Set up argument array
 	struct arg **arglist;
 	arglist = (struct arg **)kmalloc(sizeof(struct arg *) * 64);
 
-	// Set up array to hold stackpointers for each argument
-	//vaddr_t **stacksonstacks;
-	//stacksonstacks = (vaddr_t **)kmalloc(sizeof(vaddr_t *) * 64);	
 	
-	vaddr_t *stacksonstacks;
-	stacksonstacks = kmalloc(sizeof(*stacksonstacks) * 64 );
+	//vaddr_t *stacksonstacks;
+	//stacksonstacks = kmalloc(sizeof(*stacksonstacks) * 64 );
 
-	//char **buffer;
-	//buffer = (char **)kmalloc(sizeof(char *) * 128);
+	// Get program name
+	copyinstr((userptr_t)program, pr_name, PATH_MAX, &pr_length);
 
 	/* Copy user arguments to the kernel, using a safe method (copyinstr) */
 	int argcounter = 0;
 	while(args[argcounter] != NULL && argcounter < 63){
 		size_t inlength;	// Input length from copyinstr()
-		unsigned int append;	// Number of nullchars to append to the string
-		char *tempstr;		// Temporary string to hold copyinstr(), but before reversal
-		tempstr = kmalloc(sizeof(*tempstr));	
-
+		
 		// Reserve memory in arglist for the new string
 		arglist[argcounter] = (struct arg *)kmalloc(sizeof(struct arg *));
-		arglist[argcounter]->str = kmalloc(sizeof(char) * NAME_MAX);
+		arglist[argcounter]->str = kmalloc(sizeof(char) * 5000);
 		
 		// Copy string from userspace, update length; ALL RESULTS INCLUDE NULL TERMINATOR
-		result = copyinstr((const_userptr_t)args[argcounter], tempstr, NAME_MAX, &inlength);
-		//kprintf("%s| with length: ", tempstr );
-			
+		result = copyinstr((const_userptr_t)args[argcounter], arglist[argcounter]->str, 5000, &inlength);
+		arglist[argcounter]->len = inlength;
+		/*	
 		// Based on null-inclusive length, get the result of length%4 and pass to rev_and_append()	
 		append = inlength % 4;
 		arglist[argcounter]->len = rev_and_append(tempstr, arglist[argcounter]->str, append ); 
-		
-		kfree(tempstr);
+		*/
+
 		argcounter++;
 	}
 	// Set total number of args and terminate the pointer string with NULL
@@ -293,7 +294,7 @@ sys_execv(char *program, userptr_t **args, int *retval){
 
 	/* Open the file. */
 	
-	result = vfs_open(program, O_RDONLY, 0, &v);
+	result = vfs_open(pr_name, O_RDONLY, 0, &v);
 	if (result) {
 		return result;
 	}
@@ -349,59 +350,72 @@ sys_execv(char *program, userptr_t **args, int *retval){
 
 	/* Stackpointer contains ptr to beginning of user stack: where args need to go */
 	/* Use copy safe methods (copyout) */
+	//argcounter = num_args-1;
 	argcounter = 0;
+	vaddr_t stacksonstacks[num_args];
 	while(arglist[argcounter] != NULL){
-		
+	//while(argcounter >= 0){	
+		size_t outlen;
+		int mod;
+		int adjust;
+
 		// Arguments are copied onto the stack backwards
 
 		// Copy adjusted arguments
-		result = copyout(arglist[argcounter]->str, (userptr_t)stackptr, arglist[argcounter]->len * sizeof(char) );
-		//memcpy(buffer[argcounter], arglist[argcounter]->, arglist[argcounter]->len * sizeof(char) );
+		mod = arglist[argcounter]->len % 4;
+			if( mod == 0 ){
+				adjust = 0;
+			}else{		
+				adjust = 4 - mod;
+			}
+			
 
-		kprintf("StackPtr: %x | Len: %d | Final: ", stackptr, arglist[argcounter]->len);
+			stackptr -= arglist[argcounter]->len;
+			stackptr -= adjust;
+			kprintf("Adjust: %d\n", arglist[argcounter]->len + adjust);
+
+			copyoutstr(arglist[argcounter]->str, (userptr_t)stackptr, NAME_MAX, &outlen);
+		
+				
+		
+
 		/* Shift stackptr by the length of the argument */
 		/* Put a copy of the stackptr in the array */
-		stackptr -= arglist[argcounter]->len * sizeof(char);
-		//stacksonstacks[argcounter] = kmalloc(sizeof(vaddr_t *));
-		stacksonstacks[argcounter] = stackptr;
-		kprintf("%x\n", stackptr);
-		//kprintf("Shift: %d\n", arglist[argcounter]->len);
+
+		stacksonstacks[argcounter] = stackptr;		
+
+		//argcounter--;
 		argcounter++;
-	
 	}
-	// User args are still NULL terminated
-	//result = copyout(arglist[argcounter], (userptr_t)stackptr, 4);
-	//stackptr -= 4;
-	char arr[4] = {'\0', '\0', '\0', '\0'};
-	copyout(&arr, (userptr_t)stackptr, 4);	
-	//memcpy(buffer[argcounter], &arr, 4);
+	// User args are still NULL terminated	
 	stackptr -= 4;
+	copyout(arglist[num_args], (userptr_t)stackptr, 4);
 
 	// Stackpointer still needs references to where args are on the stack.
 	// (thanks Tuesday office hour crew!!)
 	
 	for(int i = num_args; i > 0; i--){
 		stackptr -= 4;
-		argcounter++;
-		kprintf("Arg %d at: %x\n", i-1, (int)stacksonstacks[i-1]);
 		result = copyout(&stacksonstacks[i-1], (userptr_t)stackptr, 4);
-		//memcpy(buffer[argcounter], &stacksonstacks[i-1], 4);
-
-		//stackptr -= sizeof(&stacksonstacks[i-1]);
 	}
+		kprintf("Stackptr: %x\n", stackptr);
 	
+		//stackptr += 4;
+		//stackptr-=4;
 	/* Warp to user mode. */
 
 	//enter_new_process(0 /*argc*/, NULL /*userspace addr of argv*/,
 	//		  NULL /*userspace addr of environment*/,
 	//		  stackptr, entrypoint);
-	
+
+	*retval = 0;	
+	lock_release(gpll_lock);
+
 	enter_new_process(num_args, (userptr_t)stackptr, NULL, stackptr, entrypoint);
 	
 	/* enter_new_process does not return. */
 	panic("enter_new_process returned\n");
 	
-	(void)retval;
 	return 0;
 
 }
