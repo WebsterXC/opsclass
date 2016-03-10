@@ -13,7 +13,7 @@
 #include <pid.h>
 #include <pr_table.h>
 
-unsigned int num_processes;
+volatile unsigned int num_processes;
 
 /* Initialize process table. Called in: main.c */
 void

@@ -59,10 +59,20 @@ sys_fork(struct trapframe *frame, int32_t *childpid){
 	
 	int result;		
 	
+	lock_acquire(gpll_lock);
+
+	//kprintf("Num: %d\n", proc_rollcall() );	
 	/* Generate a "fork image" to pass to the child handle function.
 	 * A fork image consists of heap copies of the current process' address
 	 * space, trapframe, and filetable. 
 	 */
+	if( proc_rollcall() > 64){
+		lock_release(gpll_lock);
+		//proc_nuke(curproc);
+		sys__exit(1);
+		return EMPROC;
+	}
+
 
 	fk_img = kmalloc(sizeof(*fk_img));
 	fk_img->addr = kmalloc(sizeof(*childproc));
@@ -92,6 +102,8 @@ sys_fork(struct trapframe *frame, int32_t *childpid){
 	}
 	as_copy(curproc->p_addrspace, &childproc->p_addrspace);
 	
+	lock_release(gpll_lock);
+
 	// Fork the process through the child() method above, associated with childproc.
 	result = thread_fork(curproc->p_name, childproc, child, fk_img, 0);  	 
 	
@@ -138,6 +150,8 @@ sys_waitpid(pid_t pid, int *status, int options, int *childpid){
 	if( waiterprocess == NULL || node == NULL ){
 		return ECHILD;	
 	}
+
+	waiterprocess->parent = curproc;
 	
 	/* Determine if waiter process has finished */
 	if( waiterprocess->isactive == true ){
@@ -185,7 +199,7 @@ sys__exit(int exitcode){
 
 	// Check to see if process has a parent. Establish exit code and assign it in pnode.	
 	if( curproc->parent != NULL ){
-		kprintf("Signal to: %d\n", current->pid);
+		//kprintf("Signal to: %d\n", current->pid);
 		// Process has parent; could be waited on so call proc_exited
 		lock_acquire( curproc->p_cv_lock );
 		current->retcode = _MKWAIT_EXIT(exitcode);
@@ -258,7 +272,7 @@ sys_execv(char *program, userptr_t **args, int *retval){
 	
 	// Set up argument array
 	struct arg **arglist;
-	arglist = (struct arg **)kmalloc(sizeof(struct arg *) * 64);
+	arglist = (struct arg **)kmalloc(sizeof(struct arg *) * 500);
 
 	
 	//vaddr_t *stacksonstacks;
@@ -269,22 +283,24 @@ sys_execv(char *program, userptr_t **args, int *retval){
 
 	/* Copy user arguments to the kernel, using a safe method (copyinstr) */
 	int argcounter = 0;
-	while(args[argcounter] != NULL && argcounter < 63){
-		size_t inlength;	// Input length from copyinstr()
-		
+	while(args[argcounter] != NULL && argcounter < 499){
+		size_t inlength;	// Input length from copyinstr()	
+
+	
 		// Reserve memory in arglist for the new string
 		arglist[argcounter] = (struct arg *)kmalloc(sizeof(struct arg *));
-		arglist[argcounter]->str = kmalloc(sizeof(char) * 5000);
+		arglist[argcounter]->str = kmalloc(sizeof(char) * ARG_MAX);
 		
 		// Copy string from userspace, update length; ALL RESULTS INCLUDE NULL TERMINATOR
-		result = copyinstr((const_userptr_t)args[argcounter], arglist[argcounter]->str, 5000, &inlength);
+		result = copyinstr((const_userptr_t)args[argcounter], arglist[argcounter]->str, ARG_MAX, &inlength);
 		arglist[argcounter]->len = inlength;
 		/*	
 		// Based on null-inclusive length, get the result of length%4 and pass to rev_and_append()	
 		append = inlength % 4;
 		arglist[argcounter]->len = rev_and_append(tempstr, arglist[argcounter]->str, append ); 
 		*/
-
+		
+		//kprintf("%s\n", arglist[argcounter]->str);
 		argcounter++;
 	}
 	// Set total number of args and terminate the pointer string with NULL
@@ -372,13 +388,11 @@ sys_execv(char *program, userptr_t **args, int *retval){
 
 			stackptr -= arglist[argcounter]->len;
 			stackptr -= adjust;
-			kprintf("Adjust: %d\n", arglist[argcounter]->len + adjust);
-
-			copyoutstr(arglist[argcounter]->str, (userptr_t)stackptr, NAME_MAX, &outlen);
+			//kprintf("Adjust: %d\n", arglist[argcounter]->len + adjust);
+		
+			copyoutstr(arglist[argcounter]->str, (userptr_t)stackptr, ARG_MAX, &outlen);
 		
 				
-		
-
 		/* Shift stackptr by the length of the argument */
 		/* Put a copy of the stackptr in the array */
 
