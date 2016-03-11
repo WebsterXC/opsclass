@@ -57,7 +57,9 @@ struct pnode{
 struct pnode *_tail;
 struct pnode *_head;
 struct lock *gpll_lock;
+struct cv *gpll_cv;
 
+pid_t pidgen(void);
 /* Internal Methods */
 bool verify_unique_pid(pid_t);
 

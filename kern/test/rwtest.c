@@ -12,7 +12,6 @@
 #include <kern/test161.h>
 #include <spinlock.h>
 
-#include <pid.h>
 #include <proc.h>
 
 #define N_THREADS 128

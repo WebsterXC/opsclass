@@ -44,7 +44,6 @@
 #include <lib.h>
 #include <thread.h>
 #include <mips/trapframe.h>
-#include <pid.h>
 #include <proc.h>
 #include <addrspace.h>
 #include <vm.h>
@@ -235,12 +234,14 @@ sys_fork(struct trapframe *frame, int32_t *childpid){
 	 * A fork image consists of heap copies of the current process' address
 	 * space, trapframe, and filetable. 
 	 */
-	if( proc_rollcall() > 64){
-		lock_release(gpll_lock);
+	//while( proc_rollcall() > 64 ){
+		
+	//	cv_wait( gpll_cv, gpll_lock );
+		//lock_release(gpll_lock);
 		//proc_nuke(curproc);
-		sys__exit(1);
-		return EMPROC;
-	}
+		//sys__exit(1);
+		//return EMPROC;
+	//}
 	fk_img = kmalloc(sizeof(*fk_img));
 	fk_img->addr = kmalloc(sizeof(*childproc));
 	as_copy(curproc->p_addrspace, &fk_img->addr);
@@ -366,23 +367,28 @@ sys__exit(int exitcode){
 
 	// Check to see if process has a parent. Establish exit code and assign it in pnode.	
 	if( curproc->parent != NULL ){
-		//kprintf("Signal to: %d\n", current->pid);
+		kprintf("Signal to: %d\n", current->pid);
 		// Process has parent; could be waited on so call proc_exited
 		lock_acquire( curproc->p_cv_lock );
 		current->retcode = _MKWAIT_EXIT(exitcode);
 		proc_exited(curproc);
+		//proc_destroy(curproc);
 		cv_signal( curproc->p_cv, curproc->p_cv_lock );
 		lock_release( curproc->p_cv_lock );
+		//proc_destroy(curproc);
+		
 	}else{
 		// Process is a parent, record exit code and proc_nuke
 		lock_acquire( curproc->p_cv_lock );
 		current->retcode = _MKWAIT_EXIT(exitcode);
+		
+		proc_destroy(curproc);
 		//proc_nuke(curproc);
 		lock_release( curproc->p_cv_lock );
-		proc_destroy(curproc);
+		//proc_destroy(curproc);
 	}
 	
-
+	//proc_destroy(curproc);
 	// Actually exit the process
 	thread_exit();
 
@@ -401,7 +407,7 @@ sys_execv(char *program, userptr_t **args, int *retval){
 		*retval = -1;
 		return EFAULT;
 	}
-
+	kprintf("Execv\n");
 	lock_acquire(gpll_lock);
 
 	char *pr_name;
@@ -416,6 +422,7 @@ sys_execv(char *program, userptr_t **args, int *retval){
 	char **bigbuffer = (char **)kmalloc(sizeof(char *) * num_args);	
 	if( bigbuffer == NULL ){
 		*retval = -1;
+		kprintf("Couldn't allocate bigbuffer\n");
 		lock_release(gpll_lock);
 		return ENOMEM;
 	}
@@ -430,11 +437,17 @@ sys_execv(char *program, userptr_t **args, int *retval){
 		size_t inlength;	// Input length from copyinstr()	
 		char *tempstr;
 		char *bufstr;
-		tempstr = kmalloc(sizeof(char) * ARG_MAX);
+		tempstr = kmalloc(sizeof(char) * ARG_MAX );
+		if(tempstr == NULL){
+			lock_release(gpll_lock);
+			kprintf("tempstr kmalloc\n");
+			return ENOMEM;
+		}		
 
 		// Copy string from userspace, update length; ALL RESULTS INCLUDE NULL TERMINATOR
 		result = copyinstr((const_userptr_t)args[argcounter], tempstr, ARG_MAX, &inlength);
 		
+		//bufstr = kmalloc(sizeof(char) * inlength);
 		bufstr = kmalloc(sizeof(char) * inlength);
 		memsize += inlength * sizeof(char);		
 
@@ -495,11 +508,11 @@ sys_execv(char *program, userptr_t **args, int *retval){
 	/* Use copy safe methods (copyout) */
 	//argcounter = num_args-1;
 	argcounter = 0;
-	//kprintf("Potential nomem\n");
+	kprintf("Potential nomem\n");
 	vaddr_t stacksonstacks[num_args];
 	//char *stacksonstacks;
 	//stacksonstacks = kmalloc(sizeof(*stacksonstacks) * num_args);
-		
+	kprintf("After nonmem\n");	
 	while(bigbuffer[argcounter] != NULL){
 	//while(argcounter >= 0){	
 		size_t outlen;

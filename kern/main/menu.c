@@ -37,7 +37,6 @@
 #include <uio.h>
 #include <clock.h>
 #include <thread.h>
-#include <pid.h>
 #include <proc.h>
 #include <vfs.h>
 #include <sfs.h>
@@ -95,7 +94,7 @@ cmd_progthread(void *ptr, unsigned long nargs)
 	if (result) {
 		kprintf("Running program %s failed: %s\n", args[0],
 			strerror(result));
-		sys__exit(1);
+		//sys__exit(1);
 		return;
 	}
 

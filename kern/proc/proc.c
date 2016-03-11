@@ -47,7 +47,6 @@
 #include <lib.h>
 #include <kern/errno.h>
 #include <spl.h>
-#include <pid.h>
 #include <proc.h>
 #include <current.h>
 #include <addrspace.h>
@@ -84,6 +83,7 @@ gpll_bootstrap(void){			// Stands for global-processes linked list
 	_head->next = _tail;
 
 	gpll_lock = lock_create("GPLL Lock");
+	gpll_cv = cv_create("GPLL CV");
 
 	num_processes = 0;
 
@@ -137,6 +137,7 @@ proc_assign(struct proc *process){
 	node->next = nptr;
 
 	num_processes++;
+	kprintf("Num: %d\n", num_processes);
 
 	return;
 }
@@ -160,6 +161,7 @@ proc_exited(struct proc *process){
 	
 	process->isactive = false;
 
+
 	return;
 }
 
@@ -176,15 +178,15 @@ proc_nuke(struct proc *process){
 	struct pnode *last;
 	
 	//lock_acquire(gpll_lock);
-	//kprintf("Nuking: ");
+	kprintf("Nuking: ");
 	
-	current = kmalloc(sizeof(*current));
+	//current = kmalloc(sizeof(*current));
 	//last = kmalloc(sizeof(*last));
 	
-	current = _head->next;	
+	current = _head;	
 
 	while( current->next != NULL ){
-		if( current->next->myself == process ){		// Compare pointers
+		if( (current->next)->myself == process ){		// Compare pointers
 			last = current;
 			current = current->next;
 			break;
@@ -193,10 +195,11 @@ proc_nuke(struct proc *process){
 		current = current->next;
 	}
 	if( current->pid == -1 || current->pid == -2){
+		kprintf("Err.\n");
 		return;
 	}	
 
-	//kprintf("%d\n", current->pid);
+	kprintf("%d\n", current->pid);
 	//current->myself->isactive = false;
 	proc_exited(process);
 	
@@ -204,16 +207,20 @@ proc_nuke(struct proc *process){
 	last->next = current->next;
 
 	// Free memory at process' pnode
-	current->myself = NULL;
-	current->next = NULL;
+	//current->myself = NULL;
+	//current->next = NULL;
 	kfree(current);
 	//kfree(last);	
 
 	//lock_release(gpll_lock);
 	//proc_destroy(process);
 
+	//lock_acquire(gpll_lock);
 	num_processes--;
-	
+	//cv_broadcast( gpll_cv, gpll_lock );
+	//kprintf("Num.: %d\n", num_processes);
+	//lock_release(gpll_lock);	
+
 	return;
 }
 
@@ -273,6 +280,20 @@ unsigned int
 proc_rollcall(void){
 	return num_processes;
 }
+
+/*
+struct pnode *
+proc_get_pnodelst(struct proc *process){
+	struct pnode *current;
+	current = _head;
+	
+	while( current->next != NULL){
+		int id = proc_getpid(current->pid);
+		if( id		
+
+	}
+}
+*/
 
 /* Compares a PID to the enitre process list and returns false 
  * if the PID is not unique. 
@@ -384,8 +405,6 @@ proc_destroy(struct proc *proc)
 
 	// Remove from process list
 	proc_nuke(proc);
-	cv_destroy(proc->p_cv);
-	lock_destroy(proc->p_cv_lock);
 
 
 	/* VM fields */
@@ -440,6 +459,8 @@ proc_destroy(struct proc *proc)
 	KASSERT(proc->p_numthreads == 0);
 	spinlock_cleanup(&proc->p_lock);
 
+	cv_destroy(proc->p_cv);
+	lock_destroy(proc->p_cv_lock);
 	
 	kfree(proc->p_name);
 	kfree(proc);
