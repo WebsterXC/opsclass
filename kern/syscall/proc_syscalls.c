@@ -270,10 +270,14 @@ sys_execv(char *program, userptr_t **args, int *retval){
 
 	lock_acquire(gpll_lock);
 	
+	int look_ahead = 0;
+	while( args[look_ahead] != NULL ){
+		look_ahead++;
+	}
+
 	// Set up argument array
 	struct arg **arglist;
-	arglist = (struct arg **)kmalloc(sizeof(struct arg *) * 500);
-
+	arglist = (struct arg **)kmalloc(sizeof(struct arg *) * look_ahead);
 	
 	//vaddr_t *stacksonstacks;
 	//stacksonstacks = kmalloc(sizeof(*stacksonstacks) * 64 );
@@ -283,10 +287,9 @@ sys_execv(char *program, userptr_t **args, int *retval){
 
 	/* Copy user arguments to the kernel, using a safe method (copyinstr) */
 	int argcounter = 0;
-	while(args[argcounter] != NULL && argcounter < 499){
+	while(args[argcounter] != NULL && argcounter < 4999){
 		size_t inlength;	// Input length from copyinstr()	
 
-	
 		// Reserve memory in arglist for the new string
 		arglist[argcounter] = (struct arg *)kmalloc(sizeof(struct arg *));
 		arglist[argcounter]->str = kmalloc(sizeof(char) * ARG_MAX);
@@ -314,6 +317,7 @@ sys_execv(char *program, userptr_t **args, int *retval){
 	if (result) {
 		return result;
 	}
+	kfree(pr_name);
 
 	/* We should be a new process. */
 	//KASSERT(proc_getas() == NULL);
@@ -404,6 +408,11 @@ sys_execv(char *program, userptr_t **args, int *retval){
 	// User args are still NULL terminated	
 	stackptr -= 4;
 	copyout(arglist[num_args], (userptr_t)stackptr, 4);
+
+	for(int i = 0; i < num_args; i++){
+		kfree(arglist[i]);
+	}
+	kfree(arglist);
 
 	// Stackpointer still needs references to where args are on the stack.
 	// (thanks Tuesday office hour crew!!)
