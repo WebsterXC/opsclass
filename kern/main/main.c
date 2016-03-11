@@ -39,6 +39,7 @@
 #include <spl.h>
 #include <clock.h>
 #include <thread.h>
+#include <pid.h>
 #include <proc.h>
 #include <current.h>
 #include <synch.h>
@@ -51,7 +52,6 @@
 #include <kern/test161.h>
 #include <version.h>
 #include "autoconf.h"  // for pseudoconfig
-#include <pr_table.h>
 
 /*
  * These two pieces of data are maintained by the makefiles and build system.

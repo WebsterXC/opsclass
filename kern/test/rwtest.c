@@ -14,7 +14,6 @@
 
 #include <pid.h>
 #include <proc.h>
-#include <pr_table.h>
 
 #define N_THREADS 128
 
@@ -100,7 +99,7 @@ int rwtest(int nargs, char **args) {
 int rwtest2(int nargs, char **args) {
 	(void)nargs;
 	(void)args;
-	
+/*	
 	int number_of_loops = 50;
 	pid_t mypid;	
 
@@ -130,6 +129,7 @@ int rwtest2(int nargs, char **args) {
 
 	kprintf("PTR Grab Test: %d\n", (int)newpid);	
 
+*/
 	kprintf_n("rwt2 unimplemented\n");
 	success(TEST161_FAIL, SECRET, "rwt2");
 

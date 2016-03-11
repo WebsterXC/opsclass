@@ -15,8 +15,8 @@
 #include <kern/wait.h>
 #include <mips/trapframe.h>
 #include <addrspace.h>
+#include <pid.h>
 #include <proc.h>
-#include <pr_table.h>
 #include <syscall.h>
 #include <filetable.h>
 #include <openfile.h>

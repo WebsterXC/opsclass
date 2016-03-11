@@ -37,8 +37,8 @@
 #include <uio.h>
 #include <clock.h>
 #include <thread.h>
+#include <pid.h>
 #include <proc.h>
-#include <pr_table.h>
 #include <vfs.h>
 #include <sfs.h>
 #include <syscall.h>

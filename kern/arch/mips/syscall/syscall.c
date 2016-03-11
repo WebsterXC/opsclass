@@ -28,6 +28,7 @@
  */
 
 #include <types.h>
+#include <proc.h>
 #include <kern/errno.h>
 #include <kern/syscall.h>
 #include <endian.h>
