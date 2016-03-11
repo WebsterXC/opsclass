@@ -68,7 +68,7 @@ proc_assign(struct proc *process){
 		attempt = pidgen();
 	}
 	node->pid = attempt;
-	kprintf("Created: %d\n", attempt);
+	//kprintf("Created: %d\n", attempt);
 
 	/* Other assignments go here */
 	process->isactive = true;	
@@ -123,7 +123,7 @@ proc_nuke(struct proc *process){
 	struct pnode *last;
 	
 	//lock_acquire(gpll_lock);
-	kprintf("Nuking: ");
+	//kprintf("Nuking: ");
 	
 	current = kmalloc(sizeof(*current));
 	//last = kmalloc(sizeof(*last));
@@ -143,7 +143,7 @@ proc_nuke(struct proc *process){
 		return;
 	}	
 
-	kprintf("%d\n", current->pid);
+	//kprintf("%d\n", current->pid);
 	//current->myself->isactive = false;
 	proc_exited(process);
 	

@@ -130,10 +130,6 @@ proc_destroy(struct proc *proc)
 	 * incorrect to destroy it.)
 	 */
 	
-	//cv_destroy(proc->p_cv);
-	//lock_destroy(proc->p_cv_lock);
-
-
 	/* VFS fields */
 	if (proc->p_cwd) {
 		VOP_DECREF(proc->p_cwd);
@@ -146,6 +142,9 @@ proc_destroy(struct proc *proc)
 
 	// Remove from process list
 	proc_nuke(proc);
+	cv_destroy(proc->p_cv);
+	lock_destroy(proc->p_cv_lock);
+
 
 	/* VM fields */
 	if (proc->p_addrspace) {
