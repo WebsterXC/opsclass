@@ -129,6 +129,10 @@ proc_destroy(struct proc *proc)
 	 * reference to this structure. (Otherwise it would be
 	 * incorrect to destroy it.)
 	 */
+	
+	//cv_destroy(proc->p_cv);
+	//lock_destroy(proc->p_cv_lock);
+
 
 	/* VFS fields */
 	if (proc->p_cwd) {
@@ -139,6 +143,9 @@ proc_destroy(struct proc *proc)
 		filetable_destroy(proc->p_filetable);
 		proc->p_filetable = NULL;
 	}
+
+	// Remove from process list
+	proc_nuke(proc);
 
 	/* VM fields */
 	if (proc->p_addrspace) {
@@ -192,8 +199,6 @@ proc_destroy(struct proc *proc)
 	KASSERT(proc->p_numthreads == 0);
 	spinlock_cleanup(&proc->p_lock);
 
-	// Remove from process list
-	proc_nuke(proc);
 	
 	kfree(proc->p_name);
 	kfree(proc);

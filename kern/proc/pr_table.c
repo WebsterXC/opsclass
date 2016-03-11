@@ -68,7 +68,7 @@ proc_assign(struct proc *process){
 		attempt = pidgen();
 	}
 	node->pid = attempt;
-	//kprintf("Created: %d\n", attempt);
+	kprintf("Created: %d\n", attempt);
 
 	/* Other assignments go here */
 	process->isactive = true;	
@@ -78,7 +78,7 @@ proc_assign(struct proc *process){
 
 	/* Now fill into front of linked list (after _head of course) */
 	struct pnode *nptr;
-	nptr = kmalloc(sizeof(*nptr));
+	//nptr = kmalloc(sizeof(*nptr));
 	nptr = _head->next;
 	_head->next = node;
 	node->next = nptr;
@@ -121,10 +121,12 @@ proc_nuke(struct proc *process){
 	// Find the pnode the process is in
 	struct pnode *current;
 	struct pnode *last;
-	//kprintf("Nuking.\n");
+	
+	//lock_acquire(gpll_lock);
+	kprintf("Nuking: ");
 	
 	current = kmalloc(sizeof(*current));
-	last = kmalloc(sizeof(*last));
+	//last = kmalloc(sizeof(*last));
 	
 	current = _head->next;	
 
@@ -137,7 +139,11 @@ proc_nuke(struct proc *process){
 
 		current = current->next;
 	}
+	if( current->pid == -1 || current->pid == -2){
+		return;
+	}	
 
+	kprintf("%d\n", current->pid);
 	//current->myself->isactive = false;
 	proc_exited(process);
 	
@@ -148,7 +154,9 @@ proc_nuke(struct proc *process){
 	current->myself = NULL;
 	current->next = NULL;
 	kfree(current);
-	
+	//kfree(last);	
+
+	//lock_release(gpll_lock);
 	//proc_destroy(process);
 
 	num_processes--;
@@ -160,7 +168,7 @@ proc_nuke(struct proc *process){
 struct proc *
 proc_getptr(pid_t id){
 	struct pnode *current;
-	current = kmalloc(sizeof(*current));
+	//current = kmalloc(sizeof(*current));
 	current = _head->next;
 
 	while( current->next != NULL ){
@@ -178,7 +186,7 @@ proc_getptr(pid_t id){
 pid_t
 proc_getpid(struct proc *process){
 	struct pnode *current;
-	current = kmalloc(sizeof(*current));
+	//current = kmalloc(sizeof(*current));
 	current = _head->next;
 
 	while( current->next != NULL ){
@@ -195,7 +203,7 @@ proc_getpid(struct proc *process){
 struct pnode *
 proc_get_pnode(struct proc *process){
 	struct pnode *current;
-	current = kmalloc(sizeof(*current));
+	//current = kmalloc(sizeof(*current));
 	current = _head->next;
 
 	while( current->next != NULL ){
@@ -219,7 +227,7 @@ proc_rollcall(void){
 bool
 verify_unique_pid(pid_t id){
 	struct pnode *current;
-	current = kmalloc(sizeof(*current));
+	//current = kmalloc(sizeof(*current));
 	current = _head;	
 
 	// Traverse until _tail
@@ -241,7 +249,7 @@ gpll_dump(void){
 	
 	// Manually duplicate node
 	struct pnode *current;
-	current = kmalloc(sizeof(*current));
+	//current = kmalloc(sizeof(*current));
 	current = _head->next;
 	kprintf("Recall pnode _head with PID %d\n", _head->pid);
 

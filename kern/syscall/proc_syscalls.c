@@ -199,7 +199,7 @@ sys__exit(int exitcode){
 
 	// Check to see if process has a parent. Establish exit code and assign it in pnode.	
 	if( curproc->parent != NULL ){
-		//kprintf("Signal to: %d\n", current->pid);
+		kprintf("Signal to: %d\n", current->pid);
 		// Process has parent; could be waited on so call proc_exited
 		lock_acquire( curproc->p_cv_lock );
 		current->retcode = _MKWAIT_EXIT(exitcode);
@@ -210,10 +210,11 @@ sys__exit(int exitcode){
 		// Process is a parent, record exit code and proc_nuke
 		lock_acquire( curproc->p_cv_lock );
 		current->retcode = _MKWAIT_EXIT(exitcode);
-		//proc_destroy(curproc);
-		proc_nuke(curproc);
+		//proc_nuke(curproc);
 		lock_release( curproc->p_cv_lock );
-	}	
+		proc_destroy(curproc);
+	}
+	
 
 	// Actually exit the process
 	thread_exit();
