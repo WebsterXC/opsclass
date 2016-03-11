@@ -263,60 +263,71 @@ sys_execv(char *program, userptr_t **args, int *retval){
 	struct vnode *v;
 	vaddr_t entrypoint, stackptr;
 	int result;
-	int num_args;
 	size_t pr_length;
+
+	if(program == NULL){
+		*retval = -1;
+		return EFAULT;
+	}
+
+	lock_acquire(gpll_lock);
 
 	char *pr_name;
 	pr_name = kmalloc(PATH_MAX * sizeof(char));
-
-	lock_acquire(gpll_lock);
 	
-	int look_ahead = 0;
-	while( args[look_ahead] != NULL ){
-		look_ahead++;
+	int num_args = 0;
+	while( args[num_args] != NULL ){
+		num_args++;
 	}
 
-	// Set up argument array
-	struct arg **arglist;
-	arglist = (struct arg **)kmalloc(sizeof(struct arg *) * look_ahead);
-	
-	//vaddr_t *stacksonstacks;
-	//stacksonstacks = kmalloc(sizeof(*stacksonstacks) * 64 );
+
+	char **bigbuffer = (char **)kmalloc(sizeof(char *) * num_args);	
+	if( bigbuffer == NULL ){
+		*retval = -1;
+		lock_release(gpll_lock);
+		return ENOMEM;
+	}
 
 	// Get program name
 	copyinstr((userptr_t)program, pr_name, PATH_MAX, &pr_length);
 
 	/* Copy user arguments to the kernel, using a safe method (copyinstr) */
 	int argcounter = 0;
+	int memsize = 0;
 	while(args[argcounter] != NULL && argcounter < 4999){
 		size_t inlength;	// Input length from copyinstr()	
+		char *tempstr;
+		char *bufstr;
+		tempstr = kmalloc(sizeof(char) * ARG_MAX);
 
-		// Reserve memory in arglist for the new string
-		arglist[argcounter] = (struct arg *)kmalloc(sizeof(struct arg *));
-		arglist[argcounter]->str = kmalloc(sizeof(char) * ARG_MAX);
-		
 		// Copy string from userspace, update length; ALL RESULTS INCLUDE NULL TERMINATOR
-		result = copyinstr((const_userptr_t)args[argcounter], arglist[argcounter]->str, ARG_MAX, &inlength);
-		arglist[argcounter]->len = inlength;
-		/*	
-		// Based on null-inclusive length, get the result of length%4 and pass to rev_and_append()	
-		append = inlength % 4;
-		arglist[argcounter]->len = rev_and_append(tempstr, arglist[argcounter]->str, append ); 
-		*/
+		result = copyinstr((const_userptr_t)args[argcounter], tempstr, ARG_MAX, &inlength);
 		
-		//kprintf("%s\n", arglist[argcounter]->str);
+		bufstr = kmalloc(sizeof(char) * inlength);
+		memsize += inlength * sizeof(char);		
+
+		// Memory Check #1
+		if(bufstr == NULL || tempstr == NULL || memsize >= ARG_MAX){
+			*retval = -1;
+			lock_release(gpll_lock);
+			return ENOMEM;
+		}
+
+		strcpy(bufstr, tempstr);
+		bigbuffer[argcounter] = bufstr;
+
+		kfree(tempstr);
 		argcounter++;
 	}
 	// Set total number of args and terminate the pointer string with NULL
-	num_args = argcounter;
-	arglist[argcounter] = NULL;
-
+	bigbuffer[num_args] = NULL;
 
 	/* Open the file. */
 	
 	result = vfs_open(pr_name, O_RDONLY, 0, &v);
 	if (result) {
-		return result;
+		*retval = -1;
+		return ENOENT;
 	}
 	kfree(pr_name);
 
@@ -373,17 +384,23 @@ sys_execv(char *program, userptr_t **args, int *retval){
 	/* Use copy safe methods (copyout) */
 	//argcounter = num_args-1;
 	argcounter = 0;
+	//kprintf("Potential nomem\n");
 	vaddr_t stacksonstacks[num_args];
-	while(arglist[argcounter] != NULL){
+	//char *stacksonstacks;
+	//stacksonstacks = kmalloc(sizeof(*stacksonstacks) * num_args);
+		
+	while(bigbuffer[argcounter] != NULL){
 	//while(argcounter >= 0){	
 		size_t outlen;
 		int mod;
 		int adjust;
-
+		int length;
+	
 		// Arguments are copied onto the stack backwards
+		length = strlen(bigbuffer[argcounter]) + 1;
 
 		// Copy adjusted arguments
-		mod = arglist[argcounter]->len % 4;
+		mod = length % 4;
 			if( mod == 0 ){
 				adjust = 0;
 			}else{		
@@ -391,12 +408,13 @@ sys_execv(char *program, userptr_t **args, int *retval){
 			}
 			
 
-			stackptr -= arglist[argcounter]->len;
-			stackptr -= adjust;
-			//kprintf("Adjust: %d\n", arglist[argcounter]->len + adjust);
+		//stackptr -= arglist[argcounter]->len;
+		stackptr -= length;
+		stackptr -= adjust;
+		//kprintf("Adjust: %d\n", arglist[argcounter]->len + adjust);
 		
-			copyoutstr(arglist[argcounter]->str, (userptr_t)stackptr, ARG_MAX, &outlen);
-		
+		copyoutstr(bigbuffer[argcounter], (userptr_t)stackptr, ARG_MAX, &outlen);
+		kfree(bigbuffer[argcounter]);
 				
 		/* Shift stackptr by the length of the argument */
 		/* Put a copy of the stackptr in the array */
@@ -408,12 +426,7 @@ sys_execv(char *program, userptr_t **args, int *retval){
 	}
 	// User args are still NULL terminated	
 	stackptr -= 4;
-	copyout(arglist[num_args], (userptr_t)stackptr, 4);
-
-	for(int i = 0; i < num_args; i++){
-		kfree(arglist[i]);
-	}
-	kfree(arglist);
+	copyout(bigbuffer[num_args], (userptr_t)stackptr, 4);
 
 	// Stackpointer still needs references to where args are on the stack.
 	// (thanks Tuesday office hour crew!!)
@@ -422,7 +435,7 @@ sys_execv(char *program, userptr_t **args, int *retval){
 		stackptr -= 4;
 		result = copyout(&stacksonstacks[i-1], (userptr_t)stackptr, 4);
 	}
-		kprintf("Stackptr: %x\n", stackptr);
+		//kprintf("Stackptr: %x\n", stackptr);
 	
 		//stackptr += 4;
 		//stackptr-=4;
@@ -432,7 +445,10 @@ sys_execv(char *program, userptr_t **args, int *retval){
 	//		  NULL /*userspace addr of environment*/,
 	//		  stackptr, entrypoint);
 
-	*retval = 0;	
+	*retval = 0;
+
+	//kfree(stacksonstacks);
+	kfree(bigbuffer);	
 	lock_release(gpll_lock);
 
 	enter_new_process(num_args, (userptr_t)stackptr, NULL, stackptr, entrypoint);
