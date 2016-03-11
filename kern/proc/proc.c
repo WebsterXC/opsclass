@@ -43,6 +43,8 @@
  */
 
 #include <types.h>
+#include <limits.h>
+#include <lib.h>
 #include <kern/errno.h>
 #include <spl.h>
 #include <pid.h>
@@ -58,6 +60,13 @@
 struct proc *kproc;
 
 volatile unsigned int num_processes;
+
+pid_t
+pidgen(void){
+	// Return a random pid between 2 and 32767
+	return (pid_t)(random() % (__PID_MAX + 1 - __PID_MIN) + __PID_MIN);	
+}
+
 
 /* Initialize process table. Called in: main.c */
 void
