@@ -114,6 +114,8 @@ proc_assign(struct proc *process){
 		kfree(node);
 		return;
 	}
+
+	node->exitsem = sem_create("exitsem", 0);
 	
 	// Generate a UNIQUE process ID and assign it
 	pid_t attempt = pidgen();
@@ -122,9 +124,6 @@ proc_assign(struct proc *process){
 	}
 	node->pid = attempt;
 	//kprintf("Created: %d\n", attempt);
-
-	/* Other assignments go here */
-	process->isactive = true;	
 
 	/* Make the node aware of it's own process */
 	node->myself = process;		// Do not move.
@@ -137,33 +136,11 @@ proc_assign(struct proc *process){
 	node->next = nptr;
 
 	num_processes++;
-	kprintf("Num: %d\n", num_processes);
+	//kprintf("Num: %d\n", num_processes);
 
 	return;
 }
 
-/* Creates an exited, but accessible process in the process list. Child processes call this
- * function to indicate they have exited, but remain searchable in the global linked list
- * for the parent to find.
-
- * Processes that call this function are NOT removed from memory
- */
-
-void
-proc_exited(struct proc *process){
-
-	struct pnode *node;
-	//kprintf("Exiting.\n");
-	node = proc_get_pnode(process);
-	if( node == NULL ){
-		return;
-	}
-	
-	process->isactive = false;
-
-
-	return;
-}
 
 /* Destroys a process and associated pnode completely. This is called by parents processes
  * who exit as well as by children after their exit code has been collected or respective
@@ -177,8 +154,7 @@ proc_nuke(struct proc *process){
 	struct pnode *current;
 	struct pnode *last;
 	
-	//lock_acquire(gpll_lock);
-	kprintf("Nuking: ");
+	//kprintf("Nuking: ");
 	
 	//current = kmalloc(sizeof(*current));
 	//last = kmalloc(sizeof(*last));
@@ -199,27 +175,16 @@ proc_nuke(struct proc *process){
 		return;
 	}	
 
-	kprintf("%d\n", current->pid);
-	//current->myself->isactive = false;
-	proc_exited(process);
 	
 	// Reassign pointers
 	last->next = current->next;
 
+	sem_destroy(current->exitsem);
 	// Free memory at process' pnode
-	//current->myself = NULL;
-	//current->next = NULL;
+	
 	kfree(current);
-	//kfree(last);	
-
-	//lock_release(gpll_lock);
-	//proc_destroy(process);
-
-	//lock_acquire(gpll_lock);
 	num_processes--;
-	//cv_broadcast( gpll_cv, gpll_lock );
-	//kprintf("Num.: %d\n", num_processes);
-	//lock_release(gpll_lock);	
+	//kprintf("Num: %d\n", num_processes);
 
 	return;
 }
@@ -342,18 +307,11 @@ proc_create(const char *name)
 	proc->p_numthreads = 0;
 	spinlock_init(&proc->p_lock);
 	
-	proc->p_cv = cv_create("proc_cv");
-	if (proc->p_cv == NULL) {
+	proc->forksem = sem_create("forksem", 0);
+	if (proc->forksem == NULL){
 		kfree(proc);
 		return NULL;
 	}
-	proc->p_cv_lock = lock_create("proc cv lock");
-	if (proc->p_cv_lock == NULL){
-		kfree(proc);
-		return NULL;
-	}
-
-	proc->isactive = false;
 
 	/* VM fields */
 	proc->p_addrspace = NULL;
@@ -459,8 +417,7 @@ proc_destroy(struct proc *proc)
 	KASSERT(proc->p_numthreads == 0);
 	spinlock_cleanup(&proc->p_lock);
 
-	cv_destroy(proc->p_cv);
-	lock_destroy(proc->p_cv_lock);
+	sem_destroy(proc->forksem);
 	
 	kfree(proc->p_name);
 	kfree(proc);

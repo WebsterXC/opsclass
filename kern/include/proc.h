@@ -44,6 +44,7 @@ struct pnode{
 	/* Process this node represents. */
 	struct proc *myself;	
 	pid_t pid;
+	struct semaphore *exitsem;
 
 	int retcode;	// Exit code here. HEAD contains 32766, TAIL contains 32767
 
@@ -66,7 +67,6 @@ bool verify_unique_pid(pid_t);
 /* External Methods */
 void gpll_bootstrap(void);
 void proc_assign(struct proc *process);
-void proc_exited(struct proc *process);
 void proc_nuke(struct proc *process);
 
 struct proc * proc_getptr(pid_t id);
@@ -100,10 +100,8 @@ struct vnode;
 struct proc {
 	char *p_name;			/* Name of this process */
 	struct spinlock p_lock;		/* Lock for this structure */
-	struct lock *p_cv_lock;
-	struct cv *p_cv;			/* CV to control when processes begin running */
+	struct semaphore *forksem;
 	unsigned p_numthreads;		/* Number of threads in this process */
-	bool isactive;
 
 	struct proc *parent;
 

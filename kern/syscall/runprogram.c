@@ -196,93 +196,74 @@ runprogram(char *progname)
 }
 
 /* Wrapper for the child process.
- * Data1: Struct holding a trapframe and addrspace pointer
- * Data2: Child's new PID
+ * Data1: Pointer to forkable trapframe
+ * Data2: Unused.
  */
 void
-child(void *fk_img, long unsigned int data2){
+child(void *tf, long unsigned int data2){
 	(void)data2;
 
-	// Copy file table
-	filetable_copy( ((struct forkimage *)fk_img)->filetab, &curproc->p_filetable);
+	// Block until the parent process has finished copying filetable
+	P(curproc->forksem);
 
 	// Load and activate the address space	`	
-	proc_setas( ((struct forkimage *)fk_img)->addr );	
+	proc_setas( curproc->p_addrspace );	
 	as_activate();	
 	
-	// Alter trapframe so child returns 0
-	// Switch to usermode
+	// Pass trapframe, separate stack copy made in method
 	// See: arch/mips/syscall/syscall.c
-	enter_forked_process( ((struct forkimage *)fk_img)->trap );
+	enter_forked_process( (struct trapframe *)tf );
 
 }
 
 int
 sys_fork(struct trapframe *frame, int32_t *childpid){
 
-	/* Allocate space for a address space & trapframe copy */
-	struct filetable *file_copy;
+	/* New process and trapframe copies will be made */
 	struct proc *childproc;
-	struct forkimage *fk_img;
-	
+	struct trapframe *trap;
 	int result;		
-	
-	lock_acquire(gpll_lock);
-
-	//kprintf("Num: %d\n", proc_rollcall() );	
-	/* Generate a "fork image" to pass to the child handle function.
-	 * A fork image consists of heap copies of the current process' address
-	 * space, trapframe, and filetable. 
-	 */
-	//while( proc_rollcall() > 64 ){
 		
-	//	cv_wait( gpll_cv, gpll_lock );
-		//lock_release(gpll_lock);
-		//proc_nuke(curproc);
-		//sys__exit(1);
-		//return EMPROC;
-	//}
-	fk_img = kmalloc(sizeof(*fk_img));
-	fk_img->addr = kmalloc(sizeof(*childproc));
-	as_copy(curproc->p_addrspace, &fk_img->addr);
+	lock_acquire(gpll_lock);	
 
-	fk_img->trap = kmalloc(sizeof(*frame));			// Allocate and copy parent's trapframe
-	memcpy(fk_img->trap, frame, sizeof(*frame));
-	
-	fk_img->filetab = kmalloc(sizeof(*file_copy));
-	filetable_copy(curproc->p_filetable, &fk_img->filetab);
+	// 9 or fewer processes at once (memory managment)
+	while( proc_rollcall() > 10 ){
+		cv_wait(gpll_cv, gpll_lock);
+	}
 
-
-	/* Call proc_fork, which copies an almost-exact copy of the current
-	 * process to the childproc. It leaves out copying the address space,
-	 * so we copy the contents of that to the child as well.
-	 */
-
-	/* Proc_assign is called inside of proc_fork, which adds the child process to the
-	 * process list. We must find this node and get the newly assigned child PID. This
-	 * also serves in verifying the child exists on the process list.
-	 */
- 
-	result = proc_fork(&childproc);
-	if(result){
-		kfree(fk_img);
+	// Make a copy of the trapframe on the heap
+	trap = kmalloc(sizeof(*trap));
+	if(trap == NULL){
+		lock_release(gpll_lock);
 		return ENOMEM;
 	}
+	memcpy(trap, frame, sizeof(*frame));
+
+	// Generate an exact copy of this process and copy the current
+	// process' addrspace to the copy
+	result = proc_fork(&childproc);
 	as_copy(curproc->p_addrspace, &childproc->p_addrspace);
 	
 	lock_release(gpll_lock);
-
-	// Fork the process through the child() method above, associated with childproc.
-	result = thread_fork(curproc->p_name, childproc, child, fk_img, 0);  	 
 	
+	if(result){
+		return ENOMEM;
+	}
+	
+	// Fork the process. Copy the filetable over to the child and increment
+	// the child's semaphore so it knows to continue the fork.
+	result = thread_fork(curproc->p_name, childproc, child, trap, 0);  	 
+
+	filetable_copy(curproc->p_filetable, &childproc->p_filetable);
+	
+	V(childproc->forksem);
+
 	if(result == ENOMEM){
-		kfree(fk_img);
 		return ENOMEM;
 	}else if(result){
-		kfree(fk_img);
 		return -1;
 	}
-
+	
 	// Return with child's PID
 	*childpid = proc_getpid(childproc);
 	
@@ -292,15 +273,11 @@ sys_fork(struct trapframe *frame, int32_t *childpid){
 int
 sys_waitpid(pid_t pid, int *status, int options, int *childpid){
 	(void)options;
-	bool setdestroy = false;
 
-	/* If status is NULL, waitpid behaves the same just doesn't give
-	 * child exit code.
-	 */
-	if(status == NULL){
-		status = kmalloc(sizeof(*status));
-		setdestroy = true;
-	}
+
+	/* Semaphore = 20 Bytes */
+	/* Lock      = 24 Bytes */
+	/* Condition = 16 Bytes */
 
 	/* Check all of the args for errors */
 	if( pid < __PID_MIN || pid > __PID_MAX ){
@@ -309,43 +286,32 @@ sys_waitpid(pid_t pid, int *status, int options, int *childpid){
 
 	/* Get waiter process pnode */
 	struct proc *waiterprocess;
-	struct pnode *node;
-	waiterprocess = proc_getptr(pid);
-	node = proc_get_pnode(waiterprocess);
+	struct pnode *childnode;
 	
+	lock_acquire(gpll_lock);
+	
+	/* Get process to wait on and it's respective pnode in the GPLL */
+	waiterprocess = proc_getptr(pid);
+	childnode = proc_get_pnode(waiterprocess);
 
 	/* Determine if waiter process exists */
-	if( waiterprocess == NULL || node == NULL ){
+	if( waiterprocess == NULL || childnode == NULL ){
 		return ECHILD;	
 	}
 
+	// Controls whether or not _exit() destroys the process. In this
+	// case, we will manually destroy it after waiting.
 	waiterprocess->parent = curproc;
+
+	lock_release(gpll_lock);
+
+	P(childnode->exitsem);
+	if(status != NULL){
+		*status = childnode->retcode;
+	}
 	
-	/* Determine if waiter process has finished */
-	if( waiterprocess->isactive == true ){
-		//kprintf("Waiting on: %d\n", node->pid);
-		// Waiter process is still running, wait for it to finish
-		lock_acquire(waiterprocess->p_cv_lock);
-		cv_wait( waiterprocess->p_cv, waiterprocess->p_cv_lock );
-		*status = node->retcode;
-		// Get exit code from the child that just finished			
-		lock_release(waiterprocess->p_cv_lock);
-	}else{
-		// Waiter process has exited. Collect exit code
-		lock_acquire(waiterprocess->p_cv_lock);
-		// Get exit code
-		*status = node->retcode;
-		lock_release(waiterprocess->p_cv_lock); 	
-	}
-
-	// Free the fake status ptr if status was originally NULL
-	if(setdestroy == true){
-		status = NULL;
-		kfree(status);
-	}
-
-	/* In either case, the child process has yet to be destroyed. Do so here. */
-	proc_destroy(waiterprocess);	// Call proc_destroy?
+	// Destroy the process we were waiting on since it's confirmed exited.
+	proc_destroy(waiterprocess);
 
 	*childpid = pid;
 
@@ -356,7 +322,7 @@ sys_waitpid(pid_t pid, int *status, int options, int *childpid){
 int
 sys__exit(int exitcode){
 
-	// Find current pnode
+	// Find current pnode of the process to exit
 	struct pnode *current;
 	current = proc_get_pnode(curproc);	
 	
@@ -365,30 +331,23 @@ sys__exit(int exitcode){
 		return -1;
 	}	
 
-	// Check to see if process has a parent. Establish exit code and assign it in pnode.	
-	if( curproc->parent != NULL ){
-		kprintf("Signal to: %d\n", current->pid);
-		// Process has parent; could be waited on so call proc_exited
-		lock_acquire( curproc->p_cv_lock );
-		current->retcode = _MKWAIT_EXIT(exitcode);
-		proc_exited(curproc);
-		//proc_destroy(curproc);
-		cv_signal( curproc->p_cv, curproc->p_cv_lock );
-		lock_release( curproc->p_cv_lock );
-		//proc_destroy(curproc);
-		
-	}else{
-		// Process is a parent, record exit code and proc_nuke
-		lock_acquire( curproc->p_cv_lock );
-		current->retcode = _MKWAIT_EXIT(exitcode);
-		
+	lock_acquire(gpll_lock);
+
+	/* Generate the current process' exit code and increment the
+	 * exit semaphore to let waitpid() know curproc has exited.
+	 */
+	current->retcode = _MKWAIT_EXIT(exitcode);
+	V(current->exitsem);	
+
+	// If this process called exit on it's own (without waitpid), just destroy it
+	if( curproc->parent == NULL ){
 		proc_destroy(curproc);
-		//proc_nuke(curproc);
-		lock_release( curproc->p_cv_lock );
-		//proc_destroy(curproc);
 	}
-	
-	//proc_destroy(curproc);
+
+	// Signal the GPLL CV to let it know memory has been freed for more forks.
+	cv_signal(gpll_cv, gpll_lock);
+	lock_release(gpll_lock);
+
 	// Actually exit the process
 	thread_exit();
 
