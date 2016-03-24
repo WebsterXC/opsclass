@@ -44,6 +44,30 @@
 #define VM_FAULT_WRITE       1    /* A write was attempted */
 #define VM_FAULT_READONLY    2    /* A write to a readonly page was attempted*/
 
+#define COREMAP_FIXED	     0
+#define COREMAP_DIRTY	     1
+#define COREMAP_CLEAN	     2
+#define COREMAP_FREE	     3
+
+/* Coremap is made of cores (ha!) */
+struct core{
+	paddr_t paddr;
+	vaddr_t vaddr;
+	
+	struct addrspace *space;
+	
+	/* Possible states:
+	 * (0) = FIXED
+	 * (1) = Dirty
+	 * (2) = Clean
+	 * (3) = Free
+	 */	
+	unsigned int state;
+	bool istail;
+};
+
+struct core *coremap;
+//struct spinlock *coremap_lock;
 
 /* Initialization function */
 void vm_bootstrap(void);
@@ -65,6 +89,5 @@ unsigned int coremap_used_bytes(void);
 /* TLB shootdown handling called from interprocessor_interrupt */
 void vm_tlbshootdown_all(void);
 void vm_tlbshootdown(const struct tlbshootdown *);
-
 
 #endif /* _VM_H_ */

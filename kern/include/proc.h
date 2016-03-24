@@ -67,7 +67,7 @@ bool verify_unique_pid(pid_t);
 /* External Methods */
 void gpll_bootstrap(void);
 void proc_assign(struct proc *process);
-void proc_nuke(struct proc *process);
+int proc_nuke(struct proc *process);
 
 struct proc * proc_getptr(pid_t id);
 pid_t proc_getpid(struct proc *process);

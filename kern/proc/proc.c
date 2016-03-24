@@ -57,7 +57,6 @@
  * The process for the kernel; this holds all the kernel-only threads.
  */
 struct proc *kproc;
-
 volatile unsigned int num_processes;
 
 pid_t
@@ -111,6 +110,7 @@ proc_assign(struct proc *process){
 	node = kmalloc(sizeof(*node));
 	node->retcode = 0;
 	if( node == NULL ){
+		kprintf("Node.\n");
 		kfree(node);
 		return;
 	}
@@ -130,7 +130,6 @@ proc_assign(struct proc *process){
 
 	/* Now fill into front of linked list (after _head of course) */
 	struct pnode *nptr;
-	//nptr = kmalloc(sizeof(*nptr));
 	nptr = _head->next;
 	_head->next = node;
 	node->next = nptr;
@@ -147,9 +146,8 @@ proc_assign(struct proc *process){
  * parent has exited.
  */
 
-void
+int
 proc_nuke(struct proc *process){
-	
 	// Find the pnode the process is in
 	struct pnode *current;
 	struct pnode *last;
@@ -170,9 +168,11 @@ proc_nuke(struct proc *process){
 
 		current = current->next;
 	}
+	//kprintf("Del: %d\n", current->pid);
+
 	if( current->pid == -1 || current->pid == -2){
 		kprintf("Err.\n");
-		return;
+		return ENOMEM;
 	}	
 
 	
@@ -186,7 +186,7 @@ proc_nuke(struct proc *process){
 	num_processes--;
 	//kprintf("Num: %d\n", num_processes);
 
-	return;
+	return 0;
 }
 
 /* Returns a pointer to a process with supplied PID */
@@ -360,10 +360,13 @@ proc_destroy(struct proc *proc)
 		filetable_destroy(proc->p_filetable);
 		proc->p_filetable = NULL;
 	}
-
+	
+	int result;
 	// Remove from process list
-	proc_nuke(proc);
-
+	result = proc_nuke(proc);
+	if(result){
+		return;
+	}
 
 	/* VM fields */
 	if (proc->p_addrspace) {

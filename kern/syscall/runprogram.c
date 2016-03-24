@@ -227,9 +227,9 @@ sys_fork(struct trapframe *frame, int32_t *childpid){
 	lock_acquire(gpll_lock);	
 
 	// 9 or fewer processes at once (memory managment)
-	while( proc_rollcall() > 10 ){
-		cv_wait(gpll_cv, gpll_lock);
-	}
+	//while( proc_rollcall() > 10 ){
+	//	cv_wait(gpll_cv, gpll_lock);
+	//}
 
 	// Make a copy of the trapframe on the heap
 	trap = kmalloc(sizeof(*trap));
@@ -242,13 +242,14 @@ sys_fork(struct trapframe *frame, int32_t *childpid){
 	// Generate an exact copy of this process and copy the current
 	// process' addrspace to the copy
 	result = proc_fork(&childproc);
-	as_copy(curproc->p_addrspace, &childproc->p_addrspace);
-	
-	lock_release(gpll_lock);
-	
-	if(result){
+	if(result || proc_rollcall() > 24){
+		lock_release(gpll_lock);
 		return ENOMEM;
 	}
+
+	as_copy(curproc->p_addrspace, &childproc->p_addrspace);
+	
+	//lock_release(gpll_lock);
 	
 	// Fork the process. Copy the filetable over to the child and increment
 	// the child's semaphore so it knows to continue the fork.
@@ -266,6 +267,8 @@ sys_fork(struct trapframe *frame, int32_t *childpid){
 	
 	// Return with child's PID
 	*childpid = proc_getpid(childproc);
+
+	lock_release(gpll_lock);
 	
 	return 0;
 }
@@ -278,7 +281,10 @@ sys_waitpid(pid_t pid, int *status, int options, int *childpid){
 	/* Semaphore = 20 Bytes */
 	/* Lock      = 24 Bytes */
 	/* Condition = 16 Bytes */
-
+	if(status != NULL){
+		*status = -1;
+		kprintf("%d\n", *status);
+	}
 	/* Check all of the args for errors */
 	if( pid < __PID_MIN || pid > __PID_MAX ){
 		return ESRCH;
@@ -365,8 +371,15 @@ sys_execv(char *program, userptr_t **args, int *retval){
 	if(program == NULL){
 		*retval = -1;
 		return EFAULT;
+	}else if (args == NULL){
+		*retval = -1;
+		return EFAULT;
 	}
-	kprintf("Execv\n");
+
+	//kprintf("Execv\n");
+	kprintf("%x %x\n", (vaddr_t)(**args), USERSPACETOP );	
+	kprintf("%x\n", (vaddr_t)(program));
+
 	lock_acquire(gpll_lock);
 
 	char *pr_name;
@@ -391,11 +404,11 @@ sys_execv(char *program, userptr_t **args, int *retval){
 
 	/* Copy user arguments to the kernel, using a safe method (copyinstr) */
 	int argcounter = 0;
-	int memsize = 0;
+	//int memsize = 0;
 	while(args[argcounter] != NULL && argcounter < 4999){
 		size_t inlength;	// Input length from copyinstr()	
 		char *tempstr;
-		char *bufstr;
+		//char *bufstr;
 		tempstr = kmalloc(sizeof(char) * ARG_MAX );
 		if(tempstr == NULL){
 			lock_release(gpll_lock);
@@ -407,20 +420,14 @@ sys_execv(char *program, userptr_t **args, int *retval){
 		result = copyinstr((const_userptr_t)args[argcounter], tempstr, ARG_MAX, &inlength);
 		
 		//bufstr = kmalloc(sizeof(char) * inlength);
-		bufstr = kmalloc(sizeof(char) * inlength);
-		memsize += inlength * sizeof(char);		
+		//bufstr = kmalloc(sizeof(char) * inlength);
+		//memsize += inlength * sizeof(char);		
 
-		// Memory Check #1
-		if(bufstr == NULL || tempstr == NULL || memsize >= ARG_MAX){
-			*retval = -1;
-			lock_release(gpll_lock);
-			return ENOMEM;
-		}
 
-		strcpy(bufstr, tempstr);
-		bigbuffer[argcounter] = bufstr;
+		//strcpy(bufstr, tempstr);
+		bigbuffer[argcounter] = tempstr;
 
-		kfree(tempstr);
+		//kfree(tempstr);
 		argcounter++;
 	}
 	// Set total number of args and terminate the pointer string with NULL
