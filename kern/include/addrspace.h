@@ -38,16 +38,36 @@
 #include <vm.h>
 #include "opt-dumbvm.h"
 
+/* Stack size for each address space. (18 pages * PAGE_SIZE) = 72K */
+#define ADDRSP_STACKSIZE 18
+
 struct vnode;
 
+/* Page table and entries. Forward traversing linked list format. */
+struct pentry{
+	paddr_t paddr;			// Physical page we map to
+	vaddr_t vaddr;			// Virtual address of memory we want
+		
+	unsigned int options : 5;	//Bitfield size 5
+	// MSB->LSB || read | write | execute | valid | referenced |
+
+	struct pentry *next;
+};
+
+/* Code region (area) for as_define_region */
+struct area{
+	vaddr_t vstart;		// KVADDR where this region begins
+	size_t pagecount;	// Num pages (size is page-aligned)
+
+	unsigned int options : 3;	// R,W,X Permissions
+	
+	struct area *next;
+};
 
 /*
  * Address space - data structure associated with the virtual memory
  * space of a process.
- *
- * You write this.
  */
-
 struct addrspace {
 #if OPT_DUMBVM
         vaddr_t as_vbase1;
@@ -58,7 +78,12 @@ struct addrspace {
         size_t as_npages2;
         paddr_t as_stackpbase;
 #else
-        /* Put stuff here for your VM system */
+	struct pentry *pages;		// Page table	
+	struct area *segments;		// Segments from as_define_region
+
+	vaddr_t area_heap_start;
+	vaddr_t area_heap_end;		// Virtual address of end of heap
+
 #endif
 };
 

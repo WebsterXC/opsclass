@@ -141,8 +141,9 @@ get_contiguous_cores(unsigned alloc_cores){
 	return 0;
 }
 
-vaddr_t
-alloc_kpages(unsigned npages){
+/* Page allocator. Returns the physical address of the beginning of the block of pages. */
+paddr_t
+alloc_ppages(unsigned npages){
 	(void)npages;
 	paddr_t allocation;
 
@@ -151,7 +152,14 @@ alloc_kpages(unsigned npages){
 	if(!stay_strapped){				// VM Hasn't Bootstrapped
 		allocation = ram_stealmem(npages);
 	}else if(npages <= 1){				// Allocate a single core
-
+		for(unsigned int n = 0; n < corecount; n++){
+			if(coremap[n].state == COREMAP_FREE){
+				allocation = coremap[n].paddr;
+				coremap[n].state = COREMAP_DIRTY;
+				coremap[n].istail = true;
+				break;
+			}
+		}
 	}else{						// Allocate npages contiguous cores
 		unsigned int offset;
 		// Get a paddr to the beginning of a block of cores
@@ -173,6 +181,20 @@ alloc_kpages(unsigned npages){
 	}
 
 	spinlock_release(&coremap_lock);
+
+	return allocation;
+}
+
+/* Wrapper to convert physical address from alloc_ppages to kernel virtual addresses */
+vaddr_t
+alloc_kpages(unsigned npages){
+	
+	paddr_t allocation;
+	
+	allocation = alloc_ppages(npages);
+	if(allocation == 0){
+		panic("Couldn't allocate %d kpages.\n", npages);
+	}
 
 	return PADDR_TO_KVADDR(allocation);
 }
@@ -250,8 +272,24 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 /* Address Space Shenanigans Here */
 ////////////////////////////////////
 
+/* To create an address space, we need to:
+ * (1) Allocate an addrspace using kmalloc
+ * (2) Initialize struct variables
+ *
+ * (Note) Regions are first defined in as_define_region
+ *
+ */
+
+/*
 struct addrspace *
 as_create(void){
+	struct addrspace *addrsp;
+
+	// Allocate memory for addrspace	
+	addrsp = kmalloc(sizeof(*addrsp));
+	if(addrsp == NULL){
+		return NULL;
+	}
 	
 
 	return NULL;
@@ -267,6 +305,8 @@ as_destroy(struct addrspace *addrsp){
 void 
 as_activate(void){
 
+	// Shoot down all TLB entries
+
 	return;
 }
 
@@ -275,16 +315,47 @@ as_deactivate(void){
 
 	return;
 }
+*/
+/* This is an important part of defining an addrspace. 
+ * This function allocates regions of memory in the address
+ * space including stack, heap, and static code areas.
+ */
 
+/* We need to:
+ * (1) Initialize a new area struct for the segment.
+ * (2) Reserve pages for the address space to reside in.
+ * (3) Update internal information, like permissions.
+ * (4) Add the new area to the linked list.
+ *
+ *
+ *
+ */
+/*
 int
 as_define_region(struct addrspace *addrsp, vaddr_t vaddr, size_t sz,
 			int read, int write, int exec){
 	(void)addrsp;
-	(void)vaddr;
 
-	return sz + read + write + exec;
+	unsigned int page_count;
+
+	sz += vaddr & ~(vaddr_t)PAGE_FRAME;
+	vaddr &= PAGE_FRAME;
+	sz = (sz + PAGE_SIZE - 1) & PAGE_FRAME;
+	page_count = sz / PAGE_SIZE;
+
+
+	return read + write + exec;
 }
-
+*/
+/* Using the segment information generated in as_define_region,  */
+/* Steps:
+ * (1) Set up our page table based on region information above.
+ * (2) Generate a pentry for each page needed and add to linked list.
+ *
+ *
+ *
+ */
+/*
 int
 as_prepare_load(struct addrspace *addrsp){
 	(void)addrsp;
@@ -307,7 +378,17 @@ as_define_stack(struct addrspace *addrsp, vaddr_t *stackptr){
 
 	return 0;
 }
-
+*/
+/* Copy an address space */
+/*
+ *
+ *
+ *
+ *
+ *
+ *
+ */
+/*
 int
 as_copy(struct addrspace *old, struct addrspace **new){
 	(void)old;
@@ -315,5 +396,5 @@ as_copy(struct addrspace *old, struct addrspace **new){
 
 	return 0;
 }
-
+*/
 /////////////////////////////////////////////////////////////////

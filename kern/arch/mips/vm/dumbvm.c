@@ -121,7 +121,7 @@ alloc_kpages(unsigned npages)
 void
 free_kpages(vaddr_t addr)
 {
-	/* nothing - leak the memory. */
+	//nothing - leak the memory.
 
 	(void)addr;
 }
@@ -130,7 +130,7 @@ unsigned
 int
 coremap_used_bytes() {
 
-	/* dumbvm doesn't track page allocations. Return 0 so that khu works. */
+	// dumbvm doesn't track page allocations. Return 0 so that khu works.
 
 	return 0;
 }
