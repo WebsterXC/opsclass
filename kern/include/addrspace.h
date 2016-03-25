@@ -58,7 +58,8 @@ struct pentry{
 struct area{
 	vaddr_t vstart;		// KVADDR where this region begins
 	size_t pagecount;	// Num pages (size is page-aligned)
-
+	size_t bytesize;
+	
 	unsigned int options : 3;	// R,W,X Permissions
 	
 	struct area *next;
@@ -81,8 +82,9 @@ struct addrspace {
 	struct pentry *pages;		// Page table	
 	struct area *segments;		// Segments from as_define_region
 
-	vaddr_t area_heap_start;
-	vaddr_t area_heap_end;		// Virtual address of end of heap
+	vaddr_t as_heap_start;
+	vaddr_t as_heap_end;		// Virtual address of end of heap
+	paddr_t as_stackpbase;
 
 #endif
 };

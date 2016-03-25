@@ -34,8 +34,8 @@
 #include <vm.h>
 #include <proc.h>
 
-static bool pages_init = false;
-static bool segments_init = false;
+//static bool pages_init = false;
+//static bool segments_init = false;
 
 /*
  * Note! If OPT_DUMBVM is set, as is the case until you start the VM
@@ -59,20 +59,22 @@ as_create(void)
 	if (as == NULL) {
 		return NULL;
 	}
+	
+	as->pages = NULL;
+	as->segments = NULL;
 
 	// Heap not generated yet
-	as->area_heap_start = 0;
-	as->area_heap_end = 0;
+	as->as_heap_start = 0;
+	as->as_heap_end = 0;
+	as->as_stackpbase = 0;
 
 	return as;
 }
 
-/* Copy an address space */
-/*
- *
- *
- *
- *
+/* Copy an address space. Needs to be loaded into memory */
+/* (1) Create a new address space "object"
+ * (2) Copy segments using as_define_region 
+ * (3) Create a new page table and copy page information
  *
  *
  */
@@ -86,13 +88,32 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 		return ENOMEM;
 	}
 
-	/*
-	 * Write this.
-	 */
+	// Get old segments and define them in the new address space
+	if( old->segments != NULL){
+		struct area *current;
+		current = old->segments;
 
-	(void)old;
+		while(current->next != NULL){			
+			unsigned int opt = current->options;
 
+			as_define_region(newas, current->vstart, current->bytesize, 
+						(opt^3)>>2, (opt^5)>>1, (opt^6)>>2);
+			
+			current = current->next; 
+		}
+	}else{
+		newas->segments = NULL; 
+	}	
+
+	newas->as_heap_start = old->as_heap_start;
+	newas->as_heap_end = old->as_heap_end;
+	newas->as_stackpbase = 0;
+
+	// Copy Stack?
+
+	// Address space is prepped for as_prepare_load
 	*ret = newas;
+
 	return 0;
 }
 
@@ -188,15 +209,15 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t memsize,
 	newarea->vstart = vaddr;
 	newarea->pagecount = npages;
 	newarea->next = NULL;
+	newarea->bytesize = memsize;
+	newarea->options = 0;
 
 	// Bitpack options
 	newarea->options = (readable<<2) & (writeable<<1) & (executable);
 	
 	// Add to linked list
-	if(segments_init == false){		// First area is linked list head
+	if(as->segments == NULL){		// First area is linked list head
 		as->segments = newarea;
-	
-		segments_init = true;
 	}else{					// Append to end of linked list	
 		struct area *current;
 		current = as->segments;
@@ -209,8 +230,8 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t memsize,
 	}
 
 	// Update heap information
-	//as->area_heap_start = vaddr + memsize;
-	//as->area_heap_start += memsize;
+	//as->as_heap_start = vaddr + memsize;
+	//as->as_heap_start += memsize;
 	
 	return 0;
 }
@@ -220,10 +241,51 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t memsize,
  * purchase order; getting the parts and assembling them.
  */
 
+// Helper function if adding phyiscal pages directly to the page table
+static int
+add_table_entries(struct addrspace *as, vaddr_t start, unsigned int add, 
+				unsigned int option_valid, unsigned int option_ref){
+	
+	for(unsigned int i = 0; i < add; i++){
+		struct pentry *entry;
+		entry = kmalloc(sizeof(*entry));
+
+		entry->paddr = alloc_ppages(1);		// Physical page
+		if(entry->paddr == 0){
+			return ENOMEM;			
+		}
+		if(as->as_stackpbase == 0){
+			as->as_stackpbase = entry->paddr;
+		}	
+		entry->vaddr = start;			// Virtual memory page maps to
+		entry->options = ((entry->options)<<2) & (option_valid<<1) & option_ref;
+		entry->next = NULL;
+
+		if(as->pages == NULL){			// First page in table
+			as->pages = entry;		
+		}else{
+			struct pentry *tail;
+			tail = as->pages;
+
+			while(tail->next != NULL){
+				tail = tail->next;
+			}
+				
+			tail->next = entry;
+		}
+
+		// Mapping 4K portions of regions (virtual addresses) to physical pages.
+		start += PAGE_SIZE;
+	}
+
+
+	return 0;
+}
+
 /* Steps:
  * (1) Kmalloc pentry's for each region based on area->pagecount
- * (2) Bitpack each pentry's options.
- * (3) Actually reserve the pages. Need to use alloc_ppages() for pentry->paddr
+ * (2) Actually reserve the pages. Need to use alloc_ppages() for pentry->paddr
+ * (3) Bitpack each pentry's options. 
  * (4) Update each pentry information set.
  * (5) Add each pentry to the addrspace's page table
  * (6) Reserve pages for the user stack
@@ -231,14 +293,26 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t memsize,
 int
 as_prepare_load(struct addrspace *as)
 {
-	(void)as;
+	int result;
+	struct area *current;
 
-	if(pages_init == false){
+	current = as->segments;
+	while(current->next != NULL){
+	 
+		// Steps (1) - (5) accomplished in this loop
+		// Default options set: VALID and REFERENCED on load.
+		result = add_table_entries(as, current->vstart, current->pagecount, 1, 1);		
+		if(result){
+			return ENOMEM;
+		}
 
-		pages_init = true;
-	}else{
-
+		current = current->next;
 	}
+
+	// Reserve pages for user stack
+	vaddr_t stack_begin = USERSTACK - (PAGE_SIZE * ADDRSP_STACKSIZE);
+	
+	result = add_table_entries(as, stack_begin, ADDRSP_STACKSIZE, 1, 1); 
 
 	return 0;
 }
