@@ -66,13 +66,13 @@ vm_bootstrap(void){
 	// Convert paddr to a kernel virtual address
 	coremap = (struct core *)PADDR_TO_KVADDR(first);
 
-	// Set coremap cores to fixed state, others to dirty
+	// Set coremap cores to fixed state, others to free
 	for(unsigned int i = 0; i < num_cores; i++){
 		// If coremap lies on this core, it's fixed in place
 		if( i < DIVROUNDUP(map_size, PAGE_SIZE) ){
 			coremap[i].state = COREMAP_FIXED;	
 		}else{	
-			coremap[i].state = COREMAP_DIRTY;
+			coremap[i].state = COREMAP_FREE;
 		}
 
 		/*Fill the other struct information */	
@@ -108,19 +108,76 @@ vm_bootstrap(void){
  * (6) Return PADDR_TO_KVADDR of the beginning of the allocation.
  */
 
+/* Currently, the double for-loop iterates through the entire coremap. Once working,
+ * optimize to jump to the end of a non-free memory allocation and continue
+ * searching on a contig fail. Function returns 0 on failure and should be
+ * checked before proceeding in the function it's called in. Normal operation
+ * returns the index of the beginning of a block of cores in the coremap.
+ */
+static int
+get_contiguous_cores(unsigned alloc_cores){
+	KASSERT(spinlock_do_i_hold(&coremap_lock));
+
+	for(unsigned int i = 0; i < corecount; i++){
+		// If the page is free, see if alloc_cores more are
+		if(coremap[i].state == COREMAP_FREE){
+			unsigned int audit = 1;
+			for(unsigned int j = 1; j < alloc_cores; j++){
+				if(coremap[i+j].state == COREMAP_FREE){
+					audit++;
+				}else{
+					break;
+				}	
+			} // Coremap lookahead loop //
+			
+			// Free contiguous block has been found!
+			if( audit == alloc_cores ){
+				return i;
+			}
+		}
+	} // Coremap iterator loop //
+
+	// At least the first coremap page is guaranteed to be fixed. 0 is invalid then.
+	return 0;
+}
+
 vaddr_t
 alloc_kpages(unsigned npages){
 	(void)npages;
-	//paddr_t allocation;
+	paddr_t allocation;
 
 	spinlock_acquire(&coremap_lock);
 
+	if(!stay_strapped){				// VM Hasn't Bootstrapped
+		allocation = ram_stealmem(npages);
+	}else if(npages <= 1){				// Allocate a single core
+
+	}else{						// Allocate npages contiguous cores
+		unsigned int offset;
+		// Get a paddr to the beginning of a block of cores
+		offset = get_contiguous_cores(npages);
+		if(offset == 0){
+			// Swap out cores?
+			// Contiguous block couldn't be found. Fragmented!
+		}		
+		allocation = coremap[offset].paddr;		
+
+		// Update the parameters in each core of the allocation
+		for(unsigned int i = offset; i < (offset+npages); i++){
+			coremap[i].state = COREMAP_DIRTY;
+
+			if( (offset+npages)-i == 1 ){
+				coremap[i].istail = true;
+			}
+		}
+	}
+
 	spinlock_release(&coremap_lock);
 
-	return (vaddr_t)0;
+	return PADDR_TO_KVADDR(allocation);
 }
 
-/* Free a certain number of pages */
+/* Free a certain number of cores */
 /* Steps to completion:
  * (1) Acquire spinlock.
  * (2) Find the vaddr that matches the passed argument.
@@ -134,6 +191,20 @@ free_kpages(vaddr_t addr){
 
 	spinlock_acquire(&coremap_lock);
 
+	for(unsigned int i = 0; i < corecount; i++){
+		if(coremap[i].vaddr == addr){
+			int incr = 0;
+			while(coremap[i+incr].istail == false){
+				coremap[i+incr].state = COREMAP_FREE;				
+				incr++;
+			}
+
+			coremap[i+incr].state = COREMAP_FREE;
+			coremap[i+incr].istail = false;
+			
+			break;
+		}	
+	}
 
 	spinlock_release(&coremap_lock);
 	
@@ -147,7 +218,7 @@ unsigned int
 coremap_used_bytes(){
 	unsigned int used = 0;
 	for(unsigned int i = 0; i < corecount; i++){
-		if(coremap[i].state < 3){
+		if(coremap[i].state < COREMAP_FREE){
 			used++;
 		}
 	}
