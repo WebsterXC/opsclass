@@ -34,14 +34,9 @@
 #include <vm.h>
 #include <proc.h>
 
-//static bool pages_init = false;
-//static bool segments_init = false;
+/* ADDRESS SPACE IMPLEMENTATION */
 
-/*
- * Note! If OPT_DUMBVM is set, as is the case until you start the VM
- * assignment, this file is not compiled or linked or in any way
- * used. The cheesy hack versions in dumbvm.c are used instead.
- */
+/* Written by: William Burgin (waburgin) */
 
 /* To create an address space, we need to:
  * (1) Allocate an addrspace using kmalloc
@@ -66,7 +61,7 @@ as_create(void)
 	// Heap not generated yet
 	as->as_heap_start = 0;
 	as->as_heap_end = 0;
-	as->as_stackpbase = 0;
+	as->as_stackpbase = 1;
 
 	return as;
 }
@@ -74,14 +69,19 @@ as_create(void)
 /* Copy an address space. Needs to be loaded into memory */
 /* (1) Create a new address space "object"
  * (2) Copy segments using as_define_region 
- * (3) Create a new page table and copy page information
- *
- *
+ * (3) Copy pages using as_prepare_load - identical segment info will generate the same pages
+ * (4) Copy the data from the old address space pages to the new ones
+ * 
  */
 int
 as_copy(struct addrspace *old, struct addrspace **ret)
 {
+	int result;
 	struct addrspace *newas;
+
+	if(old == NULL || ret == NULL){
+		return EFAULT;
+	}
 
 	newas = as_create();
 	if (newas==NULL) {
@@ -96,9 +96,12 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 		while(current->next != NULL){			
 			unsigned int opt = current->options;
 
-			as_define_region(newas, current->vstart, current->bytesize, 
-						(opt^3)>>2, (opt^5)>>1, (opt^6)>>2);
-			
+			result = as_define_region(newas, current->vstart, current->bytesize, 
+						  (opt^3)>>2, (opt^5)>>1, (opt^6));
+			if(result){
+				as_destroy(newas);
+				return ENOMEM;
+			}
 			current = current->next; 
 		}
 	}else{
@@ -107,11 +110,26 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 
 	newas->as_heap_start = old->as_heap_start;
 	newas->as_heap_end = old->as_heap_end;
-	newas->as_stackpbase = 0;
 
-	// Copy Stack?
+	// Load pages for given segments and create a stack	
+	result = as_prepare_load(newas);
+	if(result){
+		as_destroy(newas);
+		return ENOMEM;
+	}
 
-	// Address space is prepped for as_prepare_load
+	// Copy page state over to the new address space
+	struct pentry *sender;
+	struct pentry *reciever;
+	sender = old->pages;
+	reciever = newas->pages;
+	
+	while( sender->next != NULL){
+		memcpy((void *)reciever->paddr, (void *)sender->paddr, PAGE_SIZE);
+		sender = sender->next;
+		reciever = reciever->next;
+	}
+
 	*ret = newas;
 
 	return 0;
@@ -120,9 +138,34 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 void
 as_destroy(struct addrspace *as)
 {
-	/*
-	 * Clean up as needed.
-	 */
+	if(as == NULL){
+		return;
+	}
+
+	struct pentry *terminate;
+	struct pentry *second;
+
+	// Destroy page table
+	terminate = as->pages;
+	while(second != NULL){
+		second = terminate->next;
+		kfree((void *)terminate->vaddr);
+		terminate = second;
+	}
+
+	struct area *del;
+	struct area *other;
+
+	// Free segment partitions
+	del = as->segments;
+	while(other != NULL){
+		other = del->next;
+		kfree((void *)del->vstart);
+		del = other;
+	}
+
+	// Free stack pages
+	
 
 	kfree(as);
 }
@@ -188,12 +231,11 @@ int
 as_define_region(struct addrspace *as, vaddr_t vaddr, size_t memsize,
 		 int readable, int writeable, int executable)
 {
-	(void)as;
-	(void)readable;
-	(void)writeable;
-	(void)executable;
-	struct area *newarea;
+	if(as == NULL || vaddr == 0){
+		return EFAULT;
+	}
 
+	struct area *newarea;
 	unsigned int npages;
 
 	// Page-alignment (rounding to the nearest page) -> from dumbvm.c
@@ -202,6 +244,7 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t memsize,
 	memsize = (memsize + PAGE_SIZE - 1) & PAGE_FRAME;
 	npages = memsize / PAGE_SIZE;
 
+	// Create a new region
 	newarea = kmalloc(sizeof(struct area));
 	if(newarea == NULL){
 		return ENOMEM;
@@ -250,6 +293,7 @@ add_table_entries(struct addrspace *as, vaddr_t start, unsigned int add,
 		struct pentry *entry;
 		entry = kmalloc(sizeof(*entry));
 
+		//TODO FIX need to alloc all at once
 		entry->paddr = alloc_ppages(1);		// Physical page
 		if(entry->paddr == 0){
 			return ENOMEM;			
@@ -293,6 +337,10 @@ add_table_entries(struct addrspace *as, vaddr_t start, unsigned int add,
 int
 as_prepare_load(struct addrspace *as)
 {
+	if(as == NULL){
+		return EFAULT;
+	}
+
 	int result;
 	struct area *current;
 
@@ -312,6 +360,7 @@ as_prepare_load(struct addrspace *as)
 	// Reserve pages for user stack
 	vaddr_t stack_begin = USERSTACK - (PAGE_SIZE * ADDRSP_STACKSIZE);
 	
+	as->as_stackpbase = 0;
 	result = add_table_entries(as, stack_begin, ADDRSP_STACKSIZE, 1, 1); 
 
 	return 0;
@@ -323,22 +372,19 @@ as_prepare_load(struct addrspace *as)
 int
 as_complete_load(struct addrspace *as)
 {
-	/*
-	 * Write this.
-	 */
+	if(as == NULL){
+		return EFAULT;
+	}
 
-	(void)as;
 	return 0;
 }
 
 int
 as_define_stack(struct addrspace *as, vaddr_t *stackptr)
 {
-	/*
-	 * Write this.
-	 */
-
-	(void)as;
+	if(as == NULL || stackptr == 0){
+		return EFAULT;
+	}
 
 	/* Initial user-level stack pointer */
 	*stackptr = USERSTACK;
