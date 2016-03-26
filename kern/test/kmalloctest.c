@@ -493,7 +493,7 @@ kmalloctest5(int nargs, char **args)
 	orig_used = coremap_used_bytes();
 	known_pages = num_cpus + num_ptr_blocks + 1;
 	if (orig_used < known_pages * PAGE_SIZE) {
-		panic ("Not enough pages initially allocated");
+		panic ("Not enough pages (%d) initially allocated (%d)", known_pages * PAGE_SIZE, orig_used);
 	}
 	if ((orig_used % PAGE_SIZE) != 0) {
 		panic("Coremap used bytes should be a multiple of PAGE_SIZE");
@@ -571,6 +571,7 @@ kmalloctest5(int nargs, char **args)
 		for (block = 0; block < num_ptr_blocks; block++) {
 			for (pos = 0; pos < ptrs_per_page; pos++) {
 				if (ptrs[block][pos] != NULL) {
+					kprintf("%u : %d\n", (*(uint32_t *)ptrs[block][pos]), pos+(block * ptrs_per_page) );
 					// Make sure we got unique addresses
 					if ((*(uint32_t *)ptrs[block][pos]) != orig_magic++) {
 						panic("km5: expected %u got %u - your VM is broken!",

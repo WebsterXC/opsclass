@@ -49,6 +49,7 @@
 #define COREMAP_CLEAN	     2
 #define COREMAP_FREE	     3
 
+
 /* Coremap is made of cores (ha!) */
 struct core{
 	paddr_t paddr;
@@ -66,7 +67,7 @@ struct core{
 	bool istail;
 };
 
-struct core *coremap;
+//volatile struct core *coremap;
 //struct spinlock *coremap_lock;
 
 /* Initialization function */

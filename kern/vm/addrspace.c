@@ -289,17 +289,19 @@ static int
 add_table_entries(struct addrspace *as, vaddr_t start, unsigned int add, 
 				unsigned int option_valid, unsigned int option_ref){
 	
+	paddr_t pstart;
+	pstart = alloc_ppages(add);	
+	if(pstart == 0){
+		return ENOMEM;			
+	}
+
 	for(unsigned int i = 0; i < add; i++){
 		struct pentry *entry;
 		entry = kmalloc(sizeof(*entry));
 
-		//TODO FIX need to alloc all at once
-		entry->paddr = alloc_ppages(1);		// Physical page
-		if(entry->paddr == 0){
-			return ENOMEM;			
-		}
+		entry->paddr = pstart;			// Physical page
 		if(as->as_stackpbase == 0){
-			as->as_stackpbase = entry->paddr;
+			as->as_stackpbase = entry->paddr; // Set to 0 immidiately before calling
 		}	
 		entry->vaddr = start;			// Virtual memory page maps to
 		entry->options = ((entry->options)<<2) & (option_valid<<1) & option_ref;
@@ -320,6 +322,7 @@ add_table_entries(struct addrspace *as, vaddr_t start, unsigned int add,
 
 		// Mapping 4K portions of regions (virtual addresses) to physical pages.
 		start += PAGE_SIZE;
+		pstart += PAGE_SIZE;
 	}
 
 

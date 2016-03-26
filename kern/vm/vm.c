@@ -13,10 +13,15 @@
 #include <mips/tlb.h>
 #include <addrspace.h>
 #include <vm.h>
+#include <mainbus.h>
+
+extern vaddr_t firstfree;
 
 static unsigned long corecount;		// Number of total cores
 static bool stay_strapped = false;	// Has vm_bootstrap run yet?
 
+static volatile unsigned int total_page_allocs = 0;
+static struct core *coremap;
 /* Virtual Memory Wizardry Here */
 //////////////////////////////////
 
@@ -34,9 +39,13 @@ static struct spinlock coremap_lock = SPINLOCK_INITIALIZER;	// Synchro primitive
 
 void
 vm_bootstrap(void){
+	if(stay_strapped == true){
+		return;
+	}
+
 	paddr_t first;
 	paddr_t last;
-	
+	(void)last;	
 	unsigned int num_cores;		// Total number of free pages
 	unsigned int map_size;		// Size of the coremap (bytes)
 
@@ -56,6 +65,11 @@ vm_bootstrap(void){
 
 	// Get number of available cores, and size of coremap (in bytes)
 	num_cores = (last - first) / PAGE_SIZE;
+	//unsigned int mem;
+	//mem = mainbus_ramsize() - (uint32_t)(firstfree - MIPS_KSEG0);
+	//num_cores = (mem + PAGE_SIZE-1) / PAGE_SIZE;
+	kprintf("Num cores: %d\n", num_cores);	
+
 	KASSERT(num_cores != 0);
 	corecount = num_cores;
 	map_size = num_cores * sizeof(struct core);
@@ -94,7 +108,6 @@ vm_bootstrap(void){
 	//spinlock_init(coremap_lock);
 
 	stay_strapped = true;
-
 	return;
 }
 
@@ -149,6 +162,11 @@ alloc_ppages(unsigned npages){
 
 	spinlock_acquire(&coremap_lock);
 
+	if(total_page_allocs*PAGE_SIZE > mainbus_ramsize()-(uint32_t)(firstfree - MIPS_KSEG0)){
+		spinlock_release(&coremap_lock);
+		return 0;
+	};
+
 	if(!stay_strapped){				// VM Hasn't Bootstrapped
 		allocation = ram_stealmem(npages);
 	}else if(npages <= 1){				// Allocate a single core
@@ -165,6 +183,8 @@ alloc_ppages(unsigned npages){
 		// Get a paddr to the beginning of a block of cores
 		offset = get_contiguous_cores(npages);
 		if(offset == 0){
+			spinlock_release(&coremap_lock);
+			return ENOMEM;
 			// Swap out cores?
 			// Contiguous block couldn't be found. Fragmented!
 		}		
@@ -180,6 +200,7 @@ alloc_ppages(unsigned npages){
 		}
 	}
 
+	total_page_allocs += npages;
 	spinlock_release(&coremap_lock);
 
 	return allocation;
@@ -193,7 +214,7 @@ alloc_kpages(unsigned npages){
 	
 	allocation = alloc_ppages(npages);
 	if(allocation == 0){
-		panic("Couldn't allocate %d kpages.\n", npages);
+		return 0;
 	}
 
 	return PADDR_TO_KVADDR(allocation);
@@ -219,10 +240,12 @@ free_kpages(vaddr_t addr){
 			while(coremap[i+incr].istail == false){
 				coremap[i+incr].state = COREMAP_FREE;				
 				incr++;
+				total_page_allocs--;
 			}
 
 			coremap[i+incr].state = COREMAP_FREE;
 			coremap[i+incr].istail = false;
+			total_page_allocs--;
 			
 			break;
 		}	
@@ -238,14 +261,19 @@ free_kpages(vaddr_t addr){
  */
 unsigned int
 coremap_used_bytes(){
-	unsigned int used = 0;
-	for(unsigned int i = 0; i < corecount; i++){
-		if(coremap[i].state < COREMAP_FREE){
-			used++;
-		}
-	}
+	//unsigned int used = 0;
+	
+	//spinlock_acquire(&coremap_lock);	
 
-	return used * PAGE_SIZE;
+	//for(unsigned int i = 0; i < corecount; i++){
+	//	if(coremap[i].state != COREMAP_FREE){
+	//		used++;
+	//	}
+	//}
+	
+	//spinlock_release(&coremap_lock);	
+
+	return total_page_allocs * PAGE_SIZE;
 }
 
 void

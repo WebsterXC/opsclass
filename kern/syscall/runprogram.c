@@ -367,6 +367,7 @@ sys_execv(char *program, userptr_t **args, int *retval){
 	vaddr_t entrypoint, stackptr;
 	int result;
 	size_t pr_length;
+	size_t arg_maxsize;
 
 	if(program == NULL){
 		*retval = -1;
@@ -376,15 +377,15 @@ sys_execv(char *program, userptr_t **args, int *retval){
 		return EFAULT;
 	}
 
-	//kprintf("Execv\n");
-	kprintf("%x %x\n", (vaddr_t)(**args), USERSPACETOP );	
-	kprintf("%x\n", (vaddr_t)(program));
-
 	lock_acquire(gpll_lock);
 
 	char *pr_name;
 	pr_name = kmalloc(PATH_MAX * sizeof(char));
 	
+	/* Algorithm for memory reduction */
+	/* Find argc. The size of the arguments isn't greater than 64K so
+	 * depending on argc, we have our maximum array size per arg */
+
 	int num_args = 0;
 	while( args[num_args] != NULL ){
 		num_args++;
@@ -394,11 +395,15 @@ sys_execv(char *program, userptr_t **args, int *retval){
 	char **bigbuffer = (char **)kmalloc(sizeof(char *) * num_args);	
 	if( bigbuffer == NULL ){
 		*retval = -1;
-		kprintf("Couldn't allocate bigbuffer\n");
 		lock_release(gpll_lock);
 		return ENOMEM;
 	}
-
+	if(num_args > 1){
+		arg_maxsize = ARG_MAX / (num_args-1);
+	}else{
+		arg_maxsize = PATH_MAX;
+	}
+	//kprintf("ARGC: %d, Maxsize: %d\n", num_args, arg_maxsize);
 	// Get program name
 	copyinstr((userptr_t)program, pr_name, PATH_MAX, &pr_length);
 
@@ -408,8 +413,13 @@ sys_execv(char *program, userptr_t **args, int *retval){
 	while(args[argcounter] != NULL && argcounter < 4999){
 		size_t inlength;	// Input length from copyinstr()	
 		char *tempstr;
-		//char *bufstr;
-		tempstr = kmalloc(sizeof(char) * ARG_MAX );
+		
+
+		if(argcounter == 0){
+			tempstr = kmalloc(sizeof(char) * PATH_MAX);
+		}else{
+			tempstr = kmalloc(sizeof(char) * arg_maxsize);
+		}
 		if(tempstr == NULL){
 			lock_release(gpll_lock);
 			kprintf("tempstr kmalloc\n");
@@ -474,11 +484,14 @@ sys_execv(char *program, userptr_t **args, int *retval){
 	/* Use copy safe methods (copyout) */
 	//argcounter = num_args-1;
 	argcounter = 0;
-	kprintf("Potential nomem\n");
-	vaddr_t stacksonstacks[num_args];
+	//kprintf("Potential nomem\n");
+	//vaddr_t stacksonstacks[num_args];
+	
+	vaddr_t *stacksonstacks;
+	stacksonstacks = (vaddr_t *)kmalloc(sizeof(vaddr_t) * num_args);
 	//char *stacksonstacks;
 	//stacksonstacks = kmalloc(sizeof(*stacksonstacks) * num_args);
-	kprintf("After nonmem\n");	
+	//kprintf("After nonmem\n");	
 	while(bigbuffer[argcounter] != NULL){
 	//while(argcounter >= 0){	
 		size_t outlen;
@@ -535,7 +548,7 @@ sys_execv(char *program, userptr_t **args, int *retval){
 
 	*retval = 0;
 
-	//kfree(stacksonstacks);
+	kfree(stacksonstacks);
 	kfree(bigbuffer);	
 	lock_release(gpll_lock);
 
