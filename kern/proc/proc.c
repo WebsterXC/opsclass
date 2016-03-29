@@ -541,7 +541,6 @@ proc_fork(struct proc **ret)
 	node = proc_get_pnode(proc);
 	if(node != NULL && parnode != NULL){
 		node->pid_parent = parnode->pid;
-		kprintf("PPID: %d\n", parnode->pid);
 	}	
 
 

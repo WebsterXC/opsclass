@@ -225,7 +225,6 @@ sys_fork(struct trapframe *frame, int32_t *childpid){
 	int result;		
 		
 	lock_acquire(gpll_lock);	
-	kprintf(".");
 	// 9 or fewer processes at once (memory managment)
 	//while( proc_rollcall() > 10 ){
 	//	cv_wait(gpll_cv, gpll_lock);
@@ -287,6 +286,7 @@ sys_waitpid(pid_t pid, int *status, int options, int *childpid){
 		return ESRCH;
 	}
 	// Check status pointer
+	/*
 	if(status < (int *)(USERSTACK - 450000)){
 		return EFAULT;
 	}else if( status == (void *)(0x80000000) ){
@@ -294,13 +294,12 @@ sys_waitpid(pid_t pid, int *status, int options, int *childpid){
 	}else if( (uint32_t)status % 4 != 0 ){
 		return EFAULT;
 	}
-
+*/
 	/* Get waiter process pnode */
 	struct proc *waiterprocess;
 	struct pnode *childnode;
 	
 	lock_acquire(gpll_lock);
-
 	
 	/* Get process to wait on and it's respective pnode in the GPLL */
 	waiterprocess = proc_getptr(pid);
@@ -384,28 +383,19 @@ sys_execv(char *program, userptr_t **args, int *retval){
 		*retval = -1;
 		return EFAULT;
 	}
+
+	lock_acquire(gpll_lock);
 	
 	// Check args pointer for validity.
 	if((void **)args < (void **)(USERSTACK - 450000)){
+		lock_release(gpll_lock);
 		return EFAULT;
 	}else if( (void **)args == (void **)(0x80000000) ){
+		lock_release(gpll_lock);
 		return EFAULT;
 	}
-
+		
 	//lock_acquire(gpll_lock);
-	
-	char *test;
-	test = kmalloc(sizeof(char) * 4);
-	
-	// Test args for valid pointer
-	size_t num;
-	result = copyinstr((userptr_t)args, test, sizeof(char), &num);
-	if(result){
-		return EINVAL;
-	}
-	kfree(test);
-	
-	lock_acquire(gpll_lock);
 
 	char *pr_name;
 	pr_name = kmalloc(PATH_MAX * sizeof(char));
