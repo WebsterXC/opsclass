@@ -44,6 +44,7 @@ struct pnode{
 	/* Process this node represents. */
 	struct proc *myself;	
 	pid_t pid;
+	pid_t pid_parent;
 	struct semaphore *exitsem;
 
 	int retcode;	// Exit code here. HEAD contains 32766, TAIL contains 32767

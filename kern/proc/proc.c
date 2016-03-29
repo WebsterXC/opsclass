@@ -110,7 +110,7 @@ proc_assign(struct proc *process){
 	node = kmalloc(sizeof(*node));
 	node->retcode = 0;
 	if( node == NULL ){
-		kprintf("Node.\n");
+		//kprintf("Node.\n");
 		kfree(node);
 		return;
 	}
@@ -534,7 +534,17 @@ proc_fork(struct proc **ret)
 	
 	// Add to process list
 	proc_assign(*ret);
-	
+
+	struct pnode *node;
+	struct pnode *parnode;
+	parnode = proc_get_pnode(curproc);
+	node = proc_get_pnode(proc);
+	if(node != NULL && parnode != NULL){
+		node->pid_parent = parnode->pid;
+		kprintf("PPID: %d\n", parnode->pid);
+	}	
+
+
 	return 0;
 }
 

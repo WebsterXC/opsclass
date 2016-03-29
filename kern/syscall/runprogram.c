@@ -225,7 +225,7 @@ sys_fork(struct trapframe *frame, int32_t *childpid){
 	int result;		
 		
 	lock_acquire(gpll_lock);	
-
+	kprintf(".");
 	// 9 or fewer processes at once (memory managment)
 	//while( proc_rollcall() > 10 ){
 	//	cv_wait(gpll_cv, gpll_lock);
@@ -281,13 +281,18 @@ sys_waitpid(pid_t pid, int *status, int options, int *childpid){
 	/* Semaphore = 20 Bytes */
 	/* Lock      = 24 Bytes */
 	/* Condition = 16 Bytes */
-	if(status != NULL){
-		*status = -1;
-		kprintf("%d\n", *status);
-	}
 	/* Check all of the args for errors */
+
 	if( pid < __PID_MIN || pid > __PID_MAX ){
 		return ESRCH;
+	}
+	// Check status pointer
+	if(status < (int *)(USERSTACK - 450000)){
+		return EFAULT;
+	}else if( status == (void *)(0x80000000) ){
+		return EFAULT;
+	}else if( (uint32_t)status % 4 != 0 ){
+		return EFAULT;
 	}
 
 	/* Get waiter process pnode */
@@ -295,16 +300,18 @@ sys_waitpid(pid_t pid, int *status, int options, int *childpid){
 	struct pnode *childnode;
 	
 	lock_acquire(gpll_lock);
+
 	
 	/* Get process to wait on and it's respective pnode in the GPLL */
 	waiterprocess = proc_getptr(pid);
 	childnode = proc_get_pnode(waiterprocess);
-
+	
 	/* Determine if waiter process exists */
 	if( waiterprocess == NULL || childnode == NULL ){
+		lock_release(gpll_lock);
 		return ECHILD;	
 	}
-
+	
 	// Controls whether or not _exit() destroys the process. In this
 	// case, we will manually destroy it after waiting.
 	waiterprocess->parent = curproc;
@@ -369,6 +376,7 @@ sys_execv(char *program, userptr_t **args, int *retval){
 	size_t pr_length;
 	size_t arg_maxsize;
 
+	// Check to make sure program & arg pointers aren't null.
 	if(program == NULL){
 		*retval = -1;
 		return EFAULT;
@@ -376,21 +384,37 @@ sys_execv(char *program, userptr_t **args, int *retval){
 		*retval = -1;
 		return EFAULT;
 	}
+	
+	// Check args pointer for validity.
+	if((void **)args < (void **)(USERSTACK - 450000)){
+		return EFAULT;
+	}else if( (void **)args == (void **)(0x80000000) ){
+		return EFAULT;
+	}
 
+	//lock_acquire(gpll_lock);
+	
+	char *test;
+	test = kmalloc(sizeof(char) * 4);
+	
+	// Test args for valid pointer
+	size_t num;
+	result = copyinstr((userptr_t)args, test, sizeof(char), &num);
+	if(result){
+		return EINVAL;
+	}
+	kfree(test);
+	
 	lock_acquire(gpll_lock);
 
 	char *pr_name;
 	pr_name = kmalloc(PATH_MAX * sizeof(char));
 	
-	/* Algorithm for memory reduction */
-	/* Find argc. The size of the arguments isn't greater than 64K so
-	 * depending on argc, we have our maximum array size per arg */
 
 	int num_args = 0;
 	while( args[num_args] != NULL ){
 		num_args++;
 	}
-
 
 	char **bigbuffer = (char **)kmalloc(sizeof(char *) * num_args);	
 	if( bigbuffer == NULL ){
@@ -398,23 +422,34 @@ sys_execv(char *program, userptr_t **args, int *retval){
 		lock_release(gpll_lock);
 		return ENOMEM;
 	}
+	
+	/* Algorithm for memory reduction */
+	/* Find argc. The size of the arguments isn't greater than 64K so
+	 * depending on argc, we have our maximum array size per arg */
 	if(num_args > 1){
 		arg_maxsize = ARG_MAX / (num_args-1);
 	}else{
 		arg_maxsize = PATH_MAX;
 	}
-	//kprintf("ARGC: %d, Maxsize: %d\n", num_args, arg_maxsize);
-	// Get program name
-	copyinstr((userptr_t)program, pr_name, PATH_MAX, &pr_length);
 
+	// Get program name
+	result = copyinstr((userptr_t)program, pr_name, PATH_MAX, &pr_length);
+	if(result){
+		lock_release(gpll_lock);
+		return EFAULT;
+	}
+	// Check for empty string program
+	if(strcmp(pr_name, "") == 0){
+		lock_release(gpll_lock);
+		return EINVAL;
+	}
+	
 	/* Copy user arguments to the kernel, using a safe method (copyinstr) */
 	int argcounter = 0;
-	//int memsize = 0;
 	while(args[argcounter] != NULL && argcounter < 4999){
 		size_t inlength;	// Input length from copyinstr()	
 		char *tempstr;
 		
-
 		if(argcounter == 0){
 			tempstr = kmalloc(sizeof(char) * PATH_MAX);
 		}else{
@@ -422,22 +457,17 @@ sys_execv(char *program, userptr_t **args, int *retval){
 		}
 		if(tempstr == NULL){
 			lock_release(gpll_lock);
-			kprintf("tempstr kmalloc\n");
 			return ENOMEM;
 		}		
 
 		// Copy string from userspace, update length; ALL RESULTS INCLUDE NULL TERMINATOR
 		result = copyinstr((const_userptr_t)args[argcounter], tempstr, ARG_MAX, &inlength);
-		
-		//bufstr = kmalloc(sizeof(char) * inlength);
-		//bufstr = kmalloc(sizeof(char) * inlength);
-		//memsize += inlength * sizeof(char);		
+		if(result){
+			lock_release(gpll_lock);
+			return EFAULT;
+		}
 
-
-		//strcpy(bufstr, tempstr);
 		bigbuffer[argcounter] = tempstr;
-
-		//kfree(tempstr);
 		argcounter++;
 	}
 	// Set total number of args and terminate the pointer string with NULL
@@ -451,6 +481,7 @@ sys_execv(char *program, userptr_t **args, int *retval){
 		return ENOENT;
 	}
 	kfree(pr_name);
+
 	/* Create a new address space. */
 	as = as_create();
 	if (as == NULL) {
@@ -480,20 +511,13 @@ sys_execv(char *program, userptr_t **args, int *retval){
 		return result;
 	}
 
-	/* Stackpointer contains ptr to beginning of user stack: where args need to go */
-	/* Use copy safe methods (copyout) */
-	//argcounter = num_args-1;
 	argcounter = 0;
-	//kprintf("Potential nomem\n");
-	//vaddr_t stacksonstacks[num_args];
-	
+
+	// Array to keep stackpointer values in	
 	vaddr_t *stacksonstacks;
 	stacksonstacks = (vaddr_t *)kmalloc(sizeof(vaddr_t) * num_args);
-	//char *stacksonstacks;
-	//stacksonstacks = kmalloc(sizeof(*stacksonstacks) * num_args);
-	//kprintf("After nonmem\n");	
+	/* Copy arguments to new stack; aligned by 4 */
 	while(bigbuffer[argcounter] != NULL){
-	//while(argcounter >= 0){	
 		size_t outlen;
 		int mod;
 		int adjust;
@@ -508,22 +532,19 @@ sys_execv(char *program, userptr_t **args, int *retval){
 			}else{		
 				adjust = 4 - mod;
 			}
-			
-
-		//stackptr -= arglist[argcounter]->len;
+	
+		/* Shift stackptr by the length of the argument & buffer */	
+	
 		stackptr -= length;
 		stackptr -= adjust;
-		//kprintf("Adjust: %d\n", arglist[argcounter]->len + adjust);
 		
+		/* Actually copy to stack */
 		copyoutstr(bigbuffer[argcounter], (userptr_t)stackptr, ARG_MAX, &outlen);
 		kfree(bigbuffer[argcounter]);
 				
-		/* Shift stackptr by the length of the argument */
 		/* Put a copy of the stackptr in the array */
-
 		stacksonstacks[argcounter] = stackptr;		
 
-		//argcounter--;
 		argcounter++;
 	}
 	// User args are still NULL terminated	
@@ -536,22 +557,14 @@ sys_execv(char *program, userptr_t **args, int *retval){
 		stackptr -= 4;
 		result = copyout(&stacksonstacks[i-1], (userptr_t)stackptr, 4);
 	}
-		//kprintf("Stackptr: %x\n", stackptr);
-	
-		//stackptr += 4;
-		//stackptr-=4;
-	/* Warp to user mode. */
-
-	//enter_new_process(0 /*argc*/, NULL /*userspace addr of argv*/,
-	//		  NULL /*userspace addr of environment*/,
-	//		  stackptr, entrypoint);
-
 	*retval = 0;
-
+		
+	// Cleanup
 	kfree(stacksonstacks);
 	kfree(bigbuffer);	
 	lock_release(gpll_lock);
 
+	/* Warp to user mode. */
 	enter_new_process(num_args, (userptr_t)stackptr, NULL, stackptr, entrypoint);
 	
 	/* enter_new_process does not return. */
