@@ -15,24 +15,22 @@
 #include <vm.h>
 #include <mainbus.h>
 
-extern vaddr_t firstfree;
-
 static unsigned long corecount;		// Number of total cores
 static bool stay_strapped = false;	// Has vm_bootstrap run yet?
 
-static volatile unsigned int total_page_allocs = 0;
-static struct core *coremap;
-/* Virtual Memory Wizardry Here */
-//////////////////////////////////
+static volatile unsigned int total_page_allocs = 0;	// Total pages currently allocated
+static struct core *coremap;				// Pointer to coremap
+
+/* Virtual Memory Wizardry*/
 
 /* Here we need to create the coremap to store physical page info.
  * This requires a few steps:
- * (1) Setup coremap resources (e.g. spinlock)
+ * (1) Setup coremap resources
  * (2) Find available RAM based on first and last addresses of available memory.
  * (3) Get total number of pages. Available RAM (last-first)/page size (4K).
  * (4) Manually allocate the coremap, get it's starting paddr. Assign to PADDR_TO_KVADDR
  * (5) Iterate through coremap and initialize core information.
- * (6) Set up global coremap lock.
+ * (6) Set up global coremap lock. --> Set up statically. Step no longer needed.
  */
 
 static struct spinlock coremap_lock = SPINLOCK_INITIALIZER;	// Synchro primitive for coremap
@@ -49,8 +47,8 @@ vm_bootstrap(void){
 	unsigned int num_cores;		// Total number of free pages
 	unsigned int map_size;		// Size of the coremap (bytes)
 
-	// Reserve memory for a coremap lock. Should only need 1 page.
-	// Switched to static initializer above	
+	// Reserve memory for a coremap lock.
+	// Switched to static initializer above.	
 
 	// Get last and first address of RAM.
 	// *** ram_stealemem will no longer work ***
@@ -68,9 +66,6 @@ vm_bootstrap(void){
 	coremap = (struct core *)PADDR_TO_KVADDR(first);
 	kprintf("Num Pages %d at %u\n", num_cores, first);	
 	
-	// Cores start at the end of the coremap, which is the number of pages * sizeof(struct)
-	//first += map_size;
-
 	// Set all coremap cores to fixed state, others to free
 	for(unsigned int i = 0; i < num_cores; i++){
 		// If coremap lies on this core, it's fixed in place
@@ -93,12 +88,11 @@ vm_bootstrap(void){
 		//The kernel vaddr that we map to
 		coremap[i].vaddr = PADDR_TO_KVADDR(first);
 
-		//Manually increment by bytes to next page
+		//Manually increment by bytes to next page for the next iteration's paddr
 		first += PAGE_SIZE;
 	}
 		
 	// Paging initialized. Kmalloc should work now.
-	//spinlock_init(coremap_lock);
 
 	stay_strapped = true;
 	return;
@@ -138,7 +132,6 @@ get_contiguous_cores(unsigned alloc_cores){
 			
 			// Free contiguous block has been found!
 			if( audit == alloc_cores ){
-				//kprintf("Contig %d at %u\n", alloc_cores, i);
 				return i;
 			}
 		}
@@ -155,19 +148,14 @@ alloc_ppages(unsigned npages){
 
 	spinlock_acquire(&coremap_lock);
 
+	// If you try and allocate more pages than available, you're going to have a bad time...
 	if(total_page_allocs >= corecount){
 		spinlock_release(&coremap_lock);
 		return 0;
 	}
 
-	if(total_page_allocs*PAGE_SIZE > mainbus_ramsize()-(uint32_t)(firstfree - MIPS_KSEG0)){
-		spinlock_release(&coremap_lock);
-		return 0;
-	};
-
 	if(!stay_strapped){				// VM Hasn't Bootstrapped
-		//allocation = ram_stealmem(npages);
-		kprintf("StayStrapped Error!\n");
+		panic("Fatal: KMALLOC before VM has bootstrapped.");
 		return 0;
 	}else if(npages <= 1){				// Allocate a single core
 		for(unsigned int n = 0; n < corecount; n++){
@@ -175,7 +163,6 @@ alloc_ppages(unsigned npages){
 				allocation = coremap[n].paddr;
 				coremap[n].state = COREMAP_DIRTY;
 				coremap[n].istail = true;
-				//kprintf("Contig 1 at %u\n", coremap[n].paddr);
 				break;
 			}
 		}
@@ -186,8 +173,7 @@ alloc_ppages(unsigned npages){
 		if(offset == 0){
 			spinlock_release(&coremap_lock);
 			return ENOMEM;
-			// Swap out cores?
-			// Contiguous block couldn't be found. Fragmented!
+			// Contiguous block couldn't be found. Fragmented or full!
 		}		
 		allocation = coremap[offset].paddr;		
 
@@ -208,7 +194,7 @@ alloc_ppages(unsigned npages){
 	return allocation;
 }
 
-/* Wrapper to convert physical address from alloc_ppages to kernel virtual addresses */
+/* Wrapper to convert physical address from alloc_ppages to kernel virtual addresses for kmalloc */
 vaddr_t
 alloc_kpages(unsigned npages){
 	
@@ -238,6 +224,8 @@ free_kpages(vaddr_t addr){
 	for(unsigned int i = 0; i < corecount; i++){
 		if(coremap[i].vaddr == addr){
 			
+			// Found matching vaddr, free all cores from addr to and include the tail
+			// page.
 			int incr = 0;
 			while(coremap[i+incr].istail == false){
 				coremap[i+incr].state = COREMAP_FREE;				
@@ -263,27 +251,18 @@ free_kpages(vaddr_t addr){
  */
 unsigned int
 coremap_used_bytes(){
-	//unsigned int used = 0;
-	
-	//spinlock_acquire(&coremap_lock);	
-
-	//for(unsigned int i = 0; i < corecount; i++){
-	//	if(coremap[i].state != COREMAP_FREE){
-	//		used++;
-	//	}
-	//}
-	
-	//spinlock_release(&coremap_lock);	
-
+	// Includes bytes taken by coremap
 	return total_page_allocs * PAGE_SIZE;
 }
 
+/* Fully-Automatic Fun. Bang Bang Bang! */
 void
 vm_tlbshootdown_all(void){	
 
 	return;
 }
 
+/* Semi-Automatic, Bang! */
 void
 vm_tlbshootdown(const struct tlbshootdown *ts){
 	(void)ts;
@@ -298,133 +277,3 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 
 	return 0;
 }
-
-/* Address Space Shenanigans Here */
-////////////////////////////////////
-
-/* To create an address space, we need to:
- * (1) Allocate an addrspace using kmalloc
- * (2) Initialize struct variables
- *
- * (Note) Regions are first defined in as_define_region
- *
- */
-
-/*
-struct addrspace *
-as_create(void){
-	struct addrspace *addrsp;
-
-	// Allocate memory for addrspace	
-	addrsp = kmalloc(sizeof(*addrsp));
-	if(addrsp == NULL){
-		return NULL;
-	}
-	
-
-	return NULL;
-}
-
-void
-as_destroy(struct addrspace *addrsp){
-	(void)addrsp;
-
-	return;
-}
-
-void 
-as_activate(void){
-
-	// Shoot down all TLB entries
-
-	return;
-}
-
-void
-as_deactivate(void){
-
-	return;
-}
-*/
-/* This is an important part of defining an addrspace. 
- * This function allocates regions of memory in the address
- * space including stack, heap, and static code areas.
- */
-
-/* We need to:
- * (1) Initialize a new area struct for the segment.
- * (2) Reserve pages for the address space to reside in.
- * (3) Update internal information, like permissions.
- * (4) Add the new area to the linked list.
- *
- *
- *
- */
-/*
-int
-as_define_region(struct addrspace *addrsp, vaddr_t vaddr, size_t sz,
-			int read, int write, int exec){
-	(void)addrsp;
-
-	unsigned int page_count;
-
-	sz += vaddr & ~(vaddr_t)PAGE_FRAME;
-	vaddr &= PAGE_FRAME;
-	sz = (sz + PAGE_SIZE - 1) & PAGE_FRAME;
-	page_count = sz / PAGE_SIZE;
-
-
-	return read + write + exec;
-}
-*/
-/* Using the segment information generated in as_define_region,  */
-/* Steps:
- * (1) Set up our page table based on region information above.
- * (2) Generate a pentry for each page needed and add to linked list.
- *
- *
- *
- */
-/*
-int
-as_prepare_load(struct addrspace *addrsp){
-	(void)addrsp;
-
-
-	return 0;
-}
-
-int
-as_complete_load(struct addrspace *addrsp){
-	(void)addrsp;
-	
-	return 0;
-}
-
-int
-as_define_stack(struct addrspace *addrsp, vaddr_t *stackptr){
-	(void)addrsp;
-	(void)stackptr;
-
-	return 0;
-}
-*/
-/* Copy an address space */
-/*
- *
- *
- *
- *
- *
- *
- */
-/*
-int
-as_copy(struct addrspace *old, struct addrspace **new){
-	(void)old;
-	(void)new;
-
-	return 0;
-}
-*/
-/////////////////////////////////////////////////////////////////
