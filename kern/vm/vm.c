@@ -50,13 +50,7 @@ vm_bootstrap(void){
 	unsigned int map_size;		// Size of the coremap (bytes)
 
 	// Reserve memory for a coremap lock. Should only need 1 page.
-	/***** Static initializer?? *****/
-	//paddr_t lockmem;
-	//lockmem = ram_stealmem( DIVROUNDUP(sizeof(*coremap_lock), PAGE_SIZE) );
-	//if(lockmem == 0){
-	//	panic("VM Bootstrapping Failed!");
-	//}
-	//coremap_lock = PADDR_TO_KVADDR(lockmem);
+	// Switched to static initializer above	
 
 	// Get last and first address of RAM.
 	// *** ram_stealemem will no longer work ***
@@ -65,26 +59,25 @@ vm_bootstrap(void){
 
 	// Get number of available cores, and size of coremap (in bytes)
 	num_cores = (last - first) / PAGE_SIZE;
-	//unsigned int mem;
-	//mem = mainbus_ramsize() - (uint32_t)(firstfree - MIPS_KSEG0);
-	//num_cores = (mem + PAGE_SIZE-1) / PAGE_SIZE;
-	kprintf("Num cores: %d\n", num_cores);	
 
 	KASSERT(num_cores != 0);
 	corecount = num_cores;
 	map_size = num_cores * sizeof(struct core);
-
-	// Reserve memory for the coremap (firstpaddr altered)
-	// paddr_coremap = ram_stealmem( DIVROUNDUP(map_size, PAGE_SIZE) );
 	
-	// Convert paddr to a kernel virtual address
+	// Convert paddr to a kernel virtual address where coremap starts
 	coremap = (struct core *)PADDR_TO_KVADDR(first);
+	kprintf("Num Pages %d at %u\n", num_cores, first);	
+	
+	// Cores start at the end of the coremap, which is the number of pages * sizeof(struct)
+	//first += map_size;
 
-	// Set coremap cores to fixed state, others to free
+	// Set all coremap cores to fixed state, others to free
 	for(unsigned int i = 0; i < num_cores; i++){
 		// If coremap lies on this core, it's fixed in place
 		if( i < DIVROUNDUP(map_size, PAGE_SIZE) ){
-			coremap[i].state = COREMAP_FIXED;	
+			coremap[i].state = COREMAP_FIXED;
+			// Make sure to register the coremap takes +1 pages to store
+			total_page_allocs++;		// Don't even think about moving this	
 		}else{	
 			coremap[i].state = COREMAP_FREE;
 		}
@@ -145,6 +138,7 @@ get_contiguous_cores(unsigned alloc_cores){
 			
 			// Free contiguous block has been found!
 			if( audit == alloc_cores ){
+				//kprintf("Contig %d at %u\n", alloc_cores, i);
 				return i;
 			}
 		}
@@ -157,10 +151,14 @@ get_contiguous_cores(unsigned alloc_cores){
 /* Page allocator. Returns the physical address of the beginning of the block of pages. */
 paddr_t
 alloc_ppages(unsigned npages){
-	(void)npages;
 	paddr_t allocation;
 
 	spinlock_acquire(&coremap_lock);
+
+	if(total_page_allocs >= corecount){
+		spinlock_release(&coremap_lock);
+		return 0;
+	}
 
 	if(total_page_allocs*PAGE_SIZE > mainbus_ramsize()-(uint32_t)(firstfree - MIPS_KSEG0)){
 		spinlock_release(&coremap_lock);
@@ -168,13 +166,16 @@ alloc_ppages(unsigned npages){
 	};
 
 	if(!stay_strapped){				// VM Hasn't Bootstrapped
-		allocation = ram_stealmem(npages);
+		//allocation = ram_stealmem(npages);
+		kprintf("StayStrapped Error!\n");
+		return 0;
 	}else if(npages <= 1){				// Allocate a single core
 		for(unsigned int n = 0; n < corecount; n++){
 			if(coremap[n].state == COREMAP_FREE){
 				allocation = coremap[n].paddr;
 				coremap[n].state = COREMAP_DIRTY;
 				coremap[n].istail = true;
+				//kprintf("Contig 1 at %u\n", coremap[n].paddr);
 				break;
 			}
 		}
@@ -203,6 +204,7 @@ alloc_ppages(unsigned npages){
 	total_page_allocs += npages;
 	spinlock_release(&coremap_lock);
 
+
 	return allocation;
 }
 
@@ -211,7 +213,7 @@ vaddr_t
 alloc_kpages(unsigned npages){
 	
 	paddr_t allocation;
-	
+
 	allocation = alloc_ppages(npages);
 	if(allocation == 0){
 		return 0;
@@ -233,9 +235,9 @@ free_kpages(vaddr_t addr){
 	(void)addr;
 
 	spinlock_acquire(&coremap_lock);
-
 	for(unsigned int i = 0; i < corecount; i++){
 		if(coremap[i].vaddr == addr){
+			
 			int incr = 0;
 			while(coremap[i+incr].istail == false){
 				coremap[i+incr].state = COREMAP_FREE;				

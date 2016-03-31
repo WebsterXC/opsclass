@@ -285,8 +285,12 @@ sys_waitpid(pid_t pid, int *status, int options, int *childpid){
 	if( pid < __PID_MIN || pid > __PID_MAX ){
 		return ESRCH;
 	}
+	if( options != 0 ){
+		return EINVAL;
+	}
+
+
 	// Check status pointer
-	/*
 	if(status < (int *)(USERSTACK - 450000)){
 		return EFAULT;
 	}else if( status == (void *)(0x80000000) ){
@@ -294,11 +298,11 @@ sys_waitpid(pid_t pid, int *status, int options, int *childpid){
 	}else if( (uint32_t)status % 4 != 0 ){
 		return EFAULT;
 	}
-*/
+
 	/* Get waiter process pnode */
 	struct proc *waiterprocess;
 	struct pnode *childnode;
-	
+
 	lock_acquire(gpll_lock);
 	
 	/* Get process to wait on and it's respective pnode in the GPLL */
@@ -310,14 +314,24 @@ sys_waitpid(pid_t pid, int *status, int options, int *childpid){
 		lock_release(gpll_lock);
 		return ECHILD;	
 	}
-	
+	/*if( childnode->pid == pid && childnode->busy == true){
+		lock_release(gpll_lock);
+		return ECHILD;
+	}*/
+	/*if( childnode->pid_parent == pid ){
+		lock_release(gpll_lock);
+		return ECHILD;
+	}*/
+
 	// Controls whether or not _exit() destroys the process. In this
 	// case, we will manually destroy it after waiting.
 	waiterprocess->parent = curproc;
+	childnode->busy = true;
 
 	lock_release(gpll_lock);
 
 	P(childnode->exitsem);
+
 	if(status != NULL){
 		*status = childnode->retcode;
 	}
@@ -343,11 +357,12 @@ sys__exit(int exitcode){
 		return -1;
 	}	
 
-	lock_acquire(gpll_lock);
+	//lock_acquire(gpll_lock);
 
 	/* Generate the current process' exit code and increment the
 	 * exit semaphore to let waitpid() know curproc has exited.
 	 */
+	current->busy = false;
 	current->retcode = _MKWAIT_EXIT(exitcode);
 	V(current->exitsem);	
 
@@ -357,8 +372,8 @@ sys__exit(int exitcode){
 	}
 
 	// Signal the GPLL CV to let it know memory has been freed for more forks.
-	cv_signal(gpll_cv, gpll_lock);
-	lock_release(gpll_lock);
+	//cv_signal(gpll_cv, gpll_lock);
+	//lock_release(gpll_lock);
 
 	// Actually exit the process
 	thread_exit();

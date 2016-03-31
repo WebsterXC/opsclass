@@ -577,11 +577,14 @@ kmalloctest5(int nargs, char **args)
 		for (block = 0; block < num_ptr_blocks; block++) {
 			for (pos = 0; pos < ptrs_per_page; pos++) {
 				if (ptrs[block][pos] != NULL) {
-					kprintf("%u : %d\n", (*(uint32_t *)ptrs[block][pos]), pos+(block * ptrs_per_page) );
+					//kprintf("%u : %d\n", (*(uint32_t *)ptrs[block][pos]), pos+(block * ptrs_per_page) );	
 					// Make sure we got unique addresses
 					if ((*(uint32_t *)ptrs[block][pos]) != orig_magic++) {
 						panic("km5: expected %u got %u - your VM is broken!",
 							orig_magic-1, (*(uint32_t *)ptrs[block][pos]));
+						//kprintf("km5: expected %u got %u - your VM is broken!",
+						//	orig_magic-1, (*(uint32_t *)ptrs[block][pos]));
+
 					}
 					kfree(ptrs[block][pos]);
 				}
