@@ -272,10 +272,6 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t memsize,
 		current->next = newarea;
 	}
 
-	// Update heap information
-	//as->as_heap_start = vaddr + memsize;
-	//as->as_heap_start += memsize;
-	
 	return 0;
 }
 
