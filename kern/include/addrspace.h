@@ -58,9 +58,10 @@ struct pentry{
 
 /* Code region (area) for as_define_region */
 struct area{
+	paddr_t pstart;		// Starting PADDR where this region lives
 	vaddr_t vstart;		// KVADDR where this region begins
 	size_t pagecount;	// Num pages (size is page-aligned)
-	size_t bytesize;
+	size_t bytesize;	// Size of area in bytes
 	
 	unsigned int options : 3;	// R,W,X Permissions
 	
@@ -86,7 +87,8 @@ struct addrspace {
 
 	vaddr_t as_heap_start;
 	vaddr_t as_heap_end;
-	paddr_t as_stackpbase;		// Physical address of the BOTTOM of the stack
+	paddr_t as_stackpbase;
+	paddr_t as_heappbase;		
 
 #endif
 };

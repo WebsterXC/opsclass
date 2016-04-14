@@ -71,6 +71,7 @@ as_create(void)
 	as->as_heap_start = 1;
 	as->as_heap_end = 1;
 	as->as_stackpbase = 1;
+	as->as_heappbase = 1;
 
 	return as;
 }
@@ -182,6 +183,7 @@ as_destroy(struct addrspace *as)
 	as->as_heap_start = 1;
 	as->as_heap_end = 1;
 	as->as_stackpbase = 1;
+	as->as_heappbase = 1;
 
 	kfree(as);
 }
@@ -306,24 +308,32 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t memsize,
  * purchase order; getting the parts and assembling them.
  */
 
-// Helper function if adding phyiscal pages directly to the page table
-static int
+// Helper function if adding phyiscal pages directly to the page table. This is used in
+// as_prepare_load and returns the starting physical address of the region.
+static paddr_t
 add_table_entries(struct addrspace *as, vaddr_t start, unsigned int add, 
 				unsigned int option_valid, unsigned int option_ref){
 	
 	paddr_t pstart;
-	pstart = alloc_ppages(add);	
+	paddr_t preturn;
+	pstart = alloc_ppages(add);
+	preturn = pstart;
 	if(pstart == 0){
-		return ENOMEM;			
+		return 0;			
 	}
 
 	for(unsigned int i = 0; i < add; i++){
 		struct pentry *entry;
 		entry = kmalloc(sizeof(*entry));
+		if(entry == NULL){
+			return 0;
+		}
 
 		entry->paddr = pstart;			// Physical page
 		if(as->as_stackpbase == 0){
 			as->as_stackpbase = entry->paddr; // Set to 0 immidiately before calling
+		}else if(as->as_heappbase == 0){
+			as->as_heappbase = entry->paddr;
 		}
 	
 		entry->vaddr = start;			// Virtual memory page maps to
@@ -356,7 +366,7 @@ add_table_entries(struct addrspace *as, vaddr_t start, unsigned int add,
 		as->as_heap_end = start;
 	}
 
-	return 0;
+	return preturn;
 }
 
 /* Steps:
@@ -384,8 +394,8 @@ as_prepare_load(struct addrspace *as)
 	 
 		// Steps (1) - (5) accomplished in this loop
 		// Default options set: VALID and REFERENCED on load.
-		result = add_table_entries(as, current->vstart, current->pagecount, 1, 1);		
-		if(result){
+		current->pstart = add_table_entries(as, current->vstart, current->pagecount, 1, 1);
+		if(current->pstart == 0){
 			return ENOMEM;
 		}
 
@@ -396,8 +406,8 @@ as_prepare_load(struct addrspace *as)
 
 	// Because of the way my while-loop is set up. We need the vstart of last region 
 	// to create heap.
-	result = add_table_entries(as, current->vstart, current->pagecount, 1, 1);
-	if(result){
+	current->pstart = add_table_entries(as, current->vstart, current->pagecount, 1, 1);
+	if(current->pstart == 0){
 		return ENOMEM;
 	}
 
@@ -418,10 +428,11 @@ as_prepare_load(struct addrspace *as)
 	vaddr_t heap_begin = current->vstart + (current->pagecount * PAGE_SIZE);
 	as->as_heap_start = 0;
 	as->as_heap_end = 0;
+	as->as_heappbase = 0;
 	result = add_table_entries(as, heap_begin, ADDRSP_HEAP_PAGES, 1, 1);
-	if(result){
+	if(!result){
 		return ENOMEM;	
-	}else if(as->as_heap_start == 0 || as->as_heap_end == 0){
+	}else if(as->as_heap_start == 0 || as->as_heap_end == 0 || as->as_heappbase == 0){
 		panic("Critical failure: unable to generate a heap for addrspace.\n");
 	}
 
@@ -432,7 +443,7 @@ as_prepare_load(struct addrspace *as)
 	vaddr_t stack_begin = USERSTACK - (PAGE_SIZE * ADDRSP_STACKSIZE);
 	as->as_stackpbase = 0;
 	result = add_table_entries(as, stack_begin, ADDRSP_STACKSIZE, 1, 1); 
-	if(result){
+	if(!result){
 		return ENOMEM;
 	}else if(as->as_stackpbase == 0){
 		panic("Critical failure: unable to generate a stack for addrspace.\n");

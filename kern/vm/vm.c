@@ -34,6 +34,7 @@ static struct core *coremap;				// Pointer to coremap
  */
 
 static struct spinlock coremap_lock = SPINLOCK_INITIALIZER;	// Synchro primitive for coremap
+static struct spinlock tlb_lock = SPINLOCK_INITIALIZER;		// Synchro primitive for tlb access
 
 void
 vm_bootstrap(void){
@@ -279,6 +280,8 @@ vm_tlbshootdown(const struct tlbshootdown *ts){
  * (3)  READONLY: Invalid access. Return nonzero.
  */
 int vm_fault(int faulttype, vaddr_t faultaddress){
+
+	unsigned int offset;	
 	struct addrspace *addrsp;	
 
 	// Check the fault type
@@ -310,15 +313,26 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 		return EFAULT;
 	}
 
+	// If any of these are true the address space is broken.
+	KASSERT(addrsp->pages != NULL);
+	KASSERT(addrsp->segments != NULL);
+	KASSERT(addrsp->as_heap_start != 0 && addrsp->as_heap_start != 1);
+	KASSERT(addrsp->as_heap_end != 0 && addrsp->as_heap_end != 1);
+	KASSERT(addrsp->as_stackpbase != 0 && addrsp->as_stackpbase != 1);
+	KASSERT(addrsp->as_heappbase != 0 && addrsp->as_heappbase != 1);
+
 	/* Here we traverse our segment list generated in as_define_region.
-	 * Valid addresses are contained in our regions for the address space.
+	 * Valid addresses are contained in our regions for the address space,
+	 * but if we access an invalid location, return nonzero.
 	 */
 	struct area *valid_segments;
 	bool is_valid_vaddr = false;
+
 	valid_segments = addrsp->segments;
 	while(valid_segments != NULL){
 		if( faultaddress >= valid_segments->vstart && faultaddress < (valid_segments->vstart + valid_segments->bytesize) ){
 			is_valid_vaddr = true;
+			offset = (faultaddress - valid_segments->vstart) + valid_segments->pstart;
 			break;
 		}
 
@@ -328,16 +342,59 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 	vaddr_t stackbase = USERSTACK - (ADDRSP_STACKSIZE * PAGE_SIZE);
 	if( faultaddress >= stackbase && faultaddress < USERSTACK ){
 		is_valid_vaddr = true;
+		offset = (faultaddress - stackbase) + addrsp->as_stackpbase;
 	}else if( faultaddress >= addrsp->as_heap_start && faultaddress < addrsp->as_heap_end){
 		is_valid_vaddr = true;
+		offset = (faultaddress - addrsp->as_heap_start) + addrsp->as_heappbase;
 	}
 
 	// Invalid address
 	if(!is_valid_vaddr){
+		kprintf("Invalid Address.\n");
 		return EFAULT;
 	}
 
-	kprintf("Valid address!\n");
+	/* Valid address. Now we need to insert the translation to the TLB.
+	 * To calculate the offset, we first need to find the segment that the
+	 * faulting address belongs to, which we did above. Then, walk the page
+	 * table to see if any of the page->paddr's match the offset. If so, we
+	 * insert the translation to the TLB.
+	 */
+
+	struct pentry *pt;
+	pt = addrsp->pages;
+	while(pt != NULL){
+		// Page found, load to TLB
+		if(pt->paddr == offset){
+			spinlock_acquire(&tlb_lock);
+			uint32_t ehi = faultaddress;
+			uint32_t elo = offset | TLBLO_DIRTY | TLBLO_VALID;
+			
+			tlb_random(ehi, elo);
+
+			spinlock_release(&tlb_lock);
+			return 0;
+		}		
+
+		pt = pt->next;
+	}
+	// Page not found. Since we're not swapping, allocate a new page and add 
+	// it to the addrspace's page table.
+	// TODO
+
+	/* I'm confused when the faulting address is not exactly the page's physical
+	 * address. If the fault address is confirmed located in a segment, but lies inside of 
+	 * a page (as opposed to the front of it), how do we map to a physical address?
+	 */
+	
+	kprintf("Unable to locate 0x%x, but I have offset 0x%x\n", faultaddress, offset);
+
+	struct pentry *trav;
+	trav = addrsp->pages;
+	while(trav != NULL){
+		kprintf("0x%x\n", trav->paddr);
+		trav = trav->next;
+	}
 
 	// Return nonzero for DEBUGGING ONLY
 	return EFAULT;
