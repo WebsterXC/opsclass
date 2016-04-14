@@ -270,10 +270,76 @@ vm_tlbshootdown(const struct tlbshootdown *ts){
 	return;
 }
 
+/* This occurs when there is a page fault: a user process tried to access
+ * a coremap page that is not allocated or not in memory. We need to:
+ * (1) Ensure the fault address is a valid address.
+ * (1) Determine the fault type. It could be: VM_FAULT_READONLY, VM FAULT_READ
+ * 	or VM_FAULT_WRITE.
+ * (2)  READ/WRITE: Insert the page to the TLB.
+ * (3)  READONLY: Invalid access. Return nonzero.
+ */
 int vm_fault(int faulttype, vaddr_t faultaddress){
-	(void)faulttype;
-	(void)faultaddress;
-	
+	struct addrspace *addrsp;	
 
-	return 0;
+	// Check the fault type
+	switch(faulttype){
+		case VM_FAULT_READONLY:
+			// Danger: Insufficient access permissions.
+			kprintf("VM_FAULT_READONLY at 0x%x\n", faultaddress);
+			return EFAULT;
+		
+		case VM_FAULT_READ:
+			kprintf("VM_FAULT_READ at 0x%x\n", faultaddress);
+			break;
+
+		case VM_FAULT_WRITE:
+			kprintf("VM_FAULT_WRITE at 0x%x\n", faultaddress);
+			break;
+
+		default:
+			return EINVAL;
+
+	}
+	
+	// Ensure we're in a valid user process & address space is set up.
+	if( curproc == NULL ){
+		return EFAULT;
+	}
+	addrsp = proc_getas();
+	if( addrsp == NULL ){
+		return EFAULT;
+	}
+
+	/* Here we traverse our segment list generated in as_define_region.
+	 * Valid addresses are contained in our regions for the address space.
+	 */
+	struct area *valid_segments;
+	bool is_valid_vaddr = false;
+	valid_segments = addrsp->segments;
+	while(valid_segments != NULL){
+		if( faultaddress >= valid_segments->vstart && faultaddress < (valid_segments->vstart + valid_segments->bytesize) ){
+			is_valid_vaddr = true;
+			break;
+		}
+
+		valid_segments = valid_segments->next;
+	}	
+	/* We also need to check the stack and heap addresses */
+	vaddr_t stackbase = USERSTACK - (ADDRSP_STACKSIZE * PAGE_SIZE);
+	if( faultaddress >= stackbase && faultaddress < USERSTACK ){
+		is_valid_vaddr = true;
+	}else if( faultaddress >= addrsp->as_heap_start && faultaddress < addrsp->as_heap_end){
+		is_valid_vaddr = true;
+	}
+
+	// Invalid address
+	if(!is_valid_vaddr){
+		return EFAULT;
+	}
+
+	kprintf("Valid address!\n");
+
+	// Return nonzero for DEBUGGING ONLY
+	return EFAULT;
+	//return 0;
 }

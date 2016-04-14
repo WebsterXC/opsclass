@@ -40,6 +40,8 @@
 
 /* Stack size for each address space. (18 pages * PAGE_SIZE) = 72K */
 #define ADDRSP_STACKSIZE 18
+/* Number of heap pages to begin with for each addrspace load. */
+#define ADDRSP_HEAP_PAGES 1
 
 struct vnode;
 
@@ -83,8 +85,8 @@ struct addrspace {
 	struct area *segments;		// Segments from as_define_region
 
 	vaddr_t as_heap_start;
-	vaddr_t as_heap_end;		// Virtual address of end of heap
-	paddr_t as_stackpbase;
+	vaddr_t as_heap_end;
+	paddr_t as_stackpbase;		// Physical address of the BOTTOM of the stack
 
 #endif
 };

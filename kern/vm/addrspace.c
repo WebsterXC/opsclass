@@ -30,26 +30,35 @@
 #include <types.h>
 #include <kern/errno.h>
 #include <lib.h>
+#include <spl.h>
+#include <cpu.h>
+#include <current.h>
+#include <mips/tlb.h>
 #include <addrspace.h>
 #include <vm.h>
 #include <proc.h>
+
 
 /* ADDRESS SPACE IMPLEMENTATION */
 
 /* Written by: William Burgin (waburgin) */
 
+/* TODO
+ * as_complete_load()
+ * as_copy()
+ * as_deactivate()
+ */
+
 /* To create an address space, we need to:
  * (1) Allocate an addrspace using kmalloc
  * (2) Initialize struct variables
- *
- * (Note) Regions are first defined in as_define_region
  *
  */
 struct addrspace *
 as_create(void)
 {
 	struct addrspace *as;
-
+	
 	as = kmalloc(sizeof(struct addrspace));
 	if (as == NULL) {
 		return NULL;
@@ -58,9 +67,9 @@ as_create(void)
 	as->pages = NULL;
 	as->segments = NULL;
 
-	// Heap not generated yet
-	as->as_heap_start = 0;
-	as->as_heap_end = 0;
+	// Heap and stack not generated yet. Setting these to 1 is important for as_prepare_load.
+	as->as_heap_start = 1;
+	as->as_heap_end = 1;
 	as->as_stackpbase = 1;
 
 	return as;
@@ -78,7 +87,7 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 {
 	int result;
 	struct addrspace *newas;
-
+	
 	if(old == NULL || ret == NULL){
 		return EFAULT;
 	}
@@ -108,17 +117,17 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 		newas->segments = NULL; 
 	}	
 
-	newas->as_heap_start = old->as_heap_start;
-	newas->as_heap_end = old->as_heap_end;
-
-	// Load pages for given segments and create a stack	
+	// Load pages for given segments. Create a stack and heap.
+	// TODO If the process with oldas called sbrk() before trying to 
+	// copy the addrspace, we may run into problems with heap sizes 
+	// not matching.	
 	result = as_prepare_load(newas);
 	if(result){
 		as_destroy(newas);
 		return ENOMEM;
 	}
 
-	// Copy page state over to the new address space
+	// Copy old addrspace page data over to the new addrspace pages
 	struct pentry *sender;
 	struct pentry *reciever;
 	sender = old->pages;
@@ -135,6 +144,11 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 	return 0;
 }
 
+/* We need to free memory for 3 distinct addrspace "parts":
+ * (1) Page Table + Pages
+ * (2) Segments/Regions
+ * (3) The actual addrspace "object"
+ */
 void
 as_destroy(struct addrspace *as)
 {
@@ -145,7 +159,7 @@ as_destroy(struct addrspace *as)
 	struct pentry *terminate;
 	struct pentry *second;
 
-	// Destroy page table
+	// Destroy all pages inside of page table
 	terminate = as->pages;
 	while(second != NULL){
 		second = terminate->next;
@@ -164,17 +178,22 @@ as_destroy(struct addrspace *as)
 		del = other;
 	}
 
-	// Free stack pages
-	
+	// Just to be safe
+	as->as_heap_start = 1;
+	as->as_heap_end = 1;
+	as->as_stackpbase = 1;
 
 	kfree(as);
 }
 /* Bring the current address space into the environment. The customer
  * has recieved their product!
+ * 
+ * Note: If you kprintf in this method, you're gonna have a bad time...
  */
 void
 as_activate(void)
 {
+	int disable;
 	struct addrspace *as;
 
 	as = proc_getas();
@@ -186,9 +205,15 @@ as_activate(void)
 		return;
 	}
 
-	/*
-	 * Write this.
-	 */
+	// Shoot down all TLB Entries. This is from DUMBVM.
+	disable = splhigh();
+	
+	for(int i = 0; i < NUM_TLB; i++){
+		tlb_write(TLBHI_INVALID(i), TLBLO_INVALID(), i);
+	}
+	
+	splx(disable);
+	return;
 }
 
 void
@@ -199,6 +224,7 @@ as_deactivate(void)
 	 * anything. See proc.c for an explanation of why it (might)
 	 * be needed.
 	 */
+	return;
 }
 
 /*
@@ -216,7 +242,7 @@ as_deactivate(void)
  * space including code areas ( but NOT stack and heap!). This
  * function does not allocate memory for the address space
  * regions just yet. Think of it as a purchase order for a 
- * specific address space.
+ * specific address space that hasn't been fulfilled.
  */
 
 /* We need to:
@@ -298,8 +324,12 @@ add_table_entries(struct addrspace *as, vaddr_t start, unsigned int add,
 		entry->paddr = pstart;			// Physical page
 		if(as->as_stackpbase == 0){
 			as->as_stackpbase = entry->paddr; // Set to 0 immidiately before calling
-		}	
+		}
+	
 		entry->vaddr = start;			// Virtual memory page maps to
+		if(as->as_heap_start == 0){
+			as->as_heap_start = entry->vaddr; // Set to 0 immidiately before calling
+		}		
 		entry->options = ((entry->options)<<2) & (option_valid<<1) & option_ref;
 		entry->next = NULL;
 
@@ -320,7 +350,11 @@ add_table_entries(struct addrspace *as, vaddr_t start, unsigned int add,
 		start += PAGE_SIZE;
 		pstart += PAGE_SIZE;
 	}
-
+	
+	// If this is 0, we just created the heap and need to set the end vaddr.
+	if(as->as_heap_end == 0){
+		as->as_heap_end = start;
+	}
 
 	return 0;
 }
@@ -331,7 +365,8 @@ add_table_entries(struct addrspace *as, vaddr_t start, unsigned int add,
  * (3) Bitpack each pentry's options. 
  * (4) Update each pentry information set.
  * (5) Add each pentry to the addrspace's page table
- * (6) Reserve pages for the user stack
+ * (6) Reserve pages for the user stack. Preprocessor statement defines defualt stack pages.
+ * (7) Reserve pages for the user heap. Preprocessor statement defines default heap size.
  */
 int
 as_prepare_load(struct addrspace *as)
@@ -343,6 +378,7 @@ as_prepare_load(struct addrspace *as)
 	int result;
 	struct area *current;
 
+	// Reserve pages for all user-defined regions
 	current = as->segments;
 	while(current->next != NULL){
 	 
@@ -356,11 +392,59 @@ as_prepare_load(struct addrspace *as)
 		current = current->next;
 	}
 
-	// Reserve pages for user stack
-	vaddr_t stack_begin = USERSTACK - (PAGE_SIZE * ADDRSP_STACKSIZE);
+	//kprintf("SEG...");
+
+	// Because of the way my while-loop is set up. We need the vstart of last region 
+	// to create heap.
+	result = add_table_entries(as, current->vstart, current->pagecount, 1, 1);
+	if(result){
+		return ENOMEM;
+	}
+
+	/* Reserve pages for user heap. By setting the heap_start and heap_end
+	 * to 0 immidiately before calling add_table_entries, we tell the method
+	 * that we're creating the heap and it needs to assign vaddr's for the
+	 * heap bounds. Same for the stack with stackpbase. 
+	 *
+	 * The heap begins directly after the user defined regions.
+	 */
 	
+	KASSERT(as->as_heap_start == 1);
+	KASSERT(as->as_heap_end == 1);
+	KASSERT(as->as_stackpbase == 1);
+
+	//kprintf("X...");
+
+	vaddr_t heap_begin = current->vstart + (current->pagecount * PAGE_SIZE);
+	as->as_heap_start = 0;
+	as->as_heap_end = 0;
+	result = add_table_entries(as, heap_begin, ADDRSP_HEAP_PAGES, 1, 1);
+	if(result){
+		return ENOMEM;	
+	}else if(as->as_heap_start == 0 || as->as_heap_end == 0){
+		panic("Critical failure: unable to generate a heap for addrspace.\n");
+	}
+
+	//kprintf("HEAP...");
+	kprintf("Heap from 0x%x -> 0x%x\n", as->as_heap_start, as->as_heap_end);
+
+	// User stack begins at the number of default stack pages from REAR of addrspace.
+	vaddr_t stack_begin = USERSTACK - (PAGE_SIZE * ADDRSP_STACKSIZE);
 	as->as_stackpbase = 0;
 	result = add_table_entries(as, stack_begin, ADDRSP_STACKSIZE, 1, 1); 
+	if(result){
+		return ENOMEM;
+	}else if(as->as_stackpbase == 0){
+		panic("Critical failure: unable to generate a stack for addrspace.\n");
+	}
+
+	// Ensure our stack and heap are properly page-aligned after generation.
+	KASSERT( (USERSTACK - stack_begin) % PAGE_SIZE == 0);
+	KASSERT( (as->as_heap_end - as->as_heap_start) % PAGE_SIZE == 0 );
+
+	kprintf("Stack from 0x%x -> 0x%x\n", stack_begin, USERSTACK);
+	unsigned int actual = (USERSTACK - stack_begin) / PAGE_SIZE;
+	kprintf("Stack should be %u pages and is %u pages.\n", ADDRSP_STACKSIZE, actual);
 
 	return 0;
 }
@@ -378,10 +462,14 @@ as_complete_load(struct addrspace *as)
 	return 0;
 }
 
+/* This is kind of like asking for the address of the business to ship the
+ * purchase order to. Kind of. All we need to do is return the vaddr of the 
+ * top of the stack though.
+ */
 int
 as_define_stack(struct addrspace *as, vaddr_t *stackptr)
 {
-	if(as == NULL || stackptr == 0){
+	if(as == NULL || stackptr == NULL){
 		return EFAULT;
 	}
 
