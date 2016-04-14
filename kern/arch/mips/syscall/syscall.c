@@ -38,7 +38,7 @@
 #include <current.h>
 #include <copyinout.h>
 #include <syscall.h>
-
+#include <vm.h>
 
 /*
  * System call dispatcher.
@@ -213,7 +213,12 @@ syscall(struct trapframe *tf)
 
 	    case SYS_execv:
 		err = sys_execv((char *)tf->tf_a0, (userptr_t **)tf->tf_a1, &retval);
-		break;    	
+		break;
+
+	    case SYS_sbrk:
+		err = sys_sbrk(tf->tf_a0, &retval);
+		break;
+    	
 	default:
 		kprintf("Unknown syscall %d\n", callno);
 		err = ENOSYS;

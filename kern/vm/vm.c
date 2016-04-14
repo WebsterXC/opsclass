@@ -400,3 +400,67 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 	return EFAULT;
 	//return 0;
 }
+
+/****************************************************************************/
+/* This VM syscall moves the heap breakpoint up and down. It's used in malloc, and
+ * is of critical importance in dynamic memory de/allocations. We need to do accomplish
+ * different tasks depending on the argument:
+ * (i) Argument is 0. Useless syscall at that point, just return the heap_end.
+ * (ii) Argument is positive. Ensure it can %4; allocate more pages and extend heap_end
+ * (iii) Argument is negative. Ensure it can %4; free pages and retract heap_end
+ *
+ * We can accomplish (ii) by:
+ * (1) Ensure our argument can %4
+ * (2) Check to make sure we don't collide with our stack.
+ * (3) Allocate the number of pages needed, rounded up.
+ * (4) Add these pages to the addrspace's page table.
+ *
+ * We can accomplish (iii) by:
+ * (1) Ensure our argument can %4
+ * (2) Check to make sure the decreased heap size isn't less than the heap_start.
+ * (3) Free the designated number of pages???? 
+ * (4) Remove the pages from the end of the heap????
+ * !!! Remember, we don't actually know which pages in the addrspace are heap pages...
+ */
+// TODO what happens when shift is not a multiple of PAGE_SIZE?
+int
+sys_sbrk(int shift, int *retval){
+	struct addrspace *addrsp;
+	addrsp = proc_getas();
+	
+// LOCK_ACQUIRE
+	if( shift == 0 ){
+		*retval = addrsp->as_heap_end;
+		//lock_release();
+		return 0;
+	}else if( (shift%4) != 0 ){
+		// Pointer-align the number of bytes
+		shift += (4 - (shift%4) );
+	}	
+	
+	// Check which way to move the heap breakpoint
+	if( shift > 0 ){
+		// Increase heap size
+		// Check to make sure we don't collide with stack.
+		if( (addrsp->as_heap_end + shift) > (USERSTACK - (ADDRSP_STACKSIZE * PAGE_SIZE)) ){
+			//lock_release();
+			*retval = -1;
+			return EINVAL;
+		}
+
+		// Allocate the number of pages needed, rounded up.
+		unsigned int add_pages = shift / PAGE_SIZE;
+		if( (shift%PAGE_SIZE) != 0 ){
+			add_pages++;
+		}
+
+		
+
+	}else{
+		// Decrease heap size
+	}	
+
+
+// LOCK_RELEASE
+	return 0;
+}

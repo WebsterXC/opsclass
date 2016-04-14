@@ -68,8 +68,8 @@ struct core{
 	bool istail;
 };
 
-//volatile struct core *coremap;
-//struct spinlock *coremap_lock;
+/* VM syscalls */
+int sys_sbrk(int, int*);
 
 /* Initialization function */
 void vm_bootstrap(void);
