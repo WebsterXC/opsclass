@@ -256,14 +256,18 @@ coremap_used_bytes(){
 	return total_page_allocs * PAGE_SIZE;
 }
 
-/* Fully-Automatic Fun. Bang Bang Bang! */
 void
 vm_tlbshootdown_all(void){	
-
+	
+	int disable = splhigh();
+	for(int i = 0; i < NUM_TLB; i++){
+		tlb_write(TLBHI_INVALID(i), TLBLO_INVALID(), i);
+	}
+	
+	splx(disable);
 	return;
 }
 
-/* Semi-Automatic, Bang! */
 void
 vm_tlbshootdown(const struct tlbshootdown *ts){
 	(void)ts;
@@ -288,15 +292,15 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 	switch(faulttype){
 		case VM_FAULT_READONLY:
 			// Danger: Insufficient access permissions.
-			kprintf("VM_FAULT_READONLY at 0x%x\n", faultaddress);
+			//kprintf("VM_FAULT_READONLY at 0x%x\n", faultaddress);
 			return EFAULT;
 		
 		case VM_FAULT_READ:
-			kprintf("VM_FAULT_READ at 0x%x\n", faultaddress);
+			//kprintf("VM_FAULT_READ at 0x%x\n", faultaddress);
 			break;
 
 		case VM_FAULT_WRITE:
-			kprintf("VM_FAULT_WRITE at 0x%x\n", faultaddress);
+			//kprintf("VM_FAULT_WRITE at 0x%x\n", faultaddress);
 			break;
 
 		default:
@@ -318,8 +322,8 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 	KASSERT(addrsp->segments != NULL);
 	KASSERT(addrsp->as_heap_start != 0 && addrsp->as_heap_start != 1);
 	KASSERT(addrsp->as_heap_end != 0 && addrsp->as_heap_end != 1);
-	KASSERT(addrsp->as_stackpbase != 0 && addrsp->as_stackpbase != 1);
-	KASSERT(addrsp->as_heappbase != 0 && addrsp->as_heappbase != 1);
+	//KASSERT(addrsp->as_stackpbase != 0 && addrsp->as_stackpbase != 1);
+	//KASSERT(addrsp->as_heappbase != 0 && addrsp->as_heappbase != 1);
 
 	/* Here we traverse our segment list generated in as_define_region.
 	 * Valid addresses are contained in our regions for the address space,
@@ -354,6 +358,8 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 		return EFAULT;
 	}
 
+	/* Page fault vs TLB fault? */
+
 	/* Valid address. Now we need to insert the translation to the TLB.
 	 * To calculate the offset, we first need to find the segment that the
 	 * faulting address belongs to, which we did above. Then, walk the page
@@ -361,17 +367,28 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 	 * insert the translation to the TLB.
 	 */
 
+	// Write a TLB entry
 	struct pentry *pt;
 	pt = addrsp->pages;
 	while(pt != NULL){
-		// Page found, load to TLB
-		if(pt->paddr == offset){
+		// Page found containing the address, load TLB translation
+		if(offset >= pt->paddr && offset < (pt->paddr + PAGE_SIZE)){
 			spinlock_acquire(&tlb_lock);
 			uint32_t ehi = faultaddress;
 			uint32_t elo = offset | TLBLO_DIRTY | TLBLO_VALID;
-			
-			tlb_random(ehi, elo);
+		
+			int off = splhigh();
+			int index = tlb_probe(ehi, 0);
 
+			if( index > 0 ){
+				tlb_write(ehi, elo, index);
+			}else{
+				tlb_random(ehi, elo);
+			}
+			/* Page Referenced Options?? */
+
+			splx(off);
+			
 			spinlock_release(&tlb_lock);
 			return 0;
 		}		
@@ -380,17 +397,13 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 	}
 	// Page not found. Since we're not swapping, allocate a new page and add 
 	// it to the addrspace's page table.
-	// TODO
-
-	/* I'm confused when the faulting address is not exactly the page's physical
-	 * address. If the fault address is confirmed located in a segment, but lies inside of 
-	 * a page (as opposed to the front of it), how do we map to a physical address?
-	 */
+	// TODO PAGE FAULT
 	
 	kprintf("Unable to locate 0x%x, but I have offset 0x%x\n", faultaddress, offset);
 
 	struct pentry *trav;
 	trav = addrsp->pages;
+	kprintf("Dumping list of page paddr's in this addrspace:\n");
 	while(trav != NULL){
 		kprintf("0x%x\n", trav->paddr);
 		trav = trav->next;
@@ -445,7 +458,7 @@ sys_sbrk(int shift, int *retval){
 		if( (addrsp->as_heap_end + shift) > (USERSTACK - (ADDRSP_STACKSIZE * PAGE_SIZE)) ){
 			//lock_release();
 			*retval = -1;
-			return EINVAL;
+			return ENOMEM;
 		}
 
 		// Allocate the number of pages needed, rounded up.
@@ -454,10 +467,43 @@ sys_sbrk(int shift, int *retval){
 			add_pages++;
 		}
 
+		/* NEED PENTRIES FOR EACH NEW PAGE
+
+		struct pentry *newpages;
+		struct pentry *ptappend;
+		ptappend = kmalloc(sizeof(*ptappend));
+		if(ptappend == NULL){
+			//lock_release();
+			return ENOMEM;
+		}
+		ptappend->next = NULL;
+
+		newpages = addrsp->pages;
+		while( newpages->next != NULL ){
+			newpages = newpages->next;
+		}
 		
+		paddr_t physaddr;
+		physaddr = alloc_ppages(add_pages);
+		if(physaddr == 0){
+			//lock_release();
+			return ENOMEM;
+		}	
+		*/
+		// New pages need the same options as heap
+
 
 	}else{
 		// Decrease heap size
+		// Ensure we're not completely deleting the heap.
+		if( (addrsp->as_heap_end + shift) <= addrsp->as_heap_start ){
+			*retval = -1;
+			//lock_release();
+			return EINVAL;
+		}
+	
+		// Deallocate pages.
+
 	}	
 
 

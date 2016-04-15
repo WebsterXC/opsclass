@@ -88,7 +88,9 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 {
 	int result;
 	struct addrspace *newas;
-	
+
+	kprintf("as_copy()\n");
+		
 	if(old == NULL || ret == NULL){
 		return EFAULT;
 	}
@@ -195,7 +197,6 @@ as_destroy(struct addrspace *as)
 void
 as_activate(void)
 {
-	int disable;
 	struct addrspace *as;
 
 	as = proc_getas();
@@ -207,20 +208,17 @@ as_activate(void)
 		return;
 	}
 
+	kprintf("as_activate()\n");
+
 	// Shoot down all TLB Entries. This is from DUMBVM.
-	disable = splhigh();
-	
-	for(int i = 0; i < NUM_TLB; i++){
-		tlb_write(TLBHI_INVALID(i), TLBLO_INVALID(), i);
-	}
-	
-	splx(disable);
+	vm_tlbshootdown_all();
 	return;
 }
 
 void
 as_deactivate(void)
 {
+	kprintf("deactivate_as\n");
 	/*
 	 * Write this. For many designs it won't need to actually do
 	 * anything. See proc.c for an explanation of why it (might)
@@ -311,7 +309,7 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t memsize,
 // Helper function if adding phyiscal pages directly to the page table. This is used in
 // as_prepare_load and returns the starting physical address of the region.
 static paddr_t
-add_table_entries(struct addrspace *as, vaddr_t start, unsigned int add, 
+add_table_entries(struct addrspace *as, vaddr_t start, unsigned int add, unsigned int seg_options, 
 				unsigned int option_valid, unsigned int option_ref){
 	
 	paddr_t pstart;
@@ -337,10 +335,9 @@ add_table_entries(struct addrspace *as, vaddr_t start, unsigned int add,
 		}
 	
 		entry->vaddr = start;			// Virtual memory page maps to
-		if(as->as_heap_start == 0){
-			as->as_heap_start = entry->vaddr; // Set to 0 immidiately before calling
-		}		
-		entry->options = ((entry->options)<<2) & (option_valid<<1) & option_ref;
+		
+		// Make pages writable so we can load information to them.		
+		entry->options = (seg_options<<2) & (option_valid<<1) & option_ref;
 		entry->next = NULL;
 
 		if(as->pages == NULL){			// First page in table
@@ -361,11 +358,6 @@ add_table_entries(struct addrspace *as, vaddr_t start, unsigned int add,
 		pstart += PAGE_SIZE;
 	}
 	
-	// If this is 0, we just created the heap and need to set the end vaddr.
-	if(as->as_heap_end == 0){
-		as->as_heap_end = start;
-	}
-
 	return preturn;
 }
 
@@ -385,7 +377,6 @@ as_prepare_load(struct addrspace *as)
 		return EFAULT;
 	}
 
-	int result;
 	struct area *current;
 
 	// Reserve pages for all user-defined regions
@@ -393,38 +384,32 @@ as_prepare_load(struct addrspace *as)
 	while(current->next != NULL){
 	 
 		// Steps (1) - (5) accomplished in this loop
-		// Default options set: VALID and REFERENCED on load.
-		current->pstart = add_table_entries(as, current->vstart, current->pagecount, 1, 1);
+		// VALID Bit: Has physical page been alloced for this vpage? YES
+		// REFERENCED Bit: Has page been read/written to recently? NO
+		current->pstart = add_table_entries(as, current->vstart, current->pagecount, current->options, 1, 0);
 		if(current->pstart == 0){
 			return ENOMEM;
 		}
 
 		current = current->next;
 	}
-
-	//kprintf("SEG...");
-
 	// Because of the way my while-loop is set up. We need the vstart of last region 
-	// to create heap.
-	current->pstart = add_table_entries(as, current->vstart, current->pagecount, 1, 1);
+	// to create the heap location.
+	current->pstart = add_table_entries(as, current->vstart, current->pagecount, current->options, 1, 0);
 	if(current->pstart == 0){
 		return ENOMEM;
 	}
 
-	/* Reserve pages for user heap. By setting the heap_start and heap_end
-	 * to 0 immidiately before calling add_table_entries, we tell the method
-	 * that we're creating the heap and it needs to assign vaddr's for the
-	 * heap bounds. Same for the stack with stackpbase. 
-	 *
-	 * The heap begins directly after the user defined regions.
+	/* Set the location of the heap for the addrspace. The user can call as_define_stack
+	 * an "unlimited" number of times so we need to account for that. Since the heap
+	 * begins immidiately after the last region, we bump the heap_start back each time
+	 * this method is called.
 	 */
-	
-	KASSERT(as->as_heap_start == 1);
-	KASSERT(as->as_heap_end == 1);
-	KASSERT(as->as_stackpbase == 1);
+	as->as_heap_start = current->vstart + (current->pagecount * PAGE_SIZE);
+	as->as_heap_end = as->as_heap_start;
+	//kprintf("Init heap size: %u bytes.\n", (as->as_heap_end - as->as_heap_start));	
 
-	//kprintf("X...");
-
+/* This stuff needs to be moved to sbrk()
 	vaddr_t heap_begin = current->vstart + (current->pagecount * PAGE_SIZE);
 	as->as_heap_start = 0;
 	as->as_heap_end = 0;
@@ -435,33 +420,14 @@ as_prepare_load(struct addrspace *as)
 	}else if(as->as_heap_start == 0 || as->as_heap_end == 0 || as->as_heappbase == 0){
 		panic("Critical failure: unable to generate a heap for addrspace.\n");
 	}
-
-	//kprintf("HEAP...");
-	kprintf("Heap from 0x%x -> 0x%x\n", as->as_heap_start, as->as_heap_end);
-
-	// User stack begins at the number of default stack pages from REAR of addrspace.
-	vaddr_t stack_begin = USERSTACK - (PAGE_SIZE * ADDRSP_STACKSIZE);
-	as->as_stackpbase = 0;
-	result = add_table_entries(as, stack_begin, ADDRSP_STACKSIZE, 1, 1); 
-	if(!result){
-		return ENOMEM;
-	}else if(as->as_stackpbase == 0){
-		panic("Critical failure: unable to generate a stack for addrspace.\n");
-	}
-
-	// Ensure our stack and heap are properly page-aligned after generation.
-	KASSERT( (USERSTACK - stack_begin) % PAGE_SIZE == 0);
-	KASSERT( (as->as_heap_end - as->as_heap_start) % PAGE_SIZE == 0 );
-
-	kprintf("Stack from 0x%x -> 0x%x\n", stack_begin, USERSTACK);
-	unsigned int actual = (USERSTACK - stack_begin) / PAGE_SIZE;
-	kprintf("Stack should be %u pages and is %u pages.\n", ADDRSP_STACKSIZE, actual);
+*/
 
 	return 0;
 }
 
 /* Continuing with my metaphor, this is pretty much shipping out/fulfulling
- * the purchase order. Last step is as_activate().
+ * the purchase order. We're done loading information into our pages, so reset
+ * their permissions to the original permissions.
  */
 int
 as_complete_load(struct addrspace *as)
@@ -473,20 +439,38 @@ as_complete_load(struct addrspace *as)
 	return 0;
 }
 
-/* This is kind of like asking for the address of the business to ship the
- * purchase order to. Kind of. All we need to do is return the vaddr of the 
- * top of the stack though.
+/* Our purchase order wasn't able to be completed all in one department. Here
+ * we finish up the order by sending it to the "stack department" to finish!
+ *
+ * We need to actually reserve stack pages here and return the top of the stack.
+ * Essentially this is as_define_region exclusively for the stack.
  */
 int
 as_define_stack(struct addrspace *as, vaddr_t *stackptr)
 {
+	int result;
+
 	if(as == NULL || stackptr == NULL){
 		return EFAULT;
 	}
+	
+	// User stack begins at the number of default stack pages from REAR of addrspace.
+	vaddr_t stack_begin = USERSTACK - (PAGE_SIZE * ADDRSP_STACKSIZE);
+	as->as_stackpbase = 0;
+	result = add_table_entries(as, stack_begin, ADDRSP_STACKSIZE, 7, 1, 1); 
+	if(!result){
+		return ENOMEM;
+	}else if(as->as_stackpbase == 0){
+		panic("Critical failure: unable to generate a stack for addrspace.\n");
+	}
+
+	// Ensure our stack is properly page-aligned after generation.
+	KASSERT( (USERSTACK - stack_begin) % PAGE_SIZE == 0);
+
+	//kprintf("Stack generation: %u Kbytes, %u pages.\n", (USERSTACK - stack_begin)/1024, ADDRSP_STACKSIZE); 
 
 	/* Initial user-level stack pointer */
 	*stackptr = USERSTACK;
-
 	return 0;
 }
 

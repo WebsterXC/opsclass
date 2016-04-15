@@ -38,8 +38,8 @@
 #include <vm.h>
 #include "opt-dumbvm.h"
 
-/* Stack size for each address space. (18 pages * PAGE_SIZE) = 72K */
-#define ADDRSP_STACKSIZE 18
+/* ASST3 requires a 4MB stack (4096KB / PAGE_SIZE) = 1024 Pages. */
+#define ADDRSP_STACKSIZE 1024
 /* Number of heap pages to begin with for each addrspace load. */
 #define ADDRSP_HEAP_PAGES 1
 
