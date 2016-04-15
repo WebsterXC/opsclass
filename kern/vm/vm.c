@@ -256,6 +256,21 @@ coremap_used_bytes(){
 	return total_page_allocs * PAGE_SIZE;
 }
 
+/****************************************************/
+
+// Chop virtual and physical addresses to VPN/PPN
+inline unsigned int
+paddr_to_ppn(paddr_t paddr){
+	//return paddr>>3;
+	return paddr;
+}
+
+inline unsigned int
+vaddr_to_vpn(vaddr_t vaddr){
+	//return vaddr>>3;
+	return vaddr;
+}
+
 void
 vm_tlbshootdown_all(void){	
 	
@@ -284,8 +299,7 @@ vm_tlbshootdown(const struct tlbshootdown *ts){
  * (3)  READONLY: Invalid access. Return nonzero.
  */
 int vm_fault(int faulttype, vaddr_t faultaddress){
-
-	unsigned int offset;	
+	
 	struct addrspace *addrsp;	
 
 	// Check the fault type
@@ -296,11 +310,11 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 			return EFAULT;
 		
 		case VM_FAULT_READ:
-			//kprintf("VM_FAULT_READ at 0x%x\n", faultaddress);
+			kprintf("VM_FAULT_READ at 0x%x\n", faultaddress);
 			break;
 
 		case VM_FAULT_WRITE:
-			//kprintf("VM_FAULT_WRITE at 0x%x\n", faultaddress);
+			kprintf("VM_FAULT_WRITE at 0x%x\n", faultaddress);
 			break;
 
 		default:
@@ -316,102 +330,87 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 	if( addrsp == NULL ){
 		return EFAULT;
 	}
-
-	// If any of these are true the address space is broken.
-	KASSERT(addrsp->pages != NULL);
-	KASSERT(addrsp->segments != NULL);
-	KASSERT(addrsp->as_heap_start != 0 && addrsp->as_heap_start != 1);
-	KASSERT(addrsp->as_heap_end != 0 && addrsp->as_heap_end != 1);
-	//KASSERT(addrsp->as_stackpbase != 0 && addrsp->as_stackpbase != 1);
-	//KASSERT(addrsp->as_heappbase != 0 && addrsp->as_heappbase != 1);
-
-	/* Here we traverse our segment list generated in as_define_region.
-	 * Valid addresses are contained in our regions for the address space,
-	 * but if we access an invalid location, return nonzero.
-	 */
-	struct area *valid_segments;
-	bool is_valid_vaddr = false;
-
-	valid_segments = addrsp->segments;
-	while(valid_segments != NULL){
-		if( faultaddress >= valid_segments->vstart && faultaddress < (valid_segments->vstart + valid_segments->bytesize) ){
-			is_valid_vaddr = true;
-			offset = (faultaddress - valid_segments->vstart) + valid_segments->pstart;
-			break;
-		}
-
-		valid_segments = valid_segments->next;
-	}	
-	/* We also need to check the stack and heap addresses */
-	vaddr_t stackbase = USERSTACK - (ADDRSP_STACKSIZE * PAGE_SIZE);
-	if( faultaddress >= stackbase && faultaddress < USERSTACK ){
-		is_valid_vaddr = true;
-		offset = (faultaddress - stackbase) + addrsp->as_stackpbase;
-	}else if( faultaddress >= addrsp->as_heap_start && faultaddress < addrsp->as_heap_end){
-		is_valid_vaddr = true;
-		offset = (faultaddress - addrsp->as_heap_start) + addrsp->as_heappbase;
-	}
-
-	// Invalid address
-	if(!is_valid_vaddr){
-		kprintf("Invalid Address.\n");
-		return EFAULT;
-	}
-
-	/* Page fault vs TLB fault? */
-
-	/* Valid address. Now we need to insert the translation to the TLB.
-	 * To calculate the offset, we first need to find the segment that the
-	 * faulting address belongs to, which we did above. Then, walk the page
-	 * table to see if any of the page->paddr's match the offset. If so, we
-	 * insert the translation to the TLB.
-	 */
-
-	// Write a TLB entry
-	struct pentry *pt;
-	pt = addrsp->pages;
-	while(pt != NULL){
-		// Page found containing the address, load TLB translation
-		if(offset >= pt->paddr && offset < (pt->paddr + PAGE_SIZE)){
-			spinlock_acquire(&tlb_lock);
-			uint32_t ehi = faultaddress;
-			uint32_t elo = offset | TLBLO_DIRTY | TLBLO_VALID;
-		
-			int off = splhigh();
-			int index = tlb_probe(ehi, 0);
-
-			if( index > 0 ){
-				tlb_write(ehi, elo, index);
-			}else{
-				tlb_random(ehi, elo);
-			}
-			/* Page Referenced Options?? */
-
-			splx(off);
-			
-			spinlock_release(&tlb_lock);
-			return 0;
-		}		
-
-		pt = pt->next;
-	}
-	// Page not found. Since we're not swapping, allocate a new page and add 
-	// it to the addrspace's page table.
-	// TODO PAGE FAULT
 	
-	kprintf("Unable to locate 0x%x, but I have offset 0x%x\n", faultaddress, offset);
-
-	struct pentry *trav;
-	trav = addrsp->pages;
-	kprintf("Dumping list of page paddr's in this addrspace:\n");
-	while(trav != NULL){
-		kprintf("0x%x\n", trav->paddr);
-		trav = trav->next;
+	bool is_valid_faultaddr = false;
+	struct area *useg;
+	struct pentry *load_page;
+	/* Check to see if the fault address is valid. We need to check:
+	 * (1) Segments
+	 * (2) Stack
+	 * (3) Heap
+	 */
+	kprintf("Walk segments.\n");
+	useg = addrsp->segments;
+	while( useg != NULL ){
+		// (1)
+		if( faultaddress >= useg->vstart && faultaddress <= (useg->vstart + useg->bytesize) ){
+			is_valid_faultaddr = true;
+			break;
+		} 
+		
+		useg = useg->next;
+	}
+	if( faultaddress >= (USERSTACK-(ADDRSP_STACKSIZE*PAGE_SIZE)) && faultaddress < USERSTACK ){
+		is_valid_faultaddr = true; //(2)
+		load_page = addrsp->stack;
+	}else if( faultaddress >= addrsp->as_heap_start && faultaddress <= addrsp->as_heap_end ){
+		is_valid_faultaddr = true; //(3)
+		load_page = addrsp->heap;
 	}
 
-	// Return nonzero for DEBUGGING ONLY
-	return EFAULT;
-	//return 0;
+	// Check yoself b4 u rek yoself
+	if(!is_valid_faultaddr){
+		panic("Tried to access an invalid memory region: 0x%x.\n", faultaddress);
+	}
+
+	bool page_fault = true;
+	struct pentry *walkpage;
+	
+	kprintf("Walk pages.\n");
+	// Walk the segment's page table to see if the page is allocated already
+	if(useg != NULL){
+		walkpage = useg->pages;
+	}
+	while( walkpage != NULL ){
+		if( walkpage->vaddr == vaddr_to_vpn(faultaddress) ){
+			if(walkpage->paddr != 0){
+				page_fault = false;
+			}
+			load_page = walkpage;	
+			break;
+		}  
+		walkpage = walkpage->next;
+	}		
+
+	// If the physical page isn't assigned, we need to allocate one
+	if(page_fault){
+		paddr_t ppage = alloc_ppages(1);
+		load_page->paddr = paddr_to_ppn(ppage);		
+	}
+
+	// Finally, update the TLB with the new physical page
+	spinlock_acquire(&tlb_lock);
+	kprintf("Store TLB\n");
+	uint32_t ehi = faultaddress;
+	uint32_t elo = load_page->paddr | TLBLO_DIRTY | TLBLO_VALID;
+
+	int off = splhigh();
+	int index = tlb_probe(ehi, 0);
+	
+	if(index > 0){
+		kprintf("TLB Write\n");
+		tlb_write(ehi, elo, index);
+	}else{
+		kprintf("TLB Rand\n");
+		tlb_random(ehi, elo);
+	}
+
+	kprintf("SPLX\n");
+	splx(off);
+	kprintf("Spinlock\n");
+
+	spinlock_release(&tlb_lock);
+	return 0;
 }
 
 /****************************************************************************/
@@ -491,7 +490,6 @@ sys_sbrk(int shift, int *retval){
 		}	
 		*/
 		// New pages need the same options as heap
-
 
 	}else{
 		// Decrease heap size

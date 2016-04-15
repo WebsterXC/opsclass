@@ -89,6 +89,9 @@ void free_kpages(vaddr_t addr);
  */
 unsigned int coremap_used_bytes(void);
 
+unsigned int paddr_to_ppn(paddr_t);
+unsigned int vaddr_to_vpn(vaddr_t);
+
 /* TLB shootdown handling called from interprocessor_interrupt */
 void vm_tlbshootdown_all(void);
 void vm_tlbshootdown(const struct tlbshootdown *);

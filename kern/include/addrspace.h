@@ -47,9 +47,9 @@ struct vnode;
 
 /* Page table and entries. Forward traversing linked list format. */
 struct pentry{
-	paddr_t paddr;			// Physical page we map to
-	vaddr_t vaddr;			// Virtual address of memory we want
-		
+	vaddr_t vaddr : 20;		// Virtual page number
+	paddr_t paddr : 20;		// Physical number we represent	
+	
 	unsigned int options : 5;	//Bitfield size 5
 	// MSB->LSB || read | write | execute | valid | referenced |
 
@@ -58,13 +58,13 @@ struct pentry{
 
 /* Code region (area) for as_define_region */
 struct area{
-	paddr_t pstart;		// Starting PADDR where this region lives
 	vaddr_t vstart;		// KVADDR where this region begins
 	size_t pagecount;	// Num pages (size is page-aligned)
 	size_t bytesize;	// Size of area in bytes
 	
 	unsigned int options : 3;	// R,W,X Permissions
-	
+
+	struct pentry *pages;	// User pages that represent the entire region
 	struct area *next;
 };
 
@@ -82,13 +82,12 @@ struct addrspace {
         size_t as_npages2;
         paddr_t as_stackpbase;
 #else
-	struct pentry *pages;		// Page table	
 	struct area *segments;		// Segments from as_define_region
+	struct pentry *stack;		// Stack pages
+	struct pentry *heap;		// Heap pages
 
 	vaddr_t as_heap_start;
 	vaddr_t as_heap_end;
-	paddr_t as_stackpbase;
-	paddr_t as_heappbase;		
 
 #endif
 };
