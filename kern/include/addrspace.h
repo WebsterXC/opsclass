@@ -47,8 +47,8 @@ struct vnode;
 
 /* Page table and entries. Forward traversing linked list format. */
 struct pentry{
-	vaddr_t vaddr : 20;		// Virtual page number
-	paddr_t paddr : 20;		// Physical number we represent	
+	vaddr_t vaddr;		// Virtual page number
+	paddr_t paddr;		// Physical number we represent	
 	
 	unsigned int options : 5;	//Bitfield size 5
 	// MSB->LSB || read | write | execute | valid | referenced |

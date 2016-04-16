@@ -293,7 +293,7 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t memsize,
 }
 
 static void
-add_table_entries(struct addrspace *as, vaddr_t start, unsigned int add, unsigned int seg_options, 
+add_table_entries(struct area *segment, vaddr_t start, unsigned int add, unsigned int seg_options, 
 				unsigned int option_valid, unsigned int option_ref){
 	
 	// Make pentries for the number of pages needed
@@ -303,17 +303,17 @@ add_table_entries(struct addrspace *as, vaddr_t start, unsigned int add, unsigne
 		if(entry == NULL){
 			return;
 		}
-		entry->vaddr = vaddr_to_vpn(start);
-		//entry->vaddr = start;
+		//entry->vaddr = vaddr_to_vpn(start);
+		entry->vaddr = start;
 		entry->paddr = 0;
 		entry->options = (seg_options<<2) & (option_valid<<1) & option_ref;
 		entry->next = NULL;
 
-		if(as->segments->pages == NULL){			// First page in table
-			as->segments->pages = entry;		
+		if(segment->pages == NULL){			// First page in table
+			segment->pages = entry;
 		}else{
 			struct pentry *tail;
-			tail = as->segments->pages;
+			tail = segment->pages;
 
 			while(tail->next != NULL){
 				tail = tail->next;
@@ -325,7 +325,6 @@ add_table_entries(struct addrspace *as, vaddr_t start, unsigned int add, unsigne
 		// Mapping 4K portions of regions (virtual addresses) to physical pages.
 		start += PAGE_SIZE;
 	}
-	
 	return;
 }
 
@@ -350,22 +349,24 @@ as_prepare_load(struct addrspace *as)
 
 	KASSERT(as->segments != NULL);
 
-	while(current->next != NULL){	 
+	while(current != NULL){	 
 		// Generate pentries for required pages. Pages aren't reserved until a Page Fault.
-		add_table_entries(as, current->vstart, current->pagecount, current->options, 1, 0);
+		add_table_entries(current, current->vstart, current->pagecount, current->options, 1, 0);
+		as->as_heap_start = current->vstart + (current->pagecount * PAGE_SIZE);
+		as->as_heap_end = as->as_heap_start;
 
 		current = current->next;
 	}
 	
-	add_table_entries(as, current->vstart, current->pagecount, current->options, 1, 0);
+	//add_table_entries(as, current->vstart, current->pagecount, current->options, 1, 0);
 
 	/* Set the location of the heap for the addrspace. The user can call as_define_stack
 	 * an "unlimited" number of times so we need to account for that. Since the heap
 	 * begins immidiately after the last region, we bump the heap_start back each time
 	 * this method is called.
 	 */
-	as->as_heap_start = current->vstart + (current->pagecount * PAGE_SIZE);
-	as->as_heap_end = as->as_heap_start;
+	//as->as_heap_start = current->vstart + (current->pagecount * PAGE_SIZE);
+	//as->as_heap_end = as->as_heap_start;
 
 /* This stuff needs to be moved to sbrk()
 	vaddr_t heap_begin = current->vstart + (current->pagecount * PAGE_SIZE);

@@ -302,6 +302,11 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 	
 	struct addrspace *addrsp;	
 
+	// NULL pointer
+	if( faultaddress <= (vaddr_t)10 ){
+		return EFAULT;
+	}
+
 	// Check the fault type
 	switch(faulttype){
 		case VM_FAULT_READONLY:
@@ -310,11 +315,11 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 			return EFAULT;
 		
 		case VM_FAULT_READ:
-			kprintf("VM_FAULT_READ at 0x%x\n", faultaddress);
+			//kprintf("VM_FAULT_READ at 0x%x\n", faultaddress);
 			break;
 
 		case VM_FAULT_WRITE:
-			kprintf("VM_FAULT_WRITE at 0x%x\n", faultaddress);
+			//kprintf("VM_FAULT_WRITE at 0x%x\n", faultaddress);
 			break;
 
 		default:
@@ -339,12 +344,12 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 	 * (2) Stack
 	 * (3) Heap
 	 */
-	kprintf("Walk segments.\n");
 	useg = addrsp->segments;
 	while( useg != NULL ){
 		// (1)
 		if( faultaddress >= useg->vstart && faultaddress <= (useg->vstart + useg->bytesize) ){
 			is_valid_faultaddr = true;
+			load_page = useg->pages;
 			break;
 		} 
 		
@@ -364,23 +369,22 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 	}
 
 	bool page_fault = true;
-	struct pentry *walkpage;
 	
-	kprintf("Walk pages.\n");
+	faultaddress &= PAGE_FRAME;	
+	//vaddr_t faddr = faultaddress & PAGE_FRAME;
+	//kprintf("Orig: 0x%x | Align: 0x%x\n", faultaddress, faddr);
 	// Walk the segment's page table to see if the page is allocated already
-	if(useg != NULL){
-		walkpage = useg->pages;
-	}
-	while( walkpage != NULL ){
-		if( walkpage->vaddr == vaddr_to_vpn(faultaddress) ){
-			if(walkpage->paddr != 0){
+	while( load_page != NULL ){
+		if( load_page->vaddr == vaddr_to_vpn(faultaddress) ){
+			if(load_page->paddr != 0){
 				page_fault = false;
-			}
-			load_page = walkpage;	
+			}	
 			break;
-		}  
-		walkpage = walkpage->next;
-	}		
+		}
+		load_page = load_page->next;
+	}
+
+	KASSERT(load_page != NULL);
 
 	// If the physical page isn't assigned, we need to allocate one
 	if(page_fault){
@@ -390,7 +394,6 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 
 	// Finally, update the TLB with the new physical page
 	spinlock_acquire(&tlb_lock);
-	kprintf("Store TLB\n");
 	uint32_t ehi = faultaddress;
 	uint32_t elo = load_page->paddr | TLBLO_DIRTY | TLBLO_VALID;
 
@@ -398,16 +401,12 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 	int index = tlb_probe(ehi, 0);
 	
 	if(index > 0){
-		kprintf("TLB Write\n");
 		tlb_write(ehi, elo, index);
 	}else{
-		kprintf("TLB Rand\n");
 		tlb_random(ehi, elo);
 	}
 
-	kprintf("SPLX\n");
 	splx(off);
-	kprintf("Spinlock\n");
 
 	spinlock_release(&tlb_lock);
 	return 0;
