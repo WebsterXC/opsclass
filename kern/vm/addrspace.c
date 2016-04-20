@@ -70,6 +70,42 @@ as_create(void)
 	return as;
 }
 
+static void
+add_table_entries(struct area *segment, vaddr_t start, unsigned int add, unsigned int seg_options, 
+				unsigned int option_valid, unsigned int option_ref){
+	
+	// Make pentries for the number of pages needed
+	for(unsigned int i = 0; i < add; i++){
+		struct pentry *entry;
+		entry = kmalloc(sizeof(*entry));
+		if(entry == NULL){
+			return;
+		}
+		//entry->vaddr = vaddr_to_vpn(start);
+		entry->vaddr = start;
+		entry->paddr = 0;
+		entry->options = (seg_options<<2) & (option_valid<<1) & option_ref;
+		entry->next = NULL;
+
+		if(segment->pages == NULL){			// First page in table
+			segment->pages = entry;
+		}else{
+			struct pentry *tail;
+			tail = segment->pages;
+
+			while(tail->next != NULL){
+				tail = tail->next;
+			}
+
+			tail->next = entry;
+		}
+
+		// Mapping 4K portions of regions (virtual addresses) to physical pages.
+		start += PAGE_SIZE;
+	}
+	return;
+}
+
 /* Copy an address space. Needs to be loaded into memory */
 /* (1) Create a new address space "object"
  * (2) Copy segments using as_define_region 
@@ -81,63 +117,132 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 {	
 	int result;
 	struct addrspace *newas;
-
-	kprintf("as_copy()\n");
-		
+	
+	// Basic argument checking
 	if(old == NULL || ret == NULL){
 		return EFAULT;
 	}
 
+	/* Check the integrity of our arguments. Although in some
+	 * cases, copying an addrspace before calling as_define_region
+	 * might be necessary, for the purpose of CSE421, it's not
+	 * necessary and could signify an error with my implementation.
+	 */
+	if(old->segments == NULL || old->segments->pages == NULL){
+		panic("as_copy discovered NULL region/page information, try again n00b\n");
+	}
+
+	// Create a new address space
 	newas = as_create();
-	if (newas==NULL) {
+	if (newas == NULL) {
 		return ENOMEM;
 	}
 
-	// Get old segments and define them in the new address space
-	if( old->segments != NULL){
-		struct area *current;
-		current = old->segments;
+	/* The core functionality of as_copy. We need to copy the
+	 * address space's segment information. However, since the
+	 * function must return an EXACT copy of the address space
+	 * in question, all page information must be copied over too.
+	 */	
+	struct area *oldseg;
+	
+	oldseg = old->segments;
+	while( oldseg != NULL ){
+		// Extract our R-W-X privledges
+		int read = (oldseg->options)>>2;
+		int write = (oldseg->options & 2)>>1;
+		int execute = (oldseg->options & 1); 	
 
-		while(current->next != NULL){			
-			unsigned int opt = current->options;
-
-			result = as_define_region(newas, current->vstart, current->bytesize, 
-						  (opt^3)>>2, (opt^5)>>1, (opt^6));
-			if(result){
-				as_destroy(newas);
+		// Create a new segment in the new addrspace
+		result = as_define_region(newas, oldseg->vstart, oldseg->bytesize, read, write, execute);
+		if(result){
+			as_destroy(newas);
+			if(result == ENOMEM){
 				return ENOMEM;
+			}else{
+				return EFAULT;
 			}
-			current = current->next; 
 		}
-	}else{
-		newas->segments = NULL; 
-	}	
 
+		// Navigate to the region just created
+		struct area *defined;
+		defined = newas->segments;
+		while( defined->next != NULL ){
+			defined = defined->next;
+		}
 
-	// Generate the correct number of pentrys for the address space
-	result = as_prepare_load(newas);
+		// Generate pentries for the segment
+		add_table_entries(defined, defined->vstart, defined->pagecount, defined->options, 1, 0);
+
+		// Copy page information to new segment for all pages in the old segment
+		struct pentry *oldpage;
+		struct pentry *curpage;
+
+		oldpage = oldseg->pages;
+		curpage = defined->pages;
+		while( curpage != NULL ){
+			memcpy( (void *)curpage, (void *)oldpage, PAGE_SIZE);
+			//kprintf("Old Page: 0x%x, New Page: 0x%x\n", oldpage->vaddr, curpage->vaddr);
+
+			oldpage = oldpage->next;
+			curpage = curpage->next;
+		}
+
+		oldseg = oldseg->next;
+	}
+
+	// Ensure we set everything up correctly	
+	KASSERT(newas->segments != NULL);
+
+	// Copy the stack by first reserving physical pages and then copying information
+	vaddr_t fakestack;
+	result = as_define_stack(newas, &fakestack);	
 	if(result){
 		as_destroy(newas);
-		return ENOMEM;
+		return EFAULT;
 	}
 
-	// Copy old addrspace page data over to the new addrspace pages
-	struct pentry *oldpage;
-	struct pentry *newpage;
+	//TODO This print works for some reason
+/*
+	struct pentry *printstack;
+	printstack = newas->stack;
+	while(printstack != NULL){
+		kprintf("0x%x\n", printstack->vaddr);
+		printstack = printstack->next;
+	}
+*/
+	// This copy DOESN'T work and steps on memory
+	// The old addrspace is corrupt!
+	/*
+	struct pentry *oldstack;
+	struct pentry *newstack;
+
+	oldstack = old->stack;
+	newstack = newas->stack;
+	while( oldstack != NULL && newstack != NULL ){
+		//memcpy( (void *)newstack, (void *)oldstack, PAGE_SIZE );
+		memmove( (void *)newstack->vaddr, (void *)oldstack->vaddr, PAGE_SIZE );
+		KASSERT(newstack->vaddr == oldstack->vaddr);
+		kprintf("0x%x | 0x%x\n", oldstack->vaddr, newstack->vaddr);
+		oldstack = oldstack->next;
+		newstack = newstack->next;
+	}
+	*/
+	// Copy the heap
+	struct pentry *oldheap;
+	struct pentry *newheap;
+
+	oldheap = old->heap;
+	newheap = newas->heap;
+	while( oldheap != NULL ){
+		memcpy( (void *)newheap, (void *)oldheap, PAGE_SIZE );
+
+		oldheap = oldheap->next;
+		newheap = newheap->next;
+	}
 	
-	oldpage = old->segments->pages;
-	newpage = newas->segments->pages;
-	while(oldpage != NULL){
-		if(newpage == NULL){
-			panic("Addrspace copy failed. Page count not equal.\n");
-		}		
-
-		memcpy((void *)newpage, (void *)oldpage, PAGE_SIZE);	
-
-		newpage = newpage->next;
-		oldpage = oldpage->next;
-	}
-
+	newas->as_heap_start = old->as_heap_start;
+	newas->as_heap_end = old->as_heap_end;
+	
 	*ret = newas;
 	return 0;
 }
@@ -167,6 +272,7 @@ as_destroy(struct addrspace *as)
 		upages = seg->pages;
 		while(upages != NULL){
 			temp = upages->next;
+			free_ppage(upages->paddr);
 			kfree(upages);
 			upages = temp;
 		}	
@@ -292,41 +398,6 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t memsize,
 	return 0;
 }
 
-static void
-add_table_entries(struct area *segment, vaddr_t start, unsigned int add, unsigned int seg_options, 
-				unsigned int option_valid, unsigned int option_ref){
-	
-	// Make pentries for the number of pages needed
-	for(unsigned int i = 0; i < add; i++){
-		struct pentry *entry;
-		entry = kmalloc(sizeof(*entry));
-		if(entry == NULL){
-			return;
-		}
-		//entry->vaddr = vaddr_to_vpn(start);
-		entry->vaddr = start;
-		entry->paddr = 0;
-		entry->options = (seg_options<<2) & (option_valid<<1) & option_ref;
-		entry->next = NULL;
-
-		if(segment->pages == NULL){			// First page in table
-			segment->pages = entry;
-		}else{
-			struct pentry *tail;
-			tail = segment->pages;
-
-			while(tail->next != NULL){
-				tail = tail->next;
-			}
-
-			tail->next = entry;
-		}
-
-		// Mapping 4K portions of regions (virtual addresses) to physical pages.
-		start += PAGE_SIZE;
-	}
-	return;
-}
 
 /* Steps:
  * (1) Kmalloc pentry's for each region based on area->pagecount
@@ -414,11 +485,15 @@ as_define_stack(struct addrspace *as, vaddr_t *stackptr)
 	
 	// User stack begins at the number of default stack pages from REAR of addrspace.
 	vaddr_t stack_begin = USERSTACK - (PAGE_SIZE * ADDRSP_STACKSIZE);
-	//add_table_entries(as, stack_begin, ADDRSP_STACKSIZE, 7, 1, 1); 
+	
 	// Assigned pentry's for our stack (as->stack)
 	for(int i = 0; i < ADDRSP_STACKSIZE; i++){
+		KASSERT(stack_begin <= USERSTACK);
 		struct pentry *newpage;
 		newpage = kmalloc(sizeof(*newpage));
+		if(newpage == NULL){
+			return ENOMEM;
+		}
 		newpage->vaddr = vaddr_to_vpn(stack_begin);
 		newpage->paddr = 0;
 		newpage->options = 28;	// RWX
@@ -434,11 +509,15 @@ as_define_stack(struct addrspace *as, vaddr_t *stackptr)
 			}
 			traverse->next = newpage;
 		}
-
+	
 		stack_begin += PAGE_SIZE;
-	}
 
-	/* Initial user-level stack pointer */
+		//if( i >= ADDRSP_STACKSIZE-5 ){
+		//	kprintf("StackDef: 0x%x\n", newpage->vaddr);
+		//}
+
+	}
+	
 	*stackptr = USERSTACK;
 	return 0;
 }

@@ -219,12 +219,10 @@ alloc_kpages(unsigned npages){
 
 void
 free_kpages(vaddr_t addr){
-	(void)addr;
 
 	spinlock_acquire(&coremap_lock);
 	for(unsigned int i = 0; i < corecount; i++){
 		if(coremap[i].vaddr == addr){
-			
 			// Found matching vaddr, free all cores from addr to and include the tail
 			// page.
 			int incr = 0;
@@ -240,6 +238,35 @@ free_kpages(vaddr_t addr){
 			
 			break;
 		}	
+	}
+
+	spinlock_release(&coremap_lock);
+	
+	return;
+}
+
+/* I'm not sure I fully understand the relationship between kernel vaddr's
+ * and paddr's, so I had to add this function to correctly free coremap
+ * pages. It's used by sbrk() to free physical pages in the heap, as well
+ * as as_destroy() to correctly free pages on an addrspace exit.
+ */
+void
+free_ppage(paddr_t addr){
+	if( addr == 0 ){
+		return;
+	}
+	spinlock_acquire(&coremap_lock);
+	
+	for(unsigned int i = 0; i < corecount; i++){
+		if(coremap[i].paddr == addr){
+			if(coremap[i].istail == false){
+				panic("Tried to free a physical page that's part of a set.\n");
+			}else{
+				coremap[i].state = COREMAP_FREE;
+				total_page_allocs--;
+			}
+			break;
+		}
 	}
 
 	spinlock_release(&coremap_lock);
@@ -366,13 +393,13 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 	// Check yoself b4 u rek yoself
 	if(!is_valid_faultaddr){
 		panic("Tried to access an invalid memory region: 0x%x.\n", faultaddress);
+		//return EFAULT;
 	}
 
 	bool page_fault = true;
 	
 	faultaddress &= PAGE_FRAME;	
-	//vaddr_t faddr = faultaddress & PAGE_FRAME;
-	//kprintf("Orig: 0x%x | Align: 0x%x\n", faultaddress, faddr);
+	
 	// Walk the segment's page table to see if the page is allocated already
 	while( load_page != NULL ){
 		if( load_page->vaddr == vaddr_to_vpn(faultaddress) ){
@@ -384,7 +411,17 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 		load_page = load_page->next;
 	}
 
-	KASSERT(load_page != NULL);
+	if(load_page == NULL){
+		/*
+		struct pentry *dumpstack;
+		dumpstack = addrsp->stack;
+		while(dumpstack != NULL){
+			kprintf("0x%x, ", dumpstack->vaddr);
+			dumpstack = dumpstack->next;
+		}
+		*/
+		panic("Couldn't find a page searching for 0x%x\n", faultaddress);
+	}
 
 	// If the physical page isn't assigned, we need to allocate one
 	if(page_fault){
@@ -433,12 +470,14 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
  * (4) Remove the pages from the end of the heap????
  * !!! Remember, we don't actually know which pages in the addrspace are heap pages...
  */
-// TODO what happens when shift is not a multiple of PAGE_SIZE?
 int
 sys_sbrk(int shift, int *retval){
 	struct addrspace *addrsp;
 	addrsp = proc_getas();
-	
+	if( addrsp == NULL ){
+		return EFAULT;
+	}	
+
 // LOCK_ACQUIRE
 	if( shift == 0 ){
 		*retval = addrsp->as_heap_end;
@@ -448,9 +487,19 @@ sys_sbrk(int shift, int *retval){
 		// Pointer-align the number of bytes
 		shift += (4 - (shift%4) );
 	}	
+
+	// Ensure our address space has been properly prepared for a heap
+	KASSERT(addrsp->as_heap_start != 0 && addrsp->as_heap_end != 0);
 	
+	// Find the number of pages needed, rounded up. This value can be negative.
+	int num_pages = shift / PAGE_SIZE;
+	if( (shift%PAGE_SIZE) != 0 ){
+		num_pages++;
+	}
+
 	// Check which way to move the heap breakpoint
 	if( shift > 0 ){
+		KASSERT(num_pages > 0);
 		// Increase heap size
 		// Check to make sure we don't collide with stack.
 		if( (addrsp->as_heap_end + shift) > (USERSTACK - (ADDRSP_STACKSIZE * PAGE_SIZE)) ){
@@ -459,50 +508,81 @@ sys_sbrk(int shift, int *retval){
 			return ENOMEM;
 		}
 
-		// Allocate the number of pages needed, rounded up.
-		unsigned int add_pages = shift / PAGE_SIZE;
-		if( (shift%PAGE_SIZE) != 0 ){
-			add_pages++;
-		}
-
-		/* NEED PENTRIES FOR EACH NEW PAGE
-
-		struct pentry *newpages;
-		struct pentry *ptappend;
-		ptappend = kmalloc(sizeof(*ptappend));
-		if(ptappend == NULL){
-			//lock_release();
-			return ENOMEM;
-		}
-		ptappend->next = NULL;
-
-		newpages = addrsp->pages;
-		while( newpages->next != NULL ){
-			newpages = newpages->next;
-		}
+		*retval = addrsp->as_heap_end;
+	
+		// Actually allocate the pages
+		for(int i = 0; i < num_pages; i++){
+			struct pentry *entry;
+			entry = kmalloc(sizeof(*entry));
+			if(entry == NULL){
+				return ENOMEM;
+			}
 		
-		paddr_t physaddr;
-		physaddr = alloc_ppages(add_pages);
-		if(physaddr == 0){
-			//lock_release();
-			return ENOMEM;
-		}	
-		*/
-		// New pages need the same options as heap
+			entry->vaddr = addrsp->as_heap_end;
+			entry->paddr = alloc_ppages(1);
+			entry->options = 28;		//RWX
+			entry->next = NULL;
 
-	}else{
-		// Decrease heap size
+			if(entry->paddr == 0){
+				//lock_release()
+				kfree(entry);
+				return ENOMEM;
+			}
+
+			if(addrsp->heap == NULL){
+				addrsp->heap = entry;
+			}else{
+				struct pentry *tail;
+				tail = addrsp->heap;
+
+				while(tail->next != NULL){
+					tail = tail->next;
+				}
+
+				tail->next = entry;
+			}
+
+			addrsp->as_heap_end += PAGE_SIZE;
+		}
+	}else{					// Decrease heap size
+		KASSERT(num_pages < 0);
+		num_pages *= -1;
+		
 		// Ensure we're not completely deleting the heap.
-		if( (addrsp->as_heap_end + shift) <= addrsp->as_heap_start ){
+		if( (addrsp->as_heap_end + shift) < addrsp->as_heap_start ){
 			*retval = -1;
 			//lock_release();
 			return EINVAL;
 		}
-	
-		// Deallocate pages.
 
+		/* Deallocate pages. This is enough to pass the basic sbrk() tests,
+		 * but we don't ACTUALLY free any pages, just move the breakpoint. */
+		*retval = addrsp->as_heap_end;
+		addrsp->as_heap_end += shift;
+
+		/* Here we actually free coremap pages for later use. Now I'm suddenly
+		 * regretting using forward-only linked lists... 
+		 */
+		for(int j = 0; j < num_pages; j++){
+			struct pentry *heapdel;		
+			struct pentry *tail;	
+
+			tail = addrsp->heap;
+			if( tail->next == NULL ){		// Heap has 1 page
+				free_ppage(tail->paddr);
+				addrsp->heap = NULL;
+				kfree(tail);
+			}else{					// Heap has 2 or more pages
+				while( tail->next->next != NULL ){
+					tail = tail->next;
+				}
+				heapdel = tail->next;
+				free_ppage(heapdel->paddr);
+				tail->next = NULL;
+				kfree(heapdel);
+			}
+		}	
 	}	
-
 
 // LOCK_RELEASE
 	return 0;
