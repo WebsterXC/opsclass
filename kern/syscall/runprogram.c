@@ -222,7 +222,7 @@ sys_fork(struct trapframe *frame, int32_t *childpid){
 	/* New process and trapframe copies will be made */
 	struct proc *childproc;
 	struct trapframe *trap;
-	int result;		
+	int result;	
 		
 	lock_acquire(gpll_lock);	
 	// 9 or fewer processes at once (memory managment)
@@ -247,17 +247,17 @@ sys_fork(struct trapframe *frame, int32_t *childpid){
 	}
 
 	as_copy(curproc->p_addrspace, &childproc->p_addrspace);
-		
+	kprintf("After as_copy\n");	
 	//lock_release(gpll_lock);
 	
 	// Fork the process. Copy the filetable over to the child and increment
 	// the child's semaphore so it knows to continue the fork.
-	kprintf("Before Thread_Fork\n");
 	result = thread_fork(curproc->p_name, childproc, child, trap, 0);  	 
-	kprintf("Fork complete.\n");	
+	kprintf("After thread_fork.\n");	
 
 	filetable_copy(curproc->p_filetable, &childproc->p_filetable);
-	
+
+	kprintf("After filetable_copy\n");	
 	V(childproc->forksem);
 
 	if(result == ENOMEM){
@@ -269,6 +269,7 @@ sys_fork(struct trapframe *frame, int32_t *childpid){
 	// Return with child's PID
 	*childpid = proc_getpid(childproc);
 
+	kprintf("Parent exit.\n");
 	lock_release(gpll_lock);
 	
 	return 0;

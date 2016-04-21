@@ -134,7 +134,7 @@ seg_copy(struct area **out, struct area *src){
 		newpage->next = NULL;
 
 		memmove((void *)newpage->vaddr, (void *)copyable->vaddr, PAGE_SIZE);
-		kprintf("Pagegen: 0x%x\n", newpage->vaddr);		
+		//kprintf("Pagegen: 0x%x\n", newpage->vaddr);		
 
 		// Add to new segment pages
 		if(dest->pages == NULL){
@@ -196,8 +196,8 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 	
 	oldseg = old->segments;
 	while( oldseg != NULL ){
-		struct area *newseg;
-		
+		struct area *newseg;	
+	
 		seg_copy(&newseg, oldseg);
 		KASSERT(newseg->pages != NULL);	
 
@@ -275,7 +275,6 @@ as_destroy(struct addrspace *as)
 		return;
 	}
 
-	kprintf("as_destroy\n");
 	struct area *seg;
 	struct area *move;
 	
@@ -376,12 +375,16 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t memsize,
 
 	struct area *newarea;
 	unsigned int npages;
+	
+	kprintf("Region start 0x%x size %u.\n", vaddr, memsize);
 
 	// Page-alignment (rounding to the nearest page) -> from dumbvm.c
 	memsize += vaddr & ~(vaddr_t)PAGE_FRAME;
 	vaddr &= PAGE_FRAME;
 	memsize = (memsize + PAGE_SIZE - 1) & PAGE_FRAME;
 	npages = memsize / PAGE_SIZE;
+
+	kprintf("Create %u pages for it.\n", npages);
 
 	// Create a new segment
 	newarea = kmalloc(sizeof(struct area));
@@ -414,7 +417,6 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t memsize,
 
 	return 0;
 }
-
 
 /* Steps:
  * (1) Kmalloc pentry's for each region based on area->pagecount

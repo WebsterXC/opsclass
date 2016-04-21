@@ -390,12 +390,13 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 	}
 	// Check yoself b4 u rek yoself
 	if(!is_valid_faultaddr){
-		//panic("Tried to access an invalid memory region: 0x%x.\n", faultaddress);
-		return EFAULT;
+		panic("Tried to access an invalid memory region: 0x%x.\n", faultaddress);
+		//return EFAULT;
 	}
 
 	bool page_fault = true;
-	
+
+	vaddr_t rawaddr = faultaddress;	
 	faultaddress &= PAGE_FRAME;	
 	
 	// Walk the segment's page table to see if the page is allocated already
@@ -410,6 +411,7 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 	}
 
 	if(load_page == NULL){
+		kprintf("Unaligned fault addr: 0x%x\n", rawaddr);
 		panic("Couldn't find a page searching for 0x%x\n", faultaddress);
 	}
 
@@ -545,17 +547,18 @@ sys_sbrk(int shift, int *retval){
 			return EINVAL;
 		}
 
-		/* Deallocate pages. This is enough to pass the basic sbrk() tests,
+		/* Deallocate pages. These 2 lines are enough to pass the basic sbrk() tests,
 		 * but we don't ACTUALLY free any pages, just move the breakpoint. */
 		*retval = addrsp->as_heap_end;
 		addrsp->as_heap_end += shift;
 
 		/* Here we actually free coremap pages for later use. Now I'm suddenly
-		 * regretting using forward-only linked lists... 
+		 * regretting using forward-only linked lists...
 		 */
 		for(int j = 0; j < num_pages; j++){
 			struct pentry *heapdel;		
 			struct pentry *tail;	
+			//struct tlbshootdown *bang;
 
 			tail = addrsp->heap;
 			if( tail->next == NULL ){		// Heap has 1 page
