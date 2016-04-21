@@ -1,974 +1,605 @@
-[boot.t                             ]	0.000000	0 serial
-[boot.t                             ]	0.000000	1	emufs
-[boot.t                             ]	0.000000	2	disk rpm=7200 file=LHD0.img nodoom # bytes=4M
-[boot.t                             ]	0.000000	28	random seed=30689
-[boot.t                             ]	0.000000	29	timer
-[boot.t                             ]	0.000000	30	trace
-[boot.t                             ]	0.000000	31	mainboard ramsize=1M cpus=2
-[boot.t                             ]	0.000000	sys161: System/161 release 2.0.8, compiled Mar  2 2016 17:16:01
-[boot.t                             ]	0.000000	
-[boot.t                             ]	0.000000	OS/161 base system version 2.0.1
-[boot.t                             ]	0.016289	Copyright (c) 2000, 2001-2005, 2008-2011, 2013, 2014
-[boot.t                             ]	0.016289	   President and Fellows of Harvard College.  All rights reserved.
-[boot.t                             ]	0.248344	
-[boot.t                             ]	0.248344	Will (waburgin)'s system version 0 (ASST2 #844)
-[boot.t                             ]	0.268442	
-[boot.t                             ]	0.268442	736k physical memory available
-[boot.t                             ]	0.288519	Device probe...
-[boot.t                             ]	0.288519	lamebus0 (system main bus)
-[boot.t                             ]	0.308652	emu0 at lamebus0
-[boot.t                             ]	0.318726	ltrace0 at lamebus0
-[boot.t                             ]	0.328757	ltimer0 at lamebus0
-[boot.t                             ]	0.338767	beep0 at ltimer0
-[boot.t                             ]	0.348832	rtclock0 at ltimer0
-[boot.t                             ]	0.358865	lrandom0 at lamebus0
-[boot.t                             ]	0.368907	random0 at lrandom0
-[boot.t                             ]	0.378963	lhd0 at lamebus0
-[boot.t                             ]	0.389002	lser0 at lamebus0
-[boot.t                             ]	0.389002	con0 at lser0
-[boot.t                             ]	0.419151	
-[boot.t                             ]	0.419151	cpu0: MIPS/161 (System/161 2.x) features 0x0
-[boot.t                             ]	0.439218	2 CPUs online
-[boot.t                             ]	0.439218	OS/161 kernel [? for menu]: 
-[boot.t                             ]	0.660382	
-[boot.t                             ]	0.680520	Shutting down.
-[boot.t                             ]	0.680520	The system is halted.
-[boot.t                             ]	0.690601	sys161: 24642384 cycles (12250994 run, 12391390 global-idle)
-[boot.t                             ]	0.690601	sys161:   cpu0: 4680055 kern, 0 user, 134661 idle; 7577 ll, 7577/0 sc, 21679 sync
-[boot.t                             ]	0.690601	sys161:   cpu1: 309308 kern, 0 user, 4505408 idle; 7 ll, 7/0 sc, 15 sync
-[boot.t                             ]	0.690601	sys161: 1130 irqs 0 exns 0r/0w disk 2r/589w console 0r/0w/1m emufs 0r/0w net
-[boot.t                             ]	0.690601	sys161: Elapsed real time: 0.170676 seconds (144.381 mhz)
-[boot.t                             ]	0.690601	sys161: Elapsed virtual time: 0.692534078 seconds (25 mhz)
-[boot.t                             ]	0.690601	shutdown: normal shutdown
-[syscalls/consoletest.t             ]	0.000000	0 serial
-[syscalls/consoletest.t             ]	0.000000	1	emufs
-[syscalls/consoletest.t             ]	0.000000	2	disk rpm=7200 file=LHD0.img nodoom # bytes=4M
-[syscalls/consoletest.t             ]	0.000000	28	random seed=56330
-[syscalls/consoletest.t             ]	0.000000	29	timer
-[syscalls/consoletest.t             ]	0.000000	30	trace
-[syscalls/consoletest.t             ]	0.000000	31	mainboard ramsize=512K cpus=8
-[syscalls/consoletest.t             ]	0.000000	sys161: System/161 release 2.0.8, compiled Mar  2 2016 17:16:01
-[syscalls/consoletest.t             ]	0.014289	
-[syscalls/consoletest.t             ]	0.014289	OS/161 base system version 2.0.1
-[syscalls/consoletest.t             ]	0.014289	Copyright (c) 2000, 2001-2005, 2008-2011, 2013, 2014
-[syscalls/consoletest.t             ]	0.014289	   President and Fellows of Harvard College.  All rights reserved.
-[syscalls/consoletest.t             ]	0.234510	
-[syscalls/consoletest.t             ]	0.234510	Will (waburgin)'s system version 0 (ASST2 #844)
-[syscalls/consoletest.t             ]	0.254643	
-[syscalls/consoletest.t             ]	0.254643	224k physical memory available
-[syscalls/consoletest.t             ]	0.274752	Device probe...
-[syscalls/consoletest.t             ]	0.284839	lamebus0 (system main bus)
-[syscalls/consoletest.t             ]	0.304924	emu0 at lamebus0
-[syscalls/consoletest.t             ]	0.314994	ltrace0 at lamebus0
-[syscalls/consoletest.t             ]	0.314994	ltimer0 at lamebus0
-[syscalls/consoletest.t             ]	0.335044	beep0 at ltimer0
-[syscalls/consoletest.t             ]	0.335044	rtclock0 at ltimer0
-[syscalls/consoletest.t             ]	0.355108	lrandom0 at lamebus0
-[syscalls/consoletest.t             ]	0.365127	random0 at lrandom0
-[syscalls/consoletest.t             ]	0.365127	lhd0 at lamebus0
-[syscalls/consoletest.t             ]	0.385207	lser0 at lamebus0
-[syscalls/consoletest.t             ]	0.395238	con0 at lser0
-[syscalls/consoletest.t             ]	0.395238	
-[syscalls/consoletest.t             ]	0.395238	cpu0: MIPS/161 (System/161 2.x) features 0x0
-[syscalls/consoletest.t             ]	0.445506	8 CPUs online
-[syscalls/consoletest.t             ]	0.445506	OS/161 kernel [? for menu]: 
-[syscalls/consoletest.t             ]	0.928014	p /testbin/consoletest
-[syscalls/consoletest.t             ]	1.239250	/testbin/consoletest: Able was i ere i saw elbA
-[syscalls/consoletest.t             ]	1.259348	Operation took 0.108571939 seconds
-[syscalls/consoletest.t             ]	1.279382	OS/161 kernel [? for menu]: 
-[syscalls/consoletest.t             ]	1.299481	shutdown: panic expected
-[stability/forkbomb.t               ]	0.000000	0 serial
-[stability/forkbomb.t               ]	0.000000	1	emufs
-[stability/forkbomb.t               ]	0.000000	2	disk rpm=7200 file=LHD0.img nodoom # bytes=4M
-[stability/forkbomb.t               ]	0.000000	28	random seed=7354
-[stability/forkbomb.t               ]	0.000000	29	timer
-[stability/forkbomb.t               ]	0.000000	30	trace
-[stability/forkbomb.t               ]	0.000000	31	mainboard ramsize=2M cpus=8
-[syscalls/forktest.t                ]	0.000000	0 serial
-[syscalls/forktest.t                ]	0.000000	1	emufs
-[syscalls/forktest.t                ]	0.000000	2	disk rpm=7200 file=LHD0.img nodoom # bytes=4M
-[syscalls/forktest.t                ]	0.000000	28	random seed=23130
-[syscalls/forktest.t                ]	0.000000	29	timer
-[syscalls/forktest.t                ]	0.000000	30	trace
-[syscalls/forktest.t                ]	0.000000	31	mainboard ramsize=4M cpus=8
-[stability/forkbomb.t               ]	0.000000	sys161: System/161 release 2.0.8, compiled Mar  2 2016 17:16:01
-[syscalls/forktest.t                ]	0.000000	sys161: System/161 release 2.0.8, compiled Mar  2 2016 17:16:01
-[syscalls/shell.t                   ]	0.000000	0 serial
-[syscalls/shell.t                   ]	0.000000	1	emufs
-[syscalls/shell.t                   ]	0.000000	2	disk rpm=7200 file=LHD0.img nodoom # bytes=4M
-[syscalls/shell.t                   ]	0.000000	28	random seed=14637
-[syscalls/shell.t                   ]	0.000000	29	timer
-[syscalls/shell.t                   ]	0.000000	30	trace
-[syscalls/shell.t                   ]	0.000000	31	mainboard ramsize=1M cpus=8
-[syscalls/shell.t                   ]	0.000000	sys161: System/161 release 2.0.8, compiled Mar  2 2016 17:16:01
-[stability/forkbomb.t               ]	0.000000	
-[syscalls/forktest.t                ]	0.010289	
-[syscalls/shell.t                   ]	0.010289	
-[stability/forkbomb.t               ]	0.000000	OS/161 base system version 2.0.1
-[syscalls/shell.t                   ]	0.010289	OS/161 base system version 2.0.1
-[syscalls/forktest.t                ]	0.010289	OS/161 base system version 2.0.1
-[stability/forkbomb.t               ]	0.018289	Copyright (c) 2000, 2001-2005, 2008-2011, 2013, 2014
-[syscalls/shell.t                   ]	0.010289	Copyright (c) 2000, 2001-2005, 2008-2011, 2013, 2014
-[syscalls/forktest.t                ]	0.010289	Copyright (c) 2000, 2001-2005, 2008-2011, 2013, 2014
-[stability/forkbomb.t               ]	0.018289	   President and Fellows of Harvard College.  All rights reserved.
-[stability/forkbomb.t               ]	0.228630	
-[syscalls/forktest.t                ]	0.010289	   President and Fellows of Harvard College.  All rights reserved.
-[syscalls/forktest.t                ]	0.010289	
-[syscalls/shell.t                   ]	0.010289	   President and Fellows of Harvard College.  All rights reserved.
-[syscalls/shell.t                   ]	0.010289	
-[stability/forkbomb.t               ]	0.228630	Will (waburgin)'s system version 0 (ASST2 #844)
-[stability/forkbomb.t               ]	0.248692	
-[syscalls/forktest.t                ]	0.010289	Will (waburgin)'s system version 0 (ASST2 #844)
-[syscalls/forktest.t                ]	0.230987	
-[stability/forkbomb.t               ]	0.248692	1760k physical memory available
-[syscalls/shell.t                   ]	0.010289	Will (waburgin)'s system version 0 (ASST2 #844)
-[syscalls/shell.t                   ]	0.250696	
-[stability/forkbomb.t               ]	0.248692	Device probe...
-[syscalls/forktest.t                ]	0.230987	3808k physical memory available
-[syscalls/shell.t                   ]	0.250696	736k physical memory available
-[stability/forkbomb.t               ]	0.288787	lamebus0 (system main bus)
-[syscalls/forktest.t                ]	0.230987	Device probe...
-[stability/forkbomb.t               ]	0.308926	emu0 at lamebus0
-[syscalls/shell.t                   ]	0.280873	Device probe...
-[syscalls/forktest.t                ]	0.281257	lamebus0 (system main bus)
-[stability/forkbomb.t               ]	0.308926	ltrace0 at lamebus0
-[syscalls/forktest.t                ]	0.281257	emu0 at lamebus0
-[syscalls/shell.t                   ]	0.280873	lamebus0 (system main bus)
-[stability/forkbomb.t               ]	0.308926	ltimer0 at lamebus0
-[syscalls/forktest.t                ]	0.281257	ltrace0 at lamebus0
-[syscalls/shell.t                   ]	0.280873	emu0 at lamebus0
-[stability/forkbomb.t               ]	0.329036	beep0 at ltimer0
-[syscalls/forktest.t                ]	0.281257	ltimer0 at lamebus0
-[syscalls/shell.t                   ]	0.280873	ltrace0 at lamebus0
-[stability/forkbomb.t               ]	0.329036	rtclock0 at ltimer0
-[syscalls/forktest.t                ]	0.341572	beep0 at ltimer0
-[syscalls/shell.t                   ]	0.280873	ltimer0 at lamebus0
-[stability/forkbomb.t               ]	0.329036	lrandom0 at lamebus0
-[syscalls/forktest.t                ]	0.341572	rtclock0 at ltimer0
-[syscalls/shell.t                   ]	0.280873	beep0 at ltimer0
-[stability/forkbomb.t               ]	0.329036	random0 at lrandom0
-[syscalls/forktest.t                ]	0.341572	lrandom0 at lamebus0
-[syscalls/shell.t                   ]	0.280873	rtclock0 at ltimer0
-[stability/forkbomb.t               ]	0.329036	lhd0 at lamebus0
-[syscalls/forktest.t                ]	0.341572	random0 at lrandom0
-[stability/forkbomb.t               ]	0.329036	lser0 at lamebus0
-[syscalls/shell.t                   ]	0.341190	lrandom0 at lamebus0
-[syscalls/forktest.t                ]	0.341572	lhd0 at lamebus0
-[stability/forkbomb.t               ]	0.399459	con0 at lser0
-[stability/forkbomb.t               ]	0.399459	
-[syscalls/shell.t                   ]	0.341190	random0 at lrandom0
-[syscalls/forktest.t                ]	0.341572	lser0 at lamebus0
-[syscalls/shell.t                   ]	0.341190	lhd0 at lamebus0
-[syscalls/forktest.t                ]	0.411921	con0 at lser0
-[syscalls/forktest.t                ]	0.411921	
-[stability/forkbomb.t               ]	0.399459	cpu0: MIPS/161 (System/161 2.x) features 0x0
-[syscalls/shell.t                   ]	0.381448	lser0 at lamebus0
-[syscalls/shell.t                   ]	0.381448	con0 at lser0
-[syscalls/shell.t                   ]	0.381448	
-[stability/forkbomb.t               ]	0.429620	8 CPUs online
-[syscalls/forktest.t                ]	0.411921	cpu0: MIPS/161 (System/161 2.x) features 0x0
-[stability/forkbomb.t               ]	0.429620	OS/161 kernel [? for menu]: 
-[syscalls/forktest.t                ]	0.411921	8 CPUs online
-[syscalls/shell.t                   ]	0.381448	cpu0: MIPS/161 (System/161 2.x) features 0x0
-[syscalls/forktest.t                ]	0.411921	OS/161 kernel [? for menu]: 
-[syscalls/shell.t                   ]	0.431688	8 CPUs online
-[syscalls/shell.t                   ]	0.431688	OS/161 kernel [? for menu]: 
-[stability/forkbomb.t               ]	0.429620	p /testbin/forkbomb
-[syscalls/shell.t                   ]	0.813410	
-[syscalls/forktest.t                ]	0.482196	p /testbin/forktest
-[syscalls/shell.t                   ]	0.893654	(program name unknown): Timing enabled.
-[syscalls/shell.t                   ]	0.923773	OS/161$ 
-[syscalls/forktest.t                ]	1.025042	(program name unknown): Starting. Expect this many:
-[syscalls/forktest.t                ]	1.055096	|----------------------------|
-[syscalls/shell.t                   ]	0.953946	/testbin/shelltest
-[syscalls/shell.t                   ]	1.165107	/testbin/shelltest: line-1: Able was i ere i saw elbA
-[syscalls/shell.t                   ]	1.185271	/testbin/shelltest: line-2: Able was i ere i saw elbA
-[syscalls/shell.t                   ]	1.205380	/testbin/shelltest: line-3: Able was i ere i saw elbA
-[syscalls/shell.t                   ]	1.235581	(program name unknown): subprocess time: 0.194965691 seconds
-[syscalls/shell.t                   ]	1.265715	OS/161$ 
-[syscalls/shell.t                   ]	1.275722	/testbin/shelltest
-[syscalls/shell.t                   ]	1.637458	/testbin/shelltest: line-1: Able was i ere i saw elbA
-[syscalls/shell.t                   ]	1.657481	/testbin/shelltest: line-2: Able was i ere i saw elbA
-[syscalls/shell.t                   ]	1.687571	/testbin/shelltest: line-3: Able was i ere i saw elbA
-[syscalls/shell.t                   ]	1.717781	(program name unknown): subprocess time: 0.215044512 seconds
-[syscalls/shell.t                   ]	1.757915	OS/161$ 
-[syscalls/shell.t                   ]	1.768010	exit
-[syscalls/shell.t                   ]	1.798172	Operation took 0.978885822 seconds
-[syscalls/shell.t                   ]	1.808263	OS/161 kernel [? for menu]: 
-[syscalls/shell.t                   ]	1.838533	
-[syscalls/shell.t                   ]	1.858578	Shutting down.
-[syscalls/shell.t                   ]	1.858578	The system is halted.
-[syscalls/shell.t                   ]	1.878629	sys161: 60933433 cycles (28951098 run, 31982335 global-idle)
-[syscalls/shell.t                   ]	1.878629	sys161:   cpu0: 14868595 kern, 47969 user, 9347 idle; 16847 ll, 16847/0 sc, 45056 sync
-[syscalls/shell.t                   ]	1.878629	sys161:   cpu1: 309593 kern, 0 user, 14616318 idle; 7 ll, 7/0 sc, 15 sync
-[syscalls/shell.t                   ]	1.878629	sys161:   cpu2: 309238 kern, 0 user, 14616673 idle; 6 ll, 5/1 sc, 10 sync
-[syscalls/shell.t                   ]	1.878629	sys161:   cpu3: 308871 kern, 0 user, 14617040 idle; 7 ll, 5/2 sc, 10 sync
-[syscalls/shell.t                   ]	1.878629	sys161:   cpu4: 308573 kern, 0 user, 14617338 idle; 8 ll, 5/3 sc, 10 sync
-[syscalls/shell.t                   ]	1.878629	sys161:   cpu5: 308137 kern, 0 user, 14617774 idle; 9 ll, 5/4 sc, 10 sync
-[syscalls/shell.t                   ]	1.878629	sys161:   cpu6: 307770 kern, 0 user, 14618141 idle; 10 ll, 5/5 sc, 10 sync
-[syscalls/shell.t                   ]	1.878629	sys161:   cpu7: 307403 kern, 0 user, 14618508 idle; 11 ll, 5/6 sc, 10 sync
-[syscalls/shell.t                   ]	1.878629	sys161: 2116 irqs 628 exns 0r/0w disk 47r/1222w console 27r/0w/7m emufs 0r/0w net
-[syscalls/shell.t                   ]	1.878629	sys161: Elapsed real time: 1.960890 seconds (31.0744 mhz)
-[syscalls/shell.t                   ]	1.878629	sys161: Elapsed virtual time: 1.880621707 seconds (25 mhz)
-[syscalls/shell.t                   ]	1.878629	shutdown: normal shutdown
-[stability/randcall.t               ]	0.000000	0 serial
-[stability/randcall.t               ]	0.000000	1	emufs
-[stability/randcall.t               ]	0.000000	2	disk rpm=7200 file=LHD0.img nodoom # bytes=4M
-[stability/randcall.t               ]	0.000000	28	random seed=19461
-[stability/badcall/badcall-waitpid.t]	0.000000	0 serial
-[stability/badcall/badcall-waitpid.t]	0.000000	1	emufs
-[stability/badcall/badcall-waitpid.t]	0.000000	2	disk rpm=7200 file=LHD0.img nodoom # bytes=4M
-[stability/randcall.t               ]	0.000000	29	timer
-[stability/randcall.t               ]	0.000000	30	trace
-[stability/badcall/badcall-waitpid.t]	0.000000	28	random seed=64510
-[stability/forktest-stability.t     ]	0.000000	0 serial
-[stability/forktest-stability.t     ]	0.000000	1	emufs
-[stability/forktest-stability.t     ]	0.000000	2	disk rpm=7200 file=LHD0.img nodoom # bytes=4M
-[stability/badcall/badcall-waitpid.t]	0.000000	29	timer
-[stability/randcall.t               ]	0.000000	31	mainboard ramsize=16M cpus=8
-[stability/randcall.t               ]	0.000000	sys161: System/161 release 2.0.8, compiled Mar  2 2016 17:16:01
-[stability/randcall.t               ]	0.000000	
-[stability/randcall.t               ]	0.000000	OS/161 base system version 2.0.1
-[stability/forktest-stability.t     ]	0.000000	28	random seed=8441
-[stability/forktest-stability.t     ]	0.000000	29	timer
-[stability/forktest-stability.t     ]	0.000000	30	trace
-[stability/forktest-stability.t     ]	0.000000	31	mainboard ramsize=16M cpus=8
-[stability/badcall/badcall-waitpid.t]	0.000000	30	trace
-[stability/randcall.t               ]	0.000000	Copyright (c) 2000, 2001-2005, 2008-2011, 2013, 2014
-[stability/badcall/badcall-open.t   ]	0.000000	0 serial
-[stability/badcall/badcall-open.t   ]	0.000000	1	emufs
-[stability/badcall/badcall-open.t   ]	0.000000	2	disk rpm=7200 file=LHD0.img nodoom # bytes=4M
-[stability/badcall/badcall-open.t   ]	0.000000	28	random seed=1632
-[stability/badcall/badcall-open.t   ]	0.000000	29	timer
-[stability/badcall/badcall-open.t   ]	0.000000	30	trace
-[stability/randcall.t               ]	0.000000	   President and Fellows of Harvard College.  All rights reserved.
-[stability/badcall/badcall-waitpid.t]	0.000000	31	mainboard ramsize=2M cpus=8
-[stability/badcall/badcall-read.t   ]	0.000000	0 serial
-[stability/badcall/badcall-read.t   ]	0.000000	1	emufs
-[stability/badcall/badcall-read.t   ]	0.000000	2	disk rpm=7200 file=LHD0.img nodoom # bytes=4M
-[stability/badcall/badcall-read.t   ]	0.000000	28	random seed=14312
-[stability/badcall/badcall-read.t   ]	0.000000	29	timer
-[stability/badcall/badcall-read.t   ]	0.000000	30	trace
-[stability/badcall/badcall-read.t   ]	0.000000	31	mainboard ramsize=2M cpus=8
-[stability/badcall/badcall-write.t  ]	0.000000	0 serial
-[stability/badcall/badcall-write.t  ]	0.000000	1	emufs
-[stability/badcall/badcall-write.t  ]	0.000000	2	disk rpm=7200 file=LHD0.img nodoom # bytes=4M
-[stability/badcall/badcall-write.t  ]	0.000000	28	random seed=19882
-[stability/badcall/badcall-write.t  ]	0.000000	29	timer
-[stability/badcall/badcall-write.t  ]	0.000000	30	trace
-[stability/badcall/badcall-write.t  ]	0.000000	31	mainboard ramsize=2M cpus=8
-[stability/badcall/badcall-read.t   ]	0.000000	sys161: System/161 release 2.0.8, compiled Mar  2 2016 17:16:01
-[stability/badcall/badcall-read.t   ]	0.000000	
-[stability/badcall/badcall-read.t   ]	0.000000	OS/161 base system version 2.0.1
-[stability/forktest-stability.t     ]	0.000000	sys161: System/161 release 2.0.8, compiled Mar  2 2016 17:16:01
-[stability/forktest-stability.t     ]	0.000000	
-[stability/forktest-stability.t     ]	0.000000	OS/161 base system version 2.0.1
-[stability/badcall/badcall-open.t   ]	0.000000	31	mainboard ramsize=2M cpus=8
-[stability/randcall.t               ]	0.000000	
-[stability/randcall.t               ]	0.000000	Will (waburgin)'s system version 0 (ASST2 #844)
-[stability/randcall.t               ]	0.000000	
-[stability/randcall.t               ]	0.000000	16096k physical memory available
-[stability/randcall.t               ]	0.000000	Device probe...
-[stability/randcall.t               ]	0.000000	lamebus0 (system main bus)
-[stability/randcall.t               ]	0.000000	emu0 at lamebus0
-[stability/randcall.t               ]	0.000000	ltrace0 at lamebus0
-[stability/randcall.t               ]	0.000000	ltimer0 at lamebus0
-[stability/randcall.t               ]	0.000000	beep0 at ltimer0
-[stability/randcall.t               ]	0.000000	rtclock0 at ltimer0
-[stability/randcall.t               ]	0.000000	lrandom0 at lamebus0
-[stability/randcall.t               ]	0.000000	random0 at lrandom0
-[stability/randcall.t               ]	0.000000	lhd0 at lamebus0
-[stability/badcall/badcall-waitpid.t]	0.000000	sys161: System/161 release 2.0.8, compiled Mar  2 2016 17:16:01
-[stability/badcall/badcall-waitpid.t]	0.000000	
-[stability/badcall/badcall-waitpid.t]	0.000000	OS/161 base system version 2.0.1
-[stability/badcall/badcall-waitpid.t]	0.000000	Copyright (c) 2000, 2001-2005, 2008-2011, 2013, 2014
-[stability/badcall/badcall-waitpid.t]	0.000000	   President and Fellows of Harvard College.  All rights reserved.
-[stability/badcall/badcall-waitpid.t]	0.000000	
-[stability/badcall/badcall-waitpid.t]	0.000000	Will (waburgin)'s system version 0 (ASST2 #844)
-[stability/badcall/badcall-waitpid.t]	0.000000	
-[stability/badcall/badcall-dup2.t   ]	0.000000	0 serial
-[stability/badcall/badcall-dup2.t   ]	0.000000	1	emufs
-[stability/badcall/badcall-dup2.t   ]	0.000000	2	disk rpm=7200 file=LHD0.img nodoom # bytes=4M
-[stability/badcall/badcall-dup2.t   ]	0.000000	28	random seed=18668
-[stability/badcall/badcall-dup2.t   ]	0.000000	29	timer
-[stability/badcall/badcall-dup2.t   ]	0.000000	30	trace
-[stability/badcall/badcall-dup2.t   ]	0.000000	31	mainboard ramsize=2M cpus=8
-[stability/badcall/badcall-waitpid.t]	0.000000	1760k physical memory available
-[stability/badcall/badcall-open.t   ]	0.000000	sys161: System/161 release 2.0.8, compiled Mar  2 2016 17:16:01
-[stability/badcall/badcall-open.t   ]	0.000000	
-[stability/badcall/badcall-open.t   ]	0.000000	OS/161 base system version 2.0.1
-[stability/randcall.t               ]	0.000000	lser0 at lamebus0
-[stability/badcall/badcall-read.t   ]	0.000000	Copyright (c) 2000, 2001-2005, 2008-2011, 2013, 2014
-[stability/badcall/badcall-dup2.t   ]	0.000000	sys161: System/161 release 2.0.8, compiled Mar  2 2016 17:16:01
-[stability/badcall/badcall-waitpid.t]	0.000000	Device probe...
-[stability/badcall/badcall-waitpid.t]	0.000000	lamebus0 (system main bus)
-[stability/forktest-stability.t     ]	0.000000	Copyright (c) 2000, 2001-2005, 2008-2011, 2013, 2014
-[stability/randcall.t               ]	0.720289	con0 at lser0
-[stability/randcall.t               ]	0.720289	
-[stability/badcall/badcall-waitpid.t]	0.000000	emu0 at lamebus0
-[stability/badcall/badcall-dup2.t   ]	0.000000	
-[stability/badcall/badcall-open.t   ]	0.000000	Copyright (c) 2000, 2001-2005, 2008-2011, 2013, 2014
-[stability/badcall/badcall-write.t  ]	0.000000	sys161: System/161 release 2.0.8, compiled Mar  2 2016 17:16:01
-[stability/badcall/badcall-lseek.t  ]	0.000000	0 serial
-[stability/badcall/badcall-lseek.t  ]	0.000000	1	emufs
-[stability/badcall/badcall-lseek.t  ]	0.000000	2	disk rpm=7200 file=LHD0.img nodoom # bytes=4M
-[stability/badcall/badcall-lseek.t  ]	0.000000	28	random seed=62387
-[stability/badcall/badcall-lseek.t  ]	0.000000	29	timer
-[stability/badcall/badcall-read.t   ]	0.000000	   President and Fellows of Harvard College.  All rights reserved.
-[stability/badcall/badcall-read.t   ]	0.302289	
-[stability/forktest-stability.t     ]	0.000000	   President and Fellows of Harvard College.  All rights reserved.
-[stability/forktest-stability.t     ]	0.000000	
-[stability/badcall/badcall-lseek.t  ]	0.000000	30	trace
-[stability/badcall/badcall-lseek.t  ]	0.000000	31	mainboard ramsize=2M cpus=8
-[stability/badcall/badcall-lseek.t  ]	0.000000	sys161: System/161 release 2.0.8, compiled Mar  2 2016 17:16:01
-[stability/badcall/badcall-waitpid.t]	0.000000	ltrace0 at lamebus0
-[stability/badcall/badcall-waitpid.t]	0.642289	ltimer0 at lamebus0
-[stability/badcall/badcall-waitpid.t]	0.642289	beep0 at ltimer0
-[stability/randcall.t               ]	0.720289	cpu0: MIPS/161 (System/161 2.x) features 0x0
-[stability/randcall.t               ]	0.930558	8 CPUs online
-[stability/badcall/badcall-read.t   ]	0.302289	Will (waburgin)'s system version 0 (ASST2 #844)
-[stability/badcall/badcall-open.t   ]	0.000000	   President and Fellows of Harvard College.  All rights reserved.
-[stability/badcall/badcall-open.t   ]	0.210289	
-[stability/badcall/badcall-read.t   ]	0.302289	
-[stability/randcall.t               ]	0.930558	OS/161 kernel [? for menu]: 
-[stability/badcall/badcall-lseek.t  ]	0.000000	
-[stability/forktest-stability.t     ]	0.000000	Will (waburgin)'s system version 0 (ASST2 #844)
-[stability/forktest-stability.t     ]	0.278289	
-[stability/badcall/badcall-waitpid.t]	0.642289	rtclock0 at ltimer0
-[stability/badcall/badcall-execv.t  ]	0.000000	0 serial
-[stability/randcall.t               ]	0.930558	
-[stability/badcall/badcall-execv.t  ]	0.000000	1	emufs
-[stability/badcall/badcall-execv.t  ]	0.000000	2	disk rpm=7200 file=LHD0.img nodoom # bytes=4M
-[stability/badcall/badcall-execv.t  ]	0.000000	28	random seed=1447
-[stability/badcall/badcall-execv.t  ]	0.000000	29	timer
-[stability/badcall/badcall-execv.t  ]	0.000000	30	trace
-[stability/badcall/badcall-execv.t  ]	0.000000	31	mainboard ramsize=2M cpus=8
-[stability/badcall/badcall-execv.t  ]	0.000000	sys161: System/161 release 2.0.8, compiled Mar  2 2016 17:16:01
-[stability/badcall/badcall-read.t   ]	0.302289	1760k physical memory available
-[stability/forktest-stability.t     ]	0.278289	16096k physical memory available
-[stability/badcall/badcall-read.t   ]	0.302289	Device probe...
-[stability/forkbomb.t               ]	4.961314	monitor: insufficient user instructions
-[stability/badcall/badcall-write.t  ]	0.000000	
-[stability/badcall/badcall-write.t  ]	0.016289	OS/161 base system version 2.0.1
-[stability/badcall/badcall-dup2.t   ]	0.000000	OS/161 base system version 2.0.1
-[stability/badcall/badcall-dup2.t   ]	0.014289	Copyright (c) 2000, 2001-2005, 2008-2011, 2013, 2014
-[stability/forktest-stability.t     ]	0.278289	Device probe...
-[stability/forktest-stability.t     ]	0.278289	lamebus0 (system main bus)
-[stability/badcall/badcall-waitpid.t]	0.642289	lrandom0 at lamebus0
-[stability/badcall/badcall-waitpid.t]	0.863455	random0 at lrandom0
-[stability/badcall/badcall-open.t   ]	0.210289	Will (waburgin)'s system version 0 (ASST2 #844)
-[stability/badcall/badcall-open.t   ]	0.421036	
-[stability/badcall/badcall-open.t   ]	0.421036	1760k physical memory available
-[stability/badcall/badcall-read.t   ]	0.302289	lamebus0 (system main bus)
-[stability/badcall/badcall-lseek.t  ]	0.000000	OS/161 base system version 2.0.1
-[stability/badcall/badcall-read.t   ]	0.524303	emu0 at lamebus0
-[stability/forktest-stability.t     ]	0.278289	emu0 at lamebus0
-[stability/badcall/badcall-open.t   ]	0.421036	Device probe...
-[stability/badcall/badcall-lseek.t  ]	0.012289	Copyright (c) 2000, 2001-2005, 2008-2011, 2013, 2014
-[stability/badcall/badcall-waitpid.t]	0.863455	lhd0 at lamebus0
-[stability/badcall/badcall-waitpid.t]	0.863455	lser0 at lamebus0
-[stability/badcall/badcall-write.t  ]	0.016289	Copyright (c) 2000, 2001-2005, 2008-2011, 2013, 2014
-[stability/badcall/badcall-dup2.t   ]	0.014289	   President and Fellows of Harvard College.  All rights reserved.
-[stability/badcall/badcall-dup2.t   ]	0.014289	
-[stability/badcall/badcall-waitpid.t]	0.863455	con0 at lser0
-[stability/badcall/badcall-waitpid.t]	0.863455	
-[stability/badcall/badcall-write.t  ]	0.016289	   President and Fellows of Harvard College.  All rights reserved.
-[stability/badcall/badcall-write.t  ]	0.237906	
-[stability/badcall/badcall-read.t   ]	0.524303	ltrace0 at lamebus0
-[stability/badcall/badcall-execv.t  ]	0.010289	
-[stability/badcall/badcall-execv.t  ]	0.010289	OS/161 base system version 2.0.1
-[stability/forkbomb.t               ]	4.961314	shutdown: unexpected shutdown
-[stability/forktest-stability.t     ]	0.499132	ltrace0 at lamebus0
-[stability/badcall/badcall-close.t  ]	0.000000	0 serial
-[stability/badcall/badcall-close.t  ]	0.000000	1	emufs
-[stability/badcall/badcall-close.t  ]	0.000000	2	disk rpm=7200 file=LHD0.img nodoom # bytes=4M
-[stability/badcall/badcall-close.t  ]	0.000000	28	random seed=18727
-[stability/badcall/badcall-close.t  ]	0.000000	29	timer
-[stability/badcall/badcall-close.t  ]	0.000000	30	trace
-[stability/badcall/badcall-close.t  ]	0.000000	31	mainboard ramsize=2M cpus=8
-[stability/badcall/badcall-dup2.t   ]	0.014289	Will (waburgin)'s system version 0 (ASST2 #844)
-[stability/badcall/badcall-close.t  ]	0.000000	sys161: System/161 release 2.0.8, compiled Mar  2 2016 17:16:01
-[stability/forktest-stability.t     ]	0.519247	ltimer0 at lamebus0
-[stability/badcall/badcall-read.t   ]	0.544330	ltimer0 at lamebus0
-[stability/badcall/badcall-read.t   ]	0.544330	beep0 at ltimer0
-[stability/badcall/badcall-read.t   ]	0.544330	rtclock0 at ltimer0
-[stability/badcall/badcall-close.t  ]	0.000000	
-[stability/badcall/badcall-open.t   ]	0.421036	lamebus0 (system main bus)
-[stability/badcall/badcall-open.t   ]	0.441162	emu0 at lamebus0
-[stability/badcall/badcall-waitpid.t]	0.863455	cpu0: MIPS/161 (System/161 2.x) features 0x0
-[stability/badcall/badcall-open.t   ]	0.441162	ltrace0 at lamebus0
-[stability/badcall/badcall-waitpid.t]	0.883608	8 CPUs online
-[stability/badcall/badcall-write.t  ]	0.237906	Will (waburgin)'s system version 0 (ASST2 #844)
-[stability/badcall/badcall-write.t  ]	0.237906	
-[stability/badcall/badcall-execv.t  ]	0.010289	Copyright (c) 2000, 2001-2005, 2008-2011, 2013, 2014
-[stability/forktest-stability.t     ]	0.519247	beep0 at ltimer0
-[stability/forktest-stability.t     ]	0.519247	rtclock0 at ltimer0
-[stability/badcall/badcall-waitpid.t]	0.883608	OS/161 kernel [? for menu]: 
-[stability/badcall/badcall-read.t   ]	0.544330	lrandom0 at lamebus0
-[stability/badcall/badcall-waitpid.t]	0.883608	
-[stability/randcall.t               ]	2.045577	(program name unknown): Timing enabled.
-[stability/badcall/badcall-write.t  ]	0.237906	1760k physical memory available
-[stability/forktest-stability.t     ]	0.519247	lrandom0 at lamebus0
-[stability/badcall/badcall-close.t  ]	0.000000	OS/161 base system version 2.0.1
-[stability/badcall/badcall-dup2.t   ]	0.265089	
-[stability/badcall/badcall-dup2.t   ]	0.265089	1760k physical memory available
-[stability/badcall/badcall-dup2.t   ]	0.265089	Device probe...
-[stability/badcall/badcall-dup2.t   ]	0.305326	lamebus0 (system main bus)
-[stability/badcall/badcall-lseek.t  ]	0.012289	   President and Fellows of Harvard College.  All rights reserved.
-[stability/badcall/badcall-lseek.t  ]	0.253950	
-[stability/randcall.t               ]	2.045577	OS/161$ 
-[stability/badcall/badcall-read.t   ]	0.544330	random0 at lrandom0
-[stability/badcall/badcall-open.t   ]	0.441162	ltimer0 at lamebus0
-[stability/badcall/badcall-open.t   ]	0.491480	beep0 at ltimer0
-[stability/badcall/badcall-write.t  ]	0.237906	Device probe...
-[stability/badcall/badcall-dup2.t   ]	0.305326	emu0 at lamebus0
-[stability/forktest-stability.t     ]	0.519247	random0 at lrandom0
-[stability/badcall/badcall-open.t   ]	0.491480	rtclock0 at ltimer0
-[stability/badcall/badcall-execv.t  ]	0.010289	   President and Fellows of Harvard College.  All rights reserved.
-[stability/badcall/badcall-execv.t  ]	0.220403	
-[stability/badcall/badcall-lseek.t  ]	0.253950	Will (waburgin)'s system version 0 (ASST2 #844)
-[stability/badcall/badcall-read.t   ]	0.594612	lhd0 at lamebus0
-[stability/badcall/badcall-lseek.t  ]	0.253950	
-[stability/forktest-stability.t     ]	0.569481	lhd0 at lamebus0
-[stability/badcall/badcall-dup2.t   ]	0.305326	ltrace0 at lamebus0
-[stability/forktest-stability.t     ]	0.589569	lser0 at lamebus0
-[stability/badcall/badcall-dup2.t   ]	0.305326	ltimer0 at lamebus0
-[stability/badcall/badcall-close.t  ]	0.000000	Copyright (c) 2000, 2001-2005, 2008-2011, 2013, 2014
-[stability/forktest-stability.t     ]	0.609651	con0 at lser0
-[stability/badcall/badcall-write.t  ]	0.298138	lamebus0 (system main bus)
-[stability/badcall/badcall-write.t  ]	0.328284	emu0 at lamebus0
-[stability/badcall/badcall-open.t   ]	0.501545	lrandom0 at lamebus0
-[stability/badcall/badcall-read.t   ]	0.594612	lser0 at lamebus0
-[stability/badcall/badcall-read.t   ]	0.614751	con0 at lser0
-[stability/badcall/badcall-lseek.t  ]	0.253950	1760k physical memory available
-[stability/forktest-stability.t     ]	0.609651	
-[stability/badcall/badcall-open.t   ]	0.521580	random0 at lrandom0
-[stability/badcall/badcall-read.t   ]	0.614751	
-[stability/badcall/badcall-execv.t  ]	0.220403	Will (waburgin)'s system version 0 (ASST2 #844)
-[stability/badcall/badcall-execv.t  ]	0.250530	
-[stability/badcall/badcall-open.t   ]	0.521580	lhd0 at lamebus0
-[stability/badcall/badcall-dup2.t   ]	0.335467	beep0 at ltimer0
-[stability/badcall/badcall-lseek.t  ]	0.284029	Device probe...
-[stability/badcall/badcall-write.t  ]	0.328284	ltrace0 at lamebus0
-[stability/badcall/badcall-open.t   ]	0.521580	lser0 at lamebus0
-[stability/badcall/badcall-write.t  ]	0.328284	ltimer0 at lamebus0
-[stability/badcall/badcall-dup2.t   ]	0.335467	rtclock0 at ltimer0
-[stability/badcall/badcall-execv.t  ]	0.250530	1760k physical memory available
-[stability/forktest-stability.t     ]	0.609651	cpu0: MIPS/161 (System/161 2.x) features 0x0
-[stability/badcall/badcall-lseek.t  ]	0.284029	lamebus0 (system main bus)
-[stability/badcall/badcall-read.t   ]	0.614751	cpu0: MIPS/161 (System/161 2.x) features 0x0
-[stability/badcall/badcall-open.t   ]	0.521580	con0 at lser0
-[stability/badcall/badcall-open.t   ]	0.561762	
-[stability/badcall/badcall-write.t  ]	0.328284	beep0 at ltimer0
-[stability/badcall/badcall-dup2.t   ]	0.355645	lrandom0 at lamebus0
-[stability/badcall/badcall-lseek.t  ]	0.284029	emu0 at lamebus0
-[stability/badcall/badcall-close.t  ]	0.028289	   President and Fellows of Harvard College.  All rights reserved.
-[stability/badcall/badcall-close.t  ]	0.028289	
-[stability/badcall/badcall-execv.t  ]	0.250530	Device probe...
-[stability/forktest-stability.t     ]	0.609651	8 CPUs online
-[stability/badcall/badcall-read.t   ]	0.624790	8 CPUs online
-[stability/badcall/badcall-dup2.t   ]	0.355645	random0 at lrandom0
-[stability/badcall/badcall-write.t  ]	0.328284	rtclock0 at ltimer0
-[stability/badcall/badcall-execv.t  ]	0.250530	lamebus0 (system main bus)
-[stability/badcall/badcall-write.t  ]	0.328284	lrandom0 at lamebus0
-[stability/badcall/badcall-lseek.t  ]	0.284029	ltrace0 at lamebus0
-[stability/badcall/badcall-dup2.t   ]	0.355645	lhd0 at lamebus0
-[stability/badcall/badcall-waitpid.t]	1.547157	(program name unknown): Timing enabled.
-[stability/forktest-stability.t     ]	0.609651	OS/161 kernel [? for menu]: 
-[stability/forktest-stability.t     ]	0.669925	
-[stability/badcall/badcall-read.t   ]	0.624790	OS/161 kernel [? for menu]: 
-[stability/badcall/badcall-open.t   ]	0.561762	cpu0: MIPS/161 (System/161 2.x) features 0x0
-[stability/badcall/badcall-execv.t  ]	0.300822	emu0 at lamebus0
-[stability/randcall.t               ]	2.095815	/testbin/randcall -f -c 100 -r 421 2
-[stability/badcall/badcall-read.t   ]	0.665002	
-[stability/badcall/badcall-lseek.t  ]	0.344265	ltimer0 at lamebus0
-[stability/badcall/badcall-waitpid.t]	1.607422	OS/161$ 
-[stability/badcall/badcall-dup2.t   ]	0.405799	lser0 at lamebus0
-[stability/badcall/badcall-close.t  ]	0.028289	Will (waburgin)'s system version 0 (ASST2 #844)
-[stability/badcall/badcall-close.t  ]	0.270174	
-[stability/badcall/badcall-open.t   ]	0.591976	8 CPUs online
-[stability/badcall/badcall-write.t  ]	0.378514	random0 at lrandom0
-[stability/badcall/badcall-lseek.t  ]	0.344265	beep0 at ltimer0
-[stability/badcall/badcall-dup2.t   ]	0.405799	con0 at lser0
-[stability/badcall/badcall-dup2.t   ]	0.405799	
-[stability/badcall/badcall-execv.t  ]	0.300822	ltrace0 at lamebus0
-[stability/badcall/badcall-write.t  ]	0.388571	lhd0 at lamebus0
-[stability/badcall/badcall-lseek.t  ]	0.344265	rtclock0 at ltimer0
-[stability/badcall/badcall-open.t   ]	0.591976	OS/161 kernel [? for menu]: 
-[stability/badcall/badcall-close.t  ]	0.270174	1760k physical memory available
-[stability/badcall/badcall-write.t  ]	0.388571	lser0 at lamebus0
-[stability/badcall/badcall-execv.t  ]	0.300822	ltimer0 at lamebus0
-[stability/badcall/badcall-open.t   ]	0.591976	
-[stability/badcall/badcall-lseek.t  ]	0.344265	lrandom0 at lamebus0
-[stability/badcall/badcall-close.t  ]	0.270174	Device probe...
-[stability/badcall/badcall-write.t  ]	0.388571	con0 at lser0
-[stability/badcall/badcall-write.t  ]	0.438806	
-[stability/badcall/badcall-lseek.t  ]	0.344265	random0 at lrandom0
-[stability/badcall/badcall-execv.t  ]	0.330910	beep0 at ltimer0
-[stability/badcall/badcall-dup2.t   ]	0.405799	cpu0: MIPS/161 (System/161 2.x) features 0x0
-[stability/badcall/badcall-close.t  ]	0.270174	lamebus0 (system main bus)
-[stability/badcall/badcall-lseek.t  ]	0.394583	lhd0 at lamebus0
-[stability/badcall/badcall-waitpid.t]	1.607422	/testbin/badcall b
-[stability/badcall/badcall-dup2.t   ]	0.456067	8 CPUs online
-[stability/badcall/badcall-close.t  ]	0.320473	emu0 at lamebus0
-[stability/badcall/badcall-lseek.t  ]	0.414727	lser0 at lamebus0
-[stability/badcall/badcall-write.t  ]	0.438806	cpu0: MIPS/161 (System/161 2.x) features 0x0
-[stability/badcall/badcall-close.t  ]	0.320473	ltrace0 at lamebus0
-[stability/badcall/badcall-lseek.t  ]	0.414727	con0 at lser0
-[stability/badcall/badcall-lseek.t  ]	0.414727	
-[stability/badcall/badcall-write.t  ]	0.438806	8 CPUs online
-[stability/badcall/badcall-execv.t  ]	0.351030	rtclock0 at ltimer0
-[stability/badcall/badcall-dup2.t   ]	0.456067	OS/161 kernel [? for menu]: 
-[stability/badcall/badcall-execv.t  ]	0.351030	lrandom0 at lamebus0
-[stability/badcall/badcall-execv.t  ]	0.381190	random0 at lrandom0
-[stability/badcall/badcall-execv.t  ]	0.381190	lhd0 at lamebus0
-[stability/badcall/badcall-close.t  ]	0.320473	ltimer0 at lamebus0
-[syscalls/forktest.t                ]	2.120511	
-[stability/badcall/badcall-dup2.t   ]	2.496033	
-[stability/forktest-stability.t     ]	2.116738	(program name unknown): Timing enabled.
-[stability/badcall/badcall-execv.t  ]	0.381190	lser0 at lamebus0
-[stability/badcall/badcall-close.t  ]	0.350587	beep0 at ltimer0
-[stability/badcall/badcall-write.t  ]	0.438806	OS/161 kernel [? for menu]: 
-[stability/badcall/badcall-read.t   ]	2.112141	(program name unknown): Timing enabled.
-[stability/badcall/badcall-write.t  ]	0.468931	
-[stability/badcall/badcall-lseek.t  ]	0.414727	cpu0: MIPS/161 (System/161 2.x) features 0x0
-[stability/forktest-stability.t     ]	2.156877	OS/161$ 
-[stability/badcall/badcall-execv.t  ]	0.391226	con0 at lser0
-[stability/badcall/badcall-execv.t  ]	0.411387	
-[stability/badcall/badcall-read.t   ]	2.162353	OS/161$ 
-[stability/badcall/badcall-close.t  ]	0.360593	rtclock0 at ltimer0
-[syscalls/forktest.t                ]	2.120511	AABBBBCCCCCCCCDDDDDDDDDDDDDDDD
-[stability/badcall/badcall-lseek.t  ]	0.444792	8 CPUs online
-[stability/badcall/badcall-open.t   ]	2.270169	(program name unknown): Timing enabled.
-[stability/badcall/badcall-open.t   ]	2.290231	OS/161$ 
-[stability/badcall/badcall-close.t  ]	0.380781	lrandom0 at lamebus0
-[syscalls/forktest.t                ]	2.150666	/testbin/forktest: SUCCESS
-[stability/badcall/badcall-lseek.t  ]	0.464808	OS/161 kernel [? for menu]: 
-[stability/badcall/badcall-lseek.t  ]	0.464808	
-[stability/badcall/badcall-execv.t  ]	0.411387	cpu0: MIPS/161 (System/161 2.x) features 0x0
-[stability/badcall/badcall-close.t  ]	0.380781	random0 at lrandom0
-[stability/badcall/badcall-close.t  ]	0.380781	lhd0 at lamebus0
-[stability/forktest-stability.t     ]	2.156877	/testbin/forktest
-[stability/badcall/badcall-execv.t  ]	0.411387	8 CPUs online
-[stability/badcall/badcall-close.t  ]	0.380781	lser0 at lamebus0
-[syscalls/forktest.t                ]	2.150666	(program name unknown): Complete.
-[stability/badcall/badcall-read.t   ]	2.614428	/testbin/badcall d
-[stability/badcall/badcall-close.t  ]	0.420889	con0 at lser0
-[stability/badcall/badcall-close.t  ]	0.420889	
-[stability/badcall/badcall-execv.t  ]	0.451641	OS/161 kernel [? for menu]: 
-[stability/badcall/badcall-execv.t  ]	2.973310	
-[syscalls/forktest.t                ]	2.170779	Operation took 1.232296353 seconds
-[stability/badcall/badcall-open.t   ]	2.290231	/testbin/badcall c
-[stability/badcall/badcall-dup2.t   ]	2.576398	(program name unknown): Timing enabled.
-[stability/badcall/badcall-dup2.t   ]	2.616591	OS/161$ 
-[stability/badcall/badcall-close.t  ]	0.420889	cpu0: MIPS/161 (System/161 2.x) features 0x0
-[syscalls/forktest.t                ]	2.190831	OS/161 kernel [? for menu]: 
-[stability/badcall/badcall-close.t  ]	0.461112	8 CPUs online
-[syscalls/forktest.t                ]	7.085138	
-[stability/badcall/badcall-write.t  ]	2.639977	(program name unknown): Timing enabled.
-[stability/badcall/badcall-write.t  ]	2.670072	OS/161$ 
-[stability/randcall.t               ]	3.141410	Seed: 421  Count: 100
-[stability/badcall/badcall-close.t  ]	0.461112	OS/161 kernel [? for menu]: 
-[syscalls/forktest.t                ]	7.085138	Shutting down.
-[syscalls/forktest.t                ]	7.135424	The system is halted.
-[stability/badcall/badcall-close.t  ]	0.461112	
-[stability/badcall/badcall-lseek.t  ]	2.816136	(program name unknown): Timing enabled.
-[stability/badcall/badcall-dup2.t   ]	2.626597	/testbin/badcall w
-[stability/badcall/badcall-lseek.t  ]	2.836228	OS/161$ 
-[stability/badcall/badcall-write.t  ]	2.670072	/testbin/badcall e
-[stability/randcall.t               ]	3.151477	execv(0xd68c5e88, 0xa0d8d22c)                   result -1, errno 6
-[stability/badcall/badcall-execv.t  ]	3.053651	(program name unknown): Timing enabled.
-[stability/badcall/badcall-execv.t  ]	3.093729	OS/161$ 
-[stability/badcall/badcall-waitpid.t]	2.501307	[a-|, 1-4, *, ?=menu, !=quit]
-[syscalls/forktest.t                ]	7.135424	sys161: 189792763 cycles (44726079 run, 145066684 global-idle)
-[syscalls/forktest.t                ]	7.135424	sys161:   cpu0: 27155114 kern, 250139 user, 5961158 idle; 12188 ll, 12188/0 sc, 31997 sync
-[syscalls/forktest.t                ]	7.135424	sys161:   cpu1: 7943176 kern, 91472 user, 25331763 idle; 1375 ll, 1375/0 sc, 2955 sync
-[syscalls/forktest.t                ]	7.135424	sys161:   cpu2: 7863632 kern, 101511 user, 25401268 idle; 502 ll, 501/1 sc, 1031 sync
-[syscalls/forktest.t                ]	7.135424	sys161:   cpu3: 198824 kern, 0 user, 33167587 idle; 7 ll, 5/2 sc, 10 sync
-[syscalls/forktest.t                ]	7.135424	sys161:   cpu4: 198526 kern, 0 user, 33167885 idle; 8 ll, 5/3 sc, 10 sync
-[syscalls/forktest.t                ]	7.135424	sys161:   cpu5: 198090 kern, 0 user, 33168321 idle; 9 ll, 5/4 sc, 10 sync
-[syscalls/forktest.t                ]	7.135424	sys161:   cpu6: 197723 kern, 0 user, 33168688 idle; 10 ll, 5/5 sc, 10 sync
-[syscalls/forktest.t                ]	7.135424	sys161:   cpu7: 197356 kern, 0 user, 33169055 idle; 11 ll, 5/6 sc, 10 sync
-[syscalls/forktest.t                ]	7.135424	sys161: 1809 irqs 24654 exns 0r/0w disk 22r/855w console 10r/31w/5m emufs 0r/0w net
-[syscalls/forktest.t                ]	7.135424	sys161: Elapsed real time: 7.284855 seconds (26.0531 mhz)
-[syscalls/forktest.t                ]	7.135424	sys161: Elapsed virtual time: 7.141624243 seconds (25 mhz)
-[syscalls/forktest.t                ]	7.135424	shutdown: normal shutdown
-[stability/badcall/badcall-lseek.t  ]	2.846269	/testbin/badcall j
-[stability/badcall/badcall-waitpid.t]	2.531403	Choose: b
-[stability/badcall/badcall-close.t  ]	2.289295	(program name unknown): Timing enabled.
-[stability/randcall.t               ]	3.201753	waitpid(-1568271836, 0x6260289a, -1193132418)   result -1, errno 15
-[stability/badcall/badcall-waitpid.t]	2.531403	badcall: wait for pid -8... No such process                             passed
-[stability/badcall/badcall-execv.t  ]	3.103756	/testbin/badcall a
-[stability/badcall/badcall-close.t  ]	2.319423	OS/161$ 
-[stability/forktest-stability.t     ]	2.950542	/testbin/forktest: Starting. Expect this many:
-[stability/randcall.t               ]	3.252057	open(0x7ac444a8, -295372568, 71499378)          result -1, errno 8
-[stability/badcall/badcall-waitpid.t]	2.591617	badcall: wait for pid -1... No such process                             passed
-[stability/forktest-stability.t     ]	2.980676	|----------------------------|
-[stability/badcall/badcall-read.t   ]	2.976247	[a-|, 1-4, *, ?=menu, !=quit]
-[stability/badcall/badcall-read.t   ]	3.006378	Choose: d
-[stability/badcall/badcall-open.t   ]	3.134404	[a-|, 1-4, *, ?=menu, !=quit]
-[stability/badcall/badcall-close.t  ]	2.319423	/testbin/badcall f
-[stability/badcall/badcall-waitpid.t]	2.601637	badcall: pid zero... No such process                                    passed
-[stability/randcall.t               ]	3.282283	read(2059719842, 0x28ded470, 3704511228)        result -1, errno 30
-[stability/badcall/badcall-open.t   ]	3.144490	Choose: c
-[stability/badcall/badcall-read.t   ]	3.006378	badcall: read using fd -1... Bad file number                            passed
-[stability/badcall/badcall-waitpid.t]	2.651962	badcall: nonexistent pid... No such process                             passed
-[stability/badcall/badcall-open.t   ]	3.164663	badcall: open with NULL path... Bad memory reference                    passed
-[stability/badcall/badcall-dup2.t   ]	3.360189	[a-|, 1-4, *, ?=menu, !=quit]
-[stability/badcall/badcall-read.t   ]	3.026520	badcall: read using fd -5... Bad file number                            passed
-[stability/badcall/badcall-dup2.t   ]	3.380293	Choose: w
-[stability/randcall.t               ]	3.322521	write(-1674289430, 0x243a8c52, 2731167880)      result -1, errno 30
-[stability/badcall/badcall-write.t  ]	3.534184	[a-|, 1-4, *, ?=menu, !=quit]
-[stability/badcall/badcall-write.t  ]	3.584418	Choose: e
-[stability/badcall/badcall-open.t   ]	3.204869	badcall: open with invalid-pointer path... Bad memory reference         passed
-[stability/crash/crash-allS.t       ]	0.000000	0 serial
-[stability/crash/crash-allS.t       ]	0.000000	1	emufs
-[stability/crash/crash-allS.t       ]	0.000000	2	disk rpm=7200 file=LHD0.img nodoom # bytes=4M
-[stability/crash/crash-allS.t       ]	0.000000	28	random seed=54705
-[stability/crash/crash-allS.t       ]	0.000000	29	timer
-[stability/crash/crash-allS.t       ]	0.000000	30	trace
-[stability/crash/crash-allS.t       ]	0.000000	31	mainboard ramsize=4M cpus=8
-[stability/badcall/badcall-read.t   ]	3.056653	badcall: read using closed fd... Bad file number                        passed
-[stability/crash/crash-allS.t       ]	0.000000	sys161: System/161 release 2.0.8, compiled Mar  2 2016 17:16:01
-[stability/badcall/badcall-dup2.t   ]	3.380293	badcall: dup2 using fd -1... Bad file number                            passed
-[stability/badcall/badcall-lseek.t  ]	3.670650	[a-|, 1-4, *, ?=menu, !=quit]
-[stability/badcall/badcall-lseek.t  ]	3.700810	Choose: j
-[stability/badcall/badcall-write.t  ]	3.584418	badcall: write using fd -1... Bad file number                           passed
-[stability/badcall/badcall-open.t   ]	3.245058	badcall: open with kernel-pointer path... Bad memory reference          passed
-[stability/badcall/badcall-dup2.t   ]	3.420417	badcall: dup2 using fd -5... Bad file number                            passed
-[stability/crash/crash-allS.t       ]	0.014289	
-[stability/badcall/badcall-read.t   ]	3.106970	badcall: read using impossible fd... Bad file number                    passed
-[stability/randcall.t               ]	3.362625	close(2028132080)                               result -1, errno 30
-[stability/crash/crash-allS.t       ]	0.014289	OS/161 base system version 2.0.1
-[stability/badcall/badcall-execv.t  ]	3.957891	[a-|, 1-4, *, ?=menu, !=quit]
-[stability/badcall/badcall-lseek.t  ]	3.700810	badcall: lseek using fd -1... Bad file number                           passed
-[stability/badcall/badcall-write.t  ]	3.614523	badcall: write using fd -5... Bad file number                           passed
-[stability/badcall/badcall-execv.t  ]	3.967948	Choose: a
-[stability/badcall/badcall-dup2.t   ]	3.450532	badcall: dup2 using closed fd... Bad file number                        passed
-[stability/badcall/badcall-open.t   ]	3.285283	badcall: open null: with bad flags... Invalid argument                  passed
-[stability/crash/crash-allS.t       ]	0.014289	Copyright (c) 2000, 2001-2005, 2008-2011, 2013, 2014
-[stability/badcall/badcall-read.t   ]	3.137172	badcall: read using fd OPEN_MAX... Bad file number                      passed
-[stability/badcall/badcall-lseek.t  ]	3.710843	badcall: lseek using fd -5... Bad file number                           passed
-[stability/randcall.t               ]	3.422921	lseek(1588874860, 205134436055563412, -1530901260) result -1, errno 30
-[stability/badcall/badcall-waitpid.t]	2.672101	badcall: wait with NULL status... Bad memory reference                  FAILURE
-[stability/badcall/badcall-write.t  ]	3.624526	badcall: write using closed fd... Bad file number                       passed
-[stability/badcall/badcall-dup2.t   ]	3.460533	badcall: dup2 using impossible fd... Bad file number                    passed
-[stability/badcall/badcall-close.t  ]	3.284042	[a-|, 1-4, *, ?=menu, !=quit]
-[stability/badcall/badcall-open.t   ]	3.295370	badcall: open empty string... Success                                   passed
-[stability/crash/crash-allS.t       ]	0.014289	   President and Fellows of Harvard College.  All rights reserved.
-[stability/crash/crash-allS.t       ]	0.224890	
-[stability/badcall/badcall-close.t  ]	3.294088	Choose: f
-[stability/badcall/badcall-read.t   ]	3.187468	badcall: read using fd opened write-only... Bad file number             passed
-[stability/badcall/badcall-open.t   ]	3.365614	/testbin/badcall: SUCCESS
-[stability/badcall/badcall-lseek.t  ]	3.750996	badcall: lseek using closed fd... Bad file number                       passed
-[stability/badcall/badcall-write.t  ]	3.674899	badcall: write using impossible fd... Bad file number                   passed
-[stability/badcall/badcall-dup2.t   ]	3.510798	badcall: dup2 using fd OPEN_MAX... Bad file number                      passed
-[stability/crash/crash-allS.t       ]	0.224890	Will (waburgin)'s system version 0 (ASST2 #844)
-[stability/crash/crash-allS.t       ]	0.255064	
-[stability/randcall.t               ]	3.463081	chdir(0xca8af014)                               result -1, errno 6
-[stability/badcall/badcall-close.t  ]	3.304171	badcall: close using fd -1... Bad file number                           passed
-[stability/crash/crash-allS.t       ]	0.255064	3808k physical memory available
-[stability/badcall/badcall-lseek.t  ]	3.801229	badcall: lseek using impossible fd... Bad file number                   passed
-[stability/badcall/badcall-read.t   ]	3.217601	badcall: read with NULL buffer... Bad memory reference                  passed
-[stability/crash/crash-allS.t       ]	0.255064	Device probe...
-[stability/badcall/badcall-open.t   ]	3.365614	(program name unknown): subprocess time: 0.395434973 seconds
-[stability/badcall/badcall-write.t  ]	3.715156	badcall: write using fd OPEN_MAX... Bad file number                     passed
-[stability/badcall/badcall-dup2.t   ]	3.540919	badcall: dup2 to -1... Bad file number                                  passed
-[stability/badcall/badcall-open.t   ]	3.395811	OS/161$ 
-[stability/badcall/badcall-read.t   ]	3.278131	Unknown syscall 68
-[stability/crash/crash-allS.t       ]	0.255064	lamebus0 (system main bus)
-[stability/badcall/badcall-close.t  ]	3.344379	badcall: close using fd -5... Bad file number                           passed
-[stability/badcall/badcall-execv.t  ]	4.048249	badcall: exec with NULL program... Bad memory reference                 passed
-[stability/badcall/badcall-open.t   ]	3.426057	exit
-[stability/crash/crash-allS.t       ]	0.295396	emu0 at lamebus0
-[stability/badcall/badcall-lseek.t  ]	3.811279	badcall: lseek using fd OPEN_MAX... Bad file number                     passed
-[stability/randcall.t               ]	3.513255	dup2(547503346, -591750554)                     result -1, errno 30
-[stability/crash/crash-allS.t       ]	0.295396	ltrace0 at lamebus0
-[stability/crash/crash-allS.t       ]	0.295396	ltimer0 at lamebus0
-[stability/badcall/badcall-write.t  ]	3.735215	badcall: write using fd opened read-only... Bad file number             passed
-[stability/badcall/badcall-dup2.t   ]	3.591166	badcall: dup2 to -5... Bad file number                                  passed
-[stability/badcall/badcall-open.t   ]	3.426057	Operation took 3.613170708 seconds
-[stability/badcall/badcall-close.t  ]	3.374535	badcall: close using closed fd... Bad file number                       passed
-[stability/crash/crash-allS.t       ]	0.295396	beep0 at ltimer0
-[stability/badcall/badcall-read.t   ]	3.298206	badcall: read with invalid buffer... Bad memory reference               passed
-[stability/crash/crash-allS.t       ]	0.295396	rtclock0 at ltimer0
-[stability/badcall/badcall-read.t   ]	3.298206	Unknown syscall 68
-[stability/badcall/badcall-open.t   ]	5.807269	OS/161 kernel [? for menu]: 
-[stability/badcall/badcall-lseek.t  ]	3.841397	badcall: lseek on device... Illegal seek                                passed
-[stability/badcall/badcall-waitpid.t]	2.782589	badcall: wait with invalid pointer status... Bad memory reference       passed
-[stability/badcall/badcall-open.t   ]	5.807269	
-[stability/crash/crash-allS.t       ]	0.295396	lrandom0 at lamebus0
-[stability/badcall/badcall-write.t  ]	3.795464	badcall: write with NULL buffer... Bad memory reference                 passed
-[stability/badcall/badcall-dup2.t   ]	3.591166	badcall: dup2 to impossible fd... Bad file number                       passed
-[stability/crash/crash-allS.t       ]	0.385741	random0 at lrandom0
-[stability/crash/crash-allS.t       ]	0.385741	lhd0 at lamebus0
-[stability/randcall.t               ]	3.553391	__getcwd(0x5e2094e8, 45648596)                  result -1, errno 6
-[stability/badcall/badcall-close.t  ]	3.374535	badcall: close using impossible fd... Bad file number                   passed
-[stability/badcall/badcall-write.t  ]	3.795464	Unknown syscall 68
-[stability/crash/crash-allS.t       ]	0.385741	lser0 at lamebus0
-[stability/crash/crash-allS.t       ]	0.385741	con0 at lser0
-[stability/crash/crash-allS.t       ]	0.385741	
-[stability/badcall/badcall-read.t   ]	3.298206	badcall: read with kernel-space buffer... Bad memory reference          passed
-[stability/badcall/badcall-dup2.t   ]	3.651549	badcall: dup2 to OPEN_MAX... Bad file number                            passed
-[stability/badcall/badcall-open.t   ]	5.998065	Shutting down.
-[stability/badcall/badcall-close.t  ]	3.374535	badcall: close using fd OPEN_MAX... Bad file number                     passed
-[stability/crash/crash-allS.t       ]	0.385741	cpu0: MIPS/161 (System/161 2.x) features 0x0
-[stability/badcall/badcall-read.t   ]	3.438791	Unknown syscall 68
-[stability/badcall/badcall-close.t  ]	3.495162	/testbin/badcall: SUCCESS
-[stability/badcall/badcall-read.t   ]	3.458858	/testbin/badcall: SUCCESS
-[stability/crash/crash-allS.t       ]	0.456021	8 CPUs online
-[stability/badcall/badcall-write.t  ]	3.795464	badcall: write with invalid buffer... Bad memory reference              passed
-[stability/badcall/badcall-dup2.t   ]	3.651549	badcall: copying stdin to test with... badcall: dup2 to same fd...      passed
-[stability/badcall/badcall-open.t   ]	5.998065	The system is halted.
-[stability/crash/crash-allS.t       ]	0.476107	OS/161 kernel [? for menu]: 
-[stability/badcall/badcall-write.t  ]	3.936189	Unknown syscall 68
-[stability/crash/crash-allS.t       ]	0.476107	
-[stability/badcall/badcall-dup2.t   ]	3.751855	badcall: fstat fd after dup2 to itself... Unknown syscall 82
-[stability/badcall/badcall-execv.t  ]	4.138617	badcall: exec with invalid pointer program... Bad memory reference      passed
-[stability/badcall/badcall-read.t   ]	3.478902	(program name unknown): subprocess time: 0.657519538 seconds
-[stability/badcall/badcall-close.t  ]	3.515284	(program name unknown): subprocess time: 0.384887138 seconds
-[stability/randcall.t               ]	3.553391	execv(0x3204f24a, 0x8e4834a4)                  panic: Bus error exception, PC=0x8001c618
-[stability/randcall.t               ]	3.653983	sys161: trace: software-requested debugger stop
-[stability/randcall.t               ]	3.653983	sys161: Not waiting for debugger...
-[stability/badcall/badcall-read.t   ]	3.519047	OS/161$ 
-[stability/badcall/badcall-close.t  ]	3.545354	OS/161$ 
-[stability/badcall/badcall-write.t  ]	3.946262	badcall: write with kernel-space buffer... Bad memory reference         passed
-[stability/badcall/badcall-open.t   ]	6.008082	sys161: 167261773 cycles (30649486 run, 136612287 global-idle)
-[stability/badcall/badcall-open.t   ]	6.008082	sys161:   cpu0: 13504466 kern, 42823 user, 9347 idle; 16583 ll, 16583/0 sc, 44889 sync
-[stability/badcall/badcall-open.t   ]	6.008082	sys161:   cpu1: 333793 kern, 0 user, 13222843 idle; 7 ll, 7/0 sc, 15 sync
-[stability/badcall/badcall-open.t   ]	6.008082	sys161:   cpu2: 333438 kern, 0 user, 13223198 idle; 6 ll, 5/1 sc, 10 sync
-[stability/badcall/badcall-open.t   ]	6.008082	sys161:   cpu3: 333071 kern, 0 user, 13223565 idle; 7 ll, 5/2 sc, 10 sync
-[stability/badcall/badcall-open.t   ]	6.008082	sys161:   cpu4: 332773 kern, 0 user, 13223863 idle; 8 ll, 5/3 sc, 10 sync
-[stability/badcall/badcall-open.t   ]	6.008082	sys161:   cpu5: 332337 kern, 0 user, 13224299 idle; 9 ll, 5/4 sc, 10 sync
-[stability/badcall/badcall-open.t   ]	6.008082	sys161:   cpu6: 331970 kern, 0 user, 13224666 idle; 10 ll, 5/5 sc, 10 sync
-[stability/badcall/badcall-open.t   ]	6.008082	sys161:   cpu7: 331603 kern, 0 user, 13225033 idle; 11 ll, 5/6 sc, 10 sync
-[stability/badcall/badcall-open.t   ]	6.008082	sys161: 2133 irqs 590 exns 0r/0w disk 28r/1271w console 20r/0w/5m emufs 0r/0w net
-[stability/badcall/badcall-open.t   ]	6.008082	sys161: Elapsed real time: 6.295470 seconds (26.5686 mhz)
-[stability/badcall/badcall-open.t   ]	6.008082	sys161: Elapsed virtual time: 6.011056374 seconds (25 mhz)
-[stability/badcall/badcall-open.t   ]	6.008082	shutdown: normal shutdown
-[stability/badcall/badcall-write.t  ]	3.986442	Unknown syscall 68
-[stability/badcall/badcall-read.t   ]	5.880479	exit
-[stability/badcall/badcall-close.t  ]	5.765958	exit
-[stability/badcall/badcall-waitpid.t]	2.832870	badcall: wait with kernel pointer status... Bad memory reference        passed
-[stability/badcall/badcall-dup2.t   ]	3.782072	                                          Function not implemented      ------
-[stability/badcall/badcall-write.t  ]	4.006551	/testbin/badcall: SUCCESS
-[stability/badcall/badcall-lseek.t  ]	3.841397	badcall: lseek stdin when open on file...                               ------
-[stability/badcall/badcall-close.t  ]	5.765958	Operation took 3.609146000 seconds
-[stability/randcall.t               ]	3.664041	sys161: 118674906 cycles (43807311 run, 74867595 global-idle)
-[stability/randcall.t               ]	3.664041	sys161:   cpu0: 16517896 kern, 145243 user, 9347 idle; 21351 ll, 21351/0 sc, 55641 sync
-[stability/randcall.t               ]	3.664041	sys161:   cpu1: 340108 kern, 0 user, 16332378 idle; 6 ll, 6/0 sc, 13 sync
-[stability/randcall.t               ]	3.664041	sys161:   cpu2: 339793 kern, 0 user, 16332693 idle; 5 ll, 4/1 sc, 8 sync
-[stability/randcall.t               ]	3.664041	sys161:   cpu3: 339466 kern, 0 user, 16333020 idle; 6 ll, 4/2 sc, 8 sync
-[stability/randcall.t               ]	3.664041	sys161:   cpu4: 339208 kern, 0 user, 16333278 idle; 7 ll, 4/3 sc, 8 sync
-[stability/randcall.t               ]	3.664041	sys161:   cpu5: 338812 kern, 0 user, 16333674 idle; 8 ll, 4/4 sc, 8 sync
-[stability/randcall.t               ]	3.664041	sys161:   cpu6: 338485 kern, 0 user, 16334001 idle; 9 ll, 4/5 sc, 8 sync
-[stability/randcall.t               ]	3.664041	sys161:   cpu7: 338158 kern, 0 user, 16334328 idle; 10 ll, 4/6 sc, 8 sync
-[stability/randcall.t               ]	3.664041	sys161: 2299 irqs 1285 exns 0r/0w disk 39r/1443w console 19r/0w/5m emufs 0r/0w net
-[stability/randcall.t               ]	3.664041	sys161: Elapsed real time: 6.982223 seconds (16.9967 mhz)
-[stability/randcall.t               ]	3.664041	sys161: Elapsed virtual time: 3.665897276 seconds (25 mhz)
-[stability/randcall.t               ]	3.664041	shutdown: unexpected shutdown
-[stability/badcall/badcall-read.t   ]	6.774574	Operation took 4.762703499 seconds
-[stability/badcall/badcall-dup2.t   ]	3.822330	badcall: lseek fd after dup2 to itself... Illegal seek                  passed
-[stability/badcall/badcall-read.t   ]	6.844990	OS/161 kernel [? for menu]: 
-[stability/badcall/badcall-read.t   ]	6.844990	
-[stability/badcall/badcall-close.t  ]	5.846372	OS/161 kernel [? for menu]: 
-[stability/badcall/badcall-close.t  ]	5.846372	
-[stability/badcall/badcall-close.t  ]	5.846372	Shutting down.
-[stability/badcall/badcall-write.t  ]	4.026725	(program name unknown): subprocess time: 0.624189096 seconds
-[stability/badcall/badcall-dup2.t   ]	3.842428	/testbin/badcall: SUCCESS
-[stability/badcall/badcall-read.t   ]	6.844990	Shutting down.
-[stability/badcall/badcall-lseek.t  ]	3.981924	badcall: try 1: SEEK_SET... Success                                     passed
-[stability/badcall/badcall-close.t  ]	6.087632	The system is halted.
-[stability/badcall/badcall-write.t  ]	4.066944	OS/161$ 
-[stability/badcall/badcall-write.t  ]	7.202208	exit
-[stability/crash/crash-allS.t       ]	2.575816	(program name unknown): Timing enabled.
-[stability/crash/crash-allS.t       ]	2.636218	OS/161$ 
-[stability/badcall/badcall-lseek.t  ]	4.032169	badcall: try 2: SEEK_END... Success                                     passed
-[stability/badcall/badcall-dup2.t   ]	3.872643	(program name unknown): subprocess time: 0.662358853 seconds
-[stability/badcall/badcall-lseek.t  ]	4.072416	Unknown syscall 68
-[stability/badcall/badcall-dup2.t   ]	3.892738	OS/161$ 
-[stability/badcall/badcall-write.t  ]	7.232287	Operation took 4.675061897 seconds
-[stability/badcall/badcall-close.t  ]	6.097637	sys161: 166620378 cycles (27460688 run, 139159690 global-idle)
-[stability/badcall/badcall-close.t  ]	6.097637	sys161:   cpu0: 13100768 kern, 43030 user, 134910 idle; 16480 ll, 16480/0 sc, 42972 sync
-[stability/badcall/badcall-close.t  ]	6.097637	sys161:   cpu1: 171585 kern, 0 user, 13107123 idle; 7 ll, 7/0 sc, 15 sync
-[stability/badcall/badcall-close.t  ]	6.097637	sys161:   cpu2: 171230 kern, 0 user, 13107478 idle; 6 ll, 5/1 sc, 10 sync
-[stability/badcall/badcall-close.t  ]	6.097637	sys161:   cpu3: 170863 kern, 0 user, 13107845 idle; 7 ll, 5/2 sc, 10 sync
-[stability/badcall/badcall-close.t  ]	6.097637	sys161:   cpu4: 170565 kern, 0 user, 13108143 idle; 8 ll, 5/3 sc, 10 sync
-[stability/badcall/badcall-close.t  ]	6.097637	sys161:   cpu5: 170129 kern, 0 user, 13108579 idle; 9 ll, 5/4 sc, 10 sync
-[stability/badcall/badcall-close.t  ]	6.097637	sys161:   cpu6: 169762 kern, 0 user, 13108946 idle; 10 ll, 5/5 sc, 10 sync
-[stability/badcall/badcall-close.t  ]	6.097637	sys161:   cpu7: 169395 kern, 0 user, 13109313 idle; 11 ll, 5/6 sc, 10 sync
-[stability/badcall/badcall-close.t  ]	6.097637	sys161: 2122 irqs 579 exns 0r/0w disk 28r/1271w console 20r/0w/5m emufs 0r/0w net
-[stability/badcall/badcall-close.t  ]	6.097637	sys161: Elapsed real time: 6.046818 seconds (27.5551 mhz)
-[stability/badcall/badcall-close.t  ]	6.097637	sys161: Elapsed virtual time: 6.101836457 seconds (25 mhz)
-[stability/badcall/badcall-close.t  ]	6.097637	shutdown: normal shutdown
-[stability/badcall/badcall-execv.t  ]	4.229085	badcall: exec with kernel pointer program... Bad memory reference       passed
-[stability/badcall/badcall-write.t  ]	7.232287	OS/161 kernel [? for menu]: 
-[stability/badcall/badcall-lseek.t  ]	4.072416	badcall: lseek to negative offset... Invalid argument passed
-[stability/badcall/badcall-read.t   ]	7.076125	The system is halted.
-[stability/badcall/badcall-write.t  ]	7.433278	
-[stability/badcall/badcall-waitpid.t]	2.943335	badcall: wait with unaligned status... Bad memory reference             passed
-[stability/crash/crash-allS.t       ]	2.656303	/testbin/crash *
-[stability/badcall/badcall-write.t  ]	7.433278	Shutting down.
-[stability/badcall/badcall-dup2.t   ]	7.429401	exit
-[stability/badcall/badcall-lseek.t  ]	4.122759	Unknown syscall 68
-[stability/badcall/badcall-read.t   ]	7.086220	sys161: 197720303 cycles (36950886 run, 160769417 global-idle)
-[stability/badcall/badcall-read.t   ]	7.086220	sys161:   cpu0: 16109183 kern, 67189 user, 134476 idle; 20443 ll, 20443/0 sc, 54881 sync
-[stability/badcall/badcall-read.t   ]	7.086220	sys161:   cpu1: 301491 kern, 0 user, 16009357 idle; 7 ll, 7/0 sc, 15 sync
-[stability/badcall/badcall-read.t   ]	7.086220	sys161:   cpu2: 301136 kern, 0 user, 16009712 idle; 6 ll, 5/1 sc, 10 sync
-[stability/badcall/badcall-read.t   ]	7.086220	sys161:   cpu3: 300769 kern, 0 user, 16010079 idle; 7 ll, 5/2 sc, 10 sync
-[stability/badcall/badcall-read.t   ]	7.086220	sys161:   cpu4: 300471 kern, 0 user, 16010377 idle; 8 ll, 5/3 sc, 10 sync
-[stability/badcall/badcall-read.t   ]	7.086220	sys161:   cpu5: 300035 kern, 0 user, 16010813 idle; 9 ll, 5/4 sc, 10 sync
-[stability/badcall/badcall-read.t   ]	7.086220	sys161:   cpu6: 299668 kern, 0 user, 16011180 idle; 10 ll, 5/5 sc, 10 sync
-[stability/badcall/badcall-read.t   ]	7.086220	sys161:   cpu7: 299301 kern, 0 user, 16011547 idle; 11 ll, 5/6 sc, 10 sync
-[stability/badcall/badcall-read.t   ]	7.086220	sys161: 2635 irqs 783 exns 0r/0w disk 28r/1648w console 23r/6w/13m emufs 0r/0w net
-[stability/badcall/badcall-read.t   ]	7.086220	sys161: Elapsed real time: 7.167496 seconds (27.5857 mhz)
-[stability/badcall/badcall-read.t   ]	7.086220	sys161: Elapsed virtual time: 7.087512705 seconds (25 mhz)
-[stability/badcall/badcall-read.t   ]	7.086220	shutdown: normal shutdown
-[stability/badcall/badcall-dup2.t   ]	7.479745	Operation took 4.982517541 seconds
-[stability/badcall/badcall-dup2.t   ]	7.489805	OS/161 kernel [? for menu]: 
-[stability/badcall/badcall-dup2.t   ]	7.660410	
-[stability/badcall/badcall-dup2.t   ]	7.670470	Shutting down.
-[stability/badcall/badcall-lseek.t  ]	4.142875	badcall: seek past/to EOF...                                            passed
-[stability/badcall/badcall-lseek.t  ]	4.213327	Unknown syscall 68
-[stability/badcall/badcall-write.t  ]	7.483530	The system is halted.
-[stability/badcall/badcall-dup2.t   ]	7.670470	The system is halted.
-[stability/badcall/badcall-lseek.t  ]	4.233472	badcall: lseek with invalid whence code... Invalid argument             passed
-[stability/badcall/badcall-lseek.t  ]	4.293721	Unknown syscall 68
-[stability/badcall/badcall-write.t  ]	7.503630	sys161: 203492824 cycles (32302986 run, 171189838 global-idle)
-[stability/badcall/badcall-write.t  ]	7.503630	sys161:   cpu0: 16278206 kern, 69928 user, 9347 idle; 20448 ll, 20448/0 sc, 55284 sync
-[stability/badcall/badcall-write.t  ]	7.503630	sys161:   cpu1: 304225 kern, 0 user, 16053256 idle; 7 ll, 7/0 sc, 15 sync
-[stability/badcall/badcall-write.t  ]	7.503630	sys161:   cpu2: 303870 kern, 0 user, 16053611 idle; 6 ll, 5/1 sc, 10 sync
-[stability/badcall/badcall-write.t  ]	7.503630	sys161:   cpu3: 303503 kern, 0 user, 16053978 idle; 7 ll, 5/2 sc, 10 sync
-[stability/badcall/badcall-write.t  ]	7.503630	sys161:   cpu4: 303205 kern, 0 user, 16054276 idle; 8 ll, 5/3 sc, 10 sync
-[stability/badcall/badcall-write.t  ]	7.503630	sys161:   cpu5: 302769 kern, 0 user, 16054712 idle; 9 ll, 5/4 sc, 10 sync
-[stability/badcall/badcall-write.t  ]	7.503630	sys161:   cpu6: 302402 kern, 0 user, 16055079 idle; 10 ll, 5/5 sc, 10 sync
-[stability/badcall/badcall-write.t  ]	7.503630	sys161:   cpu7: 302035 kern, 0 user, 16055446 idle; 11 ll, 5/6 sc, 10 sync
-[stability/badcall/badcall-write.t  ]	7.503630	sys161: 2642 irqs 774 exns 0r/0w disk 28r/1648w console 20r/3w/13m emufs 0r/0w net
-[stability/badcall/badcall-write.t  ]	7.503630	sys161: Elapsed real time: 7.192125 seconds (28.2938 mhz)
-[stability/badcall/badcall-write.t  ]	7.503630	sys161: Elapsed virtual time: 7.506195164 seconds (25 mhz)
-[stability/badcall/badcall-write.t  ]	7.503630	shutdown: normal shutdown
-[stability/badcall/badcall-lseek.t  ]	4.303757	/testbin/badcall: SUCCESS
-[stability/badcall/badcall-execv.t  ]	4.329671	badcall: exec the empty string... Invalid argument                      passed
-[stability/badcall/badcall-dup2.t   ]	7.680516	sys161: 208574363 cycles (33854640 run, 174719723 global-idle)
-[stability/badcall/badcall-dup2.t   ]	7.680516	sys161:   cpu0: 17167693 kern, 80785 user, 9347 idle; 21925 ll, 21925/0 sc, 59063 sync
-[stability/badcall/badcall-dup2.t   ]	7.680516	sys161:   cpu1: 255879 kern, 0 user, 17001946 idle; 7 ll, 7/0 sc, 15 sync
-[stability/badcall/badcall-dup2.t   ]	7.680516	sys161:   cpu2: 255524 kern, 0 user, 17002301 idle; 6 ll, 5/1 sc, 10 sync
-[stability/badcall/badcall-dup2.t   ]	7.680516	sys161:   cpu3: 255157 kern, 0 user, 17002668 idle; 7 ll, 5/2 sc, 10 sync
-[stability/badcall/badcall-dup2.t   ]	7.680516	sys161:   cpu4: 254859 kern, 0 user, 17002966 idle; 8 ll, 5/3 sc, 10 sync
-[stability/badcall/badcall-dup2.t   ]	7.680516	sys161:   cpu5: 254423 kern, 0 user, 17003402 idle; 9 ll, 5/4 sc, 10 sync
-[stability/badcall/badcall-dup2.t   ]	7.680516	sys161:   cpu6: 254056 kern, 0 user, 17003769 idle; 10 ll, 5/5 sc, 10 sync
-[stability/badcall/badcall-dup2.t   ]	7.680516	sys161:   cpu7: 253689 kern, 0 user, 17004136 idle; 11 ll, 5/6 sc, 10 sync
-[stability/badcall/badcall-dup2.t   ]	7.680516	sys161: 2866 irqs 796 exns 0r/0w disk 28r/1892w console 20r/0w/5m emufs 0r/0w net
-[stability/badcall/badcall-dup2.t   ]	7.680516	sys161: Elapsed real time: 7.390037 seconds (28.2237 mhz)
-[stability/badcall/badcall-dup2.t   ]	7.680516	sys161: Elapsed virtual time: 7.683404211 seconds (25 mhz)
-[stability/badcall/badcall-dup2.t   ]	7.680516	shutdown: normal shutdown
-[stability/badcall/badcall-waitpid.t]	3.043873	badcall: wait with bad flags... Invalid argument                        passed
-[stability/crash/crash-allS.t       ]	3.620629	Running: [a] read from NULL
-[stability/badcall/badcall-lseek.t  ]	4.303757	(program name unknown): subprocess time: 0.808147808 seconds
-[stability/badcall/badcall-lseek.t  ]	4.354000	OS/161$ 
-[stability/badcall/badcall-lseek.t  ]	8.122696	exit
-[stability/badcall/badcall-lseek.t  ]	8.152785	Operation took 5.413231186 seconds
-[stability/badcall/badcall-lseek.t  ]	8.162793	OS/161 kernel [? for menu]: 
-[stability/badcall/badcall-lseek.t  ]	8.213101	
-[stability/badcall/badcall-lseek.t  ]	8.233207	Shutting down.
-[stability/badcall/badcall-execv.t  ]	4.420077	badcall: exec with NULL arglist... Bad memory reference                 passed
-[stability/badcall/badcall-lseek.t  ]	8.233207	The system is halted.
-[stability/crash/crash-allS.t       ]	3.701122	Fatal user mode trap 2 sig 11 (TLB miss on load, epc 0x400280, vaddr 0x0)
-[stability/badcall/badcall-lseek.t  ]	8.243304	sys161: 222829139 cycles (35955354 run, 186873785 global-idle)
-[stability/badcall/badcall-lseek.t  ]	8.243304	sys161:   cpu0: 19090198 kern, 76266 user, 9347 idle; 22663 ll, 22663/0 sc, 60343 sync
-[stability/badcall/badcall-lseek.t  ]	8.243304	sys161:   cpu1: 256593 kern, 0 user, 18919218 idle; 7 ll, 7/0 sc, 15 sync
-[stability/badcall/badcall-lseek.t  ]	8.243304	sys161:   cpu2: 256238 kern, 0 user, 18919573 idle; 6 ll, 5/1 sc, 10 sync
-[stability/badcall/badcall-lseek.t  ]	8.243304	sys161:   cpu3: 255871 kern, 0 user, 18919940 idle; 7 ll, 5/2 sc, 10 sync
-[stability/badcall/badcall-lseek.t  ]	8.243304	sys161:   cpu4: 255573 kern, 0 user, 18920238 idle; 8 ll, 5/3 sc, 10 sync
-[stability/badcall/badcall-lseek.t  ]	8.243304	sys161:   cpu5: 255137 kern, 0 user, 18920674 idle; 9 ll, 5/4 sc, 10 sync
-[stability/badcall/badcall-lseek.t  ]	8.243304	sys161:   cpu6: 254770 kern, 0 user, 18921041 idle; 10 ll, 5/5 sc, 10 sync
-[stability/badcall/badcall-lseek.t  ]	8.243304	sys161:   cpu7: 254403 kern, 0 user, 18921408 idle; 11 ll, 5/6 sc, 10 sync
-[stability/badcall/badcall-lseek.t  ]	8.243304	sys161: 2933 irqs 864 exns 0r/0w disk 28r/1889w console 20r/6w/15m emufs 0r/0w net
-[stability/badcall/badcall-lseek.t  ]	8.243304	sys161: Elapsed real time: 7.582430 seconds (29.3876 mhz)
-[stability/badcall/badcall-lseek.t  ]	8.243304	sys161: Elapsed virtual time: 8.246287707 seconds (25 mhz)
-[stability/badcall/badcall-lseek.t  ]	8.243304	shutdown: normal shutdown
-[stability/crash/crash-allS.t       ]	3.751437	panic: I don't know how to handle this
-[stability/crash/crash-allS.t       ]	3.761470	sys161: trace: software-requested debugger stop
-[stability/crash/crash-allS.t       ]	3.761470	sys161: Not waiting for debugger...
-[stability/badcall/badcall-execv.t  ]	4.510535	badcall: exec with invalid pointer arglist... Bad memory reference      passed
-[stability/crash/crash-allS.t       ]	3.771515	sys161: 104766683 cycles (20921194 run, 83845489 global-idle)
-[stability/crash/crash-allS.t       ]	3.771515	sys161:   cpu0: 10409128 kern, 5385 user, 9347 idle; 10834 ll, 10834/0 sc, 30065 sync
-[stability/crash/crash-allS.t       ]	3.771515	sys161:   cpu1: 358202 kern, 0 user, 10065658 idle; 6 ll, 6/0 sc, 13 sync
-[stability/crash/crash-allS.t       ]	3.771515	sys161:   cpu2: 357887 kern, 0 user, 10065973 idle; 5 ll, 4/1 sc, 8 sync
-[stability/crash/crash-allS.t       ]	3.771515	sys161:   cpu3: 357560 kern, 0 user, 10066300 idle; 6 ll, 4/2 sc, 8 sync
-[stability/crash/crash-allS.t       ]	3.771515	sys161:   cpu4: 357302 kern, 0 user, 10066558 idle; 7 ll, 4/3 sc, 8 sync
-[stability/crash/crash-allS.t       ]	3.771515	sys161:   cpu5: 356906 kern, 0 user, 10066954 idle; 8 ll, 4/4 sc, 8 sync
-[stability/crash/crash-allS.t       ]	3.771515	sys161:   cpu6: 356579 kern, 0 user, 10067281 idle; 9 ll, 4/5 sc, 8 sync
-[stability/crash/crash-allS.t       ]	3.771515	sys161:   cpu7: 356252 kern, 0 user, 10067608 idle; 10 ll, 4/6 sc, 8 sync
-[stability/crash/crash-allS.t       ]	3.771515	sys161: 1463 irqs 228 exns 0r/0w disk 19r/763w console 18r/0w/5m emufs 0r/0w net
-[stability/crash/crash-allS.t       ]	3.771515	sys161: Elapsed real time: 3.939060 seconds (26.5969 mhz)
-[stability/crash/crash-allS.t       ]	3.771515	sys161: Elapsed virtual time: 3.775069667 seconds (25 mhz)
-[stability/crash/crash-allS.t       ]	3.771515	shutdown: unexpected shutdown
-[stability/badcall/badcall-execv.t  ]	4.600967	badcall: exec with kernel pointer arglist... Bad memory reference       passed
-[stability/badcall/badcall-execv.t  ]	4.691423	badcall: exec with invalid pointer arg... Bad memory reference          passed
-[stability/badcall/badcall-execv.t  ]	4.782022	badcall: exec with kernel pointer arg... Bad memory reference           passed
-[stability/badcall/badcall-execv.t  ]	4.812207	/testbin/badcall: SUCCESS
-[stability/badcall/badcall-execv.t  ]	4.832326	(program name unknown): subprocess time: 1.018267249 seconds
-[stability/badcall/badcall-execv.t  ]	4.862461	OS/161$ 
-[stability/badcall/badcall-execv.t  ]	9.103606	exit
-[stability/badcall/badcall-execv.t  ]	9.133810	Operation took 6.137708855 seconds
-[stability/badcall/badcall-execv.t  ]	9.143832	OS/161 kernel [? for menu]: 
-[stability/badcall/badcall-execv.t  ]	9.174011	
-[stability/badcall/badcall-execv.t  ]	9.194095	Shutting down.
-[stability/badcall/badcall-execv.t  ]	9.194095	The system is halted.
-[stability/badcall/badcall-execv.t  ]	9.204190	sys161: 244583475 cycles (42651132 run, 201932343 global-idle)
-[stability/badcall/badcall-execv.t  ]	9.204190	sys161:   cpu0: 27912651 kern, 65686 user, 134805 idle; 19985 ll, 19985/0 sc, 54510 sync
-[stability/badcall/badcall-execv.t  ]	9.204190	sys161:   cpu1: 305335 kern, 0 user, 27807807 idle; 7 ll, 7/0 sc, 15 sync
-[stability/badcall/badcall-execv.t  ]	9.204190	sys161:   cpu2: 304980 kern, 0 user, 27808162 idle; 6 ll, 5/1 sc, 10 sync
-[stability/badcall/badcall-execv.t  ]	9.204190	sys161:   cpu3: 304613 kern, 0 user, 27808529 idle; 7 ll, 5/2 sc, 10 sync
-[stability/badcall/badcall-execv.t  ]	9.204190	sys161:   cpu4: 304315 kern, 0 user, 27808827 idle; 8 ll, 5/3 sc, 10 sync
-[stability/badcall/badcall-execv.t  ]	9.204190	sys161:   cpu5: 303879 kern, 0 user, 27809263 idle; 9 ll, 5/4 sc, 10 sync
-[stability/badcall/badcall-execv.t  ]	9.204190	sys161:   cpu6: 303512 kern, 0 user, 27809630 idle; 10 ll, 5/5 sc, 10 sync
-[stability/badcall/badcall-execv.t  ]	9.204190	sys161:   cpu7: 303145 kern, 0 user, 27809997 idle; 11 ll, 5/6 sc, 10 sync
-[stability/badcall/badcall-execv.t  ]	9.204190	sys161: 2552 irqs 784 exns 0r/0w disk 28r/1591w console 20r/0w/5m emufs 0r/0w net
-[stability/badcall/badcall-execv.t  ]	9.204190	sys161: Elapsed real time: 8.286210 seconds (29.5169 mhz)
-[stability/badcall/badcall-execv.t  ]	9.204190	sys161: Elapsed virtual time: 9.206123664 seconds (25 mhz)
-[stability/badcall/badcall-execv.t  ]	9.204190	shutdown: normal shutdown
-[stability/forktest-stability.t     ]	4.015895	panic: Fatal exception 4 (Address error on load) in kernel mode
-[stability/forktest-stability.t     ]	4.076233	panic: EPC 0x80018fa8, exception vaddr 0xdeadbf07
-[stability/forktest-stability.t     ]	4.106411	panic: I can't handle this... I think I'll just die now...
-[stability/forktest-stability.t     ]	4.106411	sys161: trace: software-requested debugger stop
-[stability/forktest-stability.t     ]	4.106411	sys161: Not waiting for debugger...
-[stability/forktest-stability.t     ]	4.116503	sys161: 118611403 cycles (51251984 run, 67359419 global-idle)
-[stability/forktest-stability.t     ]	4.116503	sys161:   cpu0: 33063549 kern, 296953 user, 2184977 idle; 12862 ll, 12862/0 sc, 32805 sync
-[stability/forktest-stability.t     ]	4.116503	sys161:   cpu1: 10979043 kern, 119053 user, 24447383 idle; 1595 ll, 1595/0 sc, 5456 sync
-[stability/forktest-stability.t     ]	4.116503	sys161:   cpu2: 899904 kern, 14453 user, 34631122 idle; 21 ll, 20/1 sc, 41 sync
-[stability/forktest-stability.t     ]	4.116503	sys161:   cpu3: 363659 kern, 0 user, 35181820 idle; 6 ll, 4/2 sc, 8 sync
-[stability/forktest-stability.t     ]	4.116503	sys161:   cpu4: 363401 kern, 0 user, 35182078 idle; 7 ll, 4/3 sc, 8 sync
-[stability/forktest-stability.t     ]	4.116503	sys161:   cpu5: 363005 kern, 0 user, 35182474 idle; 8 ll, 4/4 sc, 8 sync
-[stability/forktest-stability.t     ]	4.116503	sys161:   cpu6: 362678 kern, 0 user, 35182801 idle; 9 ll, 4/5 sc, 8 sync
-[stability/forktest-stability.t     ]	4.116503	sys161:   cpu7: 362351 kern, 0 user, 35183128 idle; 10 ll, 4/6 sc, 8 sync
-[stability/forktest-stability.t     ]	4.116503	sys161: 1800 irqs 24087 exns 0r/0w disk 20r/876w console 18r/31w/6m emufs 0r/0w net
-[stability/forktest-stability.t     ]	4.116503	sys161: Elapsed real time: 9.377251 seconds (12.6488 mhz)
-[stability/forktest-stability.t     ]	4.116503	sys161: Elapsed virtual time: 4.120489993 seconds (25 mhz)
-[stability/forktest-stability.t     ]	4.116503	shutdown: unexpected shutdown
-[stability/badcall/badcall-waitpid.t]	13.143548	monitor: no progress for 10 s in user mode
-[stability/badcall/badcall-waitpid.t]	13.143548	shutdown: unexpected shutdown
-
-Test                                  Result       Memory Leaks
------------------------------------   ----------   ------------
-boot.t                                correct               ---
-syscalls/consoletest.t                correct               ---
-syscalls/shell.t                      correct               ---
-syscalls/forktest.t                   correct               ---
-stability/badcall/badcall-read.t      correct               ---
-stability/forkbomb.t                  incorrect             ---
-stability/forktest-stability.t        incorrect             ---
-stability/badcall/badcall-dup2.t      correct               ---
-stability/crash/crash-allS.t          incorrect             ---
-stability/badcall/badcall-waitpid.t   incorrect             ---
-stability/badcall/badcall-open.t      correct               ---
-stability/badcall/badcall-lseek.t     correct               ---
-stability/badcall/badcall-execv.t     correct               ---
-stability/badcall/badcall-write.t     correct               ---
-stability/randcall.t                  incorrect             ---
-stability/badcall/badcall-close.t     correct               ---
-
-Total Correct  : 11/16
-Total Incorrect: 5/16
-
+Binary file .git/index matches
+.root/include/setjmp.h: * If the stack frame that called setjmp returns before longjmp is
+.root/include/kern/syscall.h://#define SYS_sigaltstack 33
+.root/include/kern/resource.h:	__counter_t ru_isrss;		/* stack memory usage (kb-ticks) */
+.root/include/kern/resource.h:#define RLIMIT_STACK		4	/* max stack size (bytes) */
+.root/include/kern/mips/regdefs.h:#define sp  $29    /* stack pointer */
+.root/include/kern/signal.h:#define SA_ONSTACK	1	/* Use sigaltstack() stack. */
+.root/include/kern/signal.h: * Struct for sigaltstack().
+.root/include/kern/signal.h:struct sigaltstack {
+Binary file .root/kernel-ASST1 matches
+Binary file .root/kernel matches
+.root/man/testbin/forktest.html:has its own data and stack.
+.root/man/libc/setjmp.html:<tt>setjmp</tt> saves the current stack frame and processor state in
+.root/man/libc/setjmp.html:If the stack frame that called <tt>setjmp</tt> returns before
+Binary file .root/kernel-DUMBVM matches
+Binary file .root/hostbin/host-poisondisk matches
+Binary file .root/hostbin/host-psort matches
+Binary file .root/hostbin/host-mksfs matches
+Binary file .root/hostbin/host-hash matches
+Binary file .root/hostbin/host-sfsck matches
+Binary file .root/hostbin/host-dumpsfs matches
+Binary file .root/kernel-ASST3 matches
+Binary file .root/kernel-ASST2 matches
+Binary file build/install/hostbin/host-dumpsfs matches
+Binary file build/install/hostbin/host-hash matches
+Binary file build/install/hostbin/host-mksfs matches
+Binary file build/install/hostbin/host-poisondisk matches
+Binary file build/install/hostbin/host-psort matches
+Binary file build/install/hostbin/host-sfsck matches
+build/install/hostinclude/kern/machine/regdefs.h:#define sp  $29    /* stack pointer */
+build/install/hostinclude/kern/mips/regdefs.h:#define sp  $29    /* stack pointer */
+build/install/hostinclude/kern/resource.h:	__counter_t ru_isrss;		/* stack memory usage (kb-ticks) */
+build/install/hostinclude/kern/resource.h:#define RLIMIT_STACK		4	/* max stack size (bytes) */
+build/install/hostinclude/kern/signal.h:#define SA_ONSTACK	1	/* Use sigaltstack() stack. */
+build/install/hostinclude/kern/signal.h: * Struct for sigaltstack().
+build/install/hostinclude/kern/signal.h:struct sigaltstack {
+build/install/hostinclude/kern/syscall.h://#define SYS_sigaltstack 33
+build/install/include/kern/machine/regdefs.h:#define sp  $29    /* stack pointer */
+build/install/include/kern/mips/regdefs.h:#define sp  $29    /* stack pointer */
+build/install/include/kern/resource.h:	__counter_t ru_isrss;		/* stack memory usage (kb-ticks) */
+build/install/include/kern/resource.h:#define RLIMIT_STACK		4	/* max stack size (bytes) */
+build/install/include/kern/signal.h:#define SA_ONSTACK	1	/* Use sigaltstack() stack. */
+build/install/include/kern/signal.h: * Struct for sigaltstack().
+build/install/include/kern/signal.h:struct sigaltstack {
+build/install/include/kern/syscall.h://#define SYS_sigaltstack 33
+build/install/include/machine/regdefs.h:#define sp  $29    /* stack pointer */
+build/install/include/setjmp.h: * If the stack frame that called setjmp returns before longjmp is
+build/install/man/libc/setjmp.html:<tt>setjmp</tt> saves the current stack frame and processor state in
+build/install/man/libc/setjmp.html:If the stack frame that called <tt>setjmp</tt> returns before
+build/install/man/testbin/forktest.html:has its own data and stack.
+Binary file build/tooldir/hostlib/libhostcompat.a matches
+Binary file build/userland/lib/hostcompat/err.ho matches
+Binary file build/userland/lib/hostcompat/hostcompat.ho matches
+Binary file build/userland/lib/hostcompat/libhostcompat.a matches
+Binary file build/userland/lib/hostcompat/ntohll.ho matches
+Binary file build/userland/lib/hostcompat/time.ho matches
+Binary file build/userland/lib/hostcompat/tprintf.ho matches
+build/userland/lib/libc/syscalls.S: *    call: four args in a0-a3, the other args on the stack.
+Binary file build/userland/sbin/dumpsfs/disk.ho matches
+Binary file build/userland/sbin/dumpsfs/dumpsfs.ho matches
+Binary file build/userland/sbin/dumpsfs/host-dumpsfs matches
+Binary file build/userland/sbin/dumpsfs/support.ho matches
+Binary file build/userland/sbin/mksfs/disk.ho matches
+Binary file build/userland/sbin/mksfs/host-mksfs matches
+Binary file build/userland/sbin/mksfs/mksfs.ho matches
+Binary file build/userland/sbin/mksfs/support.ho matches
+Binary file build/userland/sbin/sfsck/disk.ho matches
+Binary file build/userland/sbin/sfsck/freemap.ho matches
+Binary file build/userland/sbin/sfsck/host-sfsck matches
+Binary file build/userland/sbin/sfsck/inode.ho matches
+Binary file build/userland/sbin/sfsck/main.ho matches
+Binary file build/userland/sbin/sfsck/pass1.ho matches
+Binary file build/userland/sbin/sfsck/pass2.ho matches
+Binary file build/userland/sbin/sfsck/sb.ho matches
+Binary file build/userland/sbin/sfsck/sfs.ho matches
+Binary file build/userland/sbin/sfsck/support.ho matches
+Binary file build/userland/sbin/sfsck/utils.ho matches
+Binary file build/userland/testbin/hash/hash.ho matches
+Binary file build/userland/testbin/hash/host-hash matches
+Binary file build/userland/testbin/poisondisk/disk.ho matches
+Binary file build/userland/testbin/poisondisk/host-poisondisk matches
+Binary file build/userland/testbin/poisondisk/poisondisk.ho matches
+Binary file build/userland/testbin/poisondisk/support.ho matches
+Binary file build/userland/testbin/psort/host-psort matches
+Binary file build/userland/testbin/psort/psort.ho matches
+Binary file build/userland/testbin/usemtest/usemtest.ho matches
+CHANGES:20090219 dholland	Make stack frames in assembly code 64-bit aligned.
+CHANGES:20031224 dholland	Update stack assertions in mips/trap.c for 4k stacks.
+CHANGES:20030129 dholland	Make first thread stack also 4k rather than 8k.
+CHANGES:20020830 dholland	Shrink kernel stacks from 8k to 4k.
+CHANGES:20020515 dholland	Initialize mips stacks better, for gdb's benefit.
+CHANGES:20020208 dholland	Fix stack frame of mips __start for gdb's benefit.
+CHANGES:20020117 dholland	Check for stack overflow during context switch.
+CHANGES.syscalls:20140916 dholland	Don't allocate char[PATH_MAX] on the kernel stack.
+common/libc/arch/mips/setjmp.S:    * only need to save registers, not the whole contents of the stack.)
+common/libtest161/config.h: * Enable the buffer allocator implementation that makes use of a (stack)
+common/libtest161/secure.c:	// We use a total of 320 bytes of array data on the stack
+kern/arch/mips/include/current.h: * current cpu, the current thread, or even the kernel stack of the
+kern/arch/mips/include/current.h: * there's a canonical way to find at least the stack.)
+kern/arch/mips/include/current.h: *   both the kernel stack and curthread.
+kern/arch/mips/include/kern/regdefs.h:#define sp  $29    /* stack pointer */
+kern/arch/mips/include/trapframe.h: * Structure describing what is saved on the stack during entry to
+kern/arch/mips/include/trapframe.h: * be on the thread's own stack or bad things will happen.
+kern/arch/mips/include/trapframe.h: * Arrays used to load the kernel stack and curthread on trap entry.
+kern/arch/mips/include/trapframe.h:extern vaddr_t cpustacks[];
+kern/arch/mips/include/vm.h: * The starting value for the stack pointer at user level.  Because
+kern/arch/mips/include/vm.h: * the stack is subtract-then-store, this can start as the next
+kern/arch/mips/include/vm.h: * address after the stack area.
+kern/arch/mips/include/vm.h: * We put the stack at the very top of user virtual memory because it
+kern/arch/mips/locore/exception-mips1.S:   beq	k0, $0, 1f		/* If clear, from kernel, already have stack */
+kern/arch/mips/locore/exception-mips1.S:   /* Coming from user mode - find kernel stack */
+kern/arch/mips/locore/exception-mips1.S:   lui k0, %hi(cpustacks)	/* get base address of cpustacks[] */
+kern/arch/mips/locore/exception-mips1.S:   move k1, sp			/* Save previous stack pointer in k1 */
+kern/arch/mips/locore/exception-mips1.S:   lw sp, %lo(cpustacks)(k0)	/* Load kernel stack pointer (in delay slot) */
+kern/arch/mips/locore/exception-mips1.S:   move k1, sp			/* Save previous stack in k1 (delay slot) */
+kern/arch/mips/locore/exception-mips1.S:    *      k1 contains the old stack pointer.
+kern/arch/mips/locore/exception-mips1.S:    *      sp points into the kernel stack.
+kern/arch/mips/locore/exception-mips1.S:    * Allocate stack space for 37 words to hold the trap frame,
+kern/arch/mips/locore/exception-mips1.S:    * one more for proper (64-bit) stack alignment.
+kern/arch/mips/locore/exception-mips1.S:    * able to trace the stack back through here, we play some silly
+kern/arch/mips/locore/exception-mips1.S:    *        think it's the stack pointer slot. Then we store the real
+kern/arch/mips/locore/exception-mips1.S:   /* Something must be here or gdb doesn't find the stack frame. */
+kern/arch/mips/locore/exception-mips1.S:   /*     152(sp)		   stack pointer - below */
+kern/arch/mips/locore/exception-mips1.S:    * It's allocated on our stack.
+kern/arch/mips/locore/exception-mips1.S:    * Move it to the stack pointer - we don't need the actual stack
+kern/arch/mips/locore/exception-mips1.S:    * position any more. (When we come back from usermode, cpustacks[]
+kern/arch/mips/locore/exception-mips1.S:    * will be used to reinitialize our stack pointer, and that was
+kern/arch/mips/locore/trap.c:	/* Make sure we haven't run off our stack */
+kern/arch/mips/locore/trap.c:	if (curthread != NULL && curthread->t_stack != NULL) {
+kern/arch/mips/locore/trap.c:		KASSERT((vaddr_t)tf > (vaddr_t)curthread->t_stack);
+kern/arch/mips/locore/trap.c:		KASSERT((vaddr_t)tf < (vaddr_t)(curthread->t_stack
+kern/arch/mips/locore/trap.c:	 * cpustacks[]. Just return.
+kern/arch/mips/locore/trap.c:	if (curthread->t_stack == NULL) {
+kern/arch/mips/locore/trap.c:	cpustacks[curcpu->c_number] = (vaddr_t)curthread->t_stack + STACK_SIZE;
+kern/arch/mips/locore/trap.c:	 *   (1) curthread->t_stack is corrupted, or
+kern/arch/mips/locore/trap.c:	 *   (2) the trap frame is somehow on the wrong kernel stack.
+kern/arch/mips/locore/trap.c:	 * If cpustacks[] is corrupted, the next trap back to the
+kern/arch/mips/locore/trap.c:	KASSERT(SAME_STACK(cpustacks[curcpu->c_number]-1, (vaddr_t)tf));
+kern/arch/mips/locore/trap.c:	cpustacks[curcpu->c_number] = (vaddr_t)curthread->t_stack + STACK_SIZE;
+kern/arch/mips/locore/trap.c:	 *   (1) cpustacks[] is corrupted, or
+kern/arch/mips/locore/trap.c:	 *   (2) the trap frame is not on our own kernel stack, or
+kern/arch/mips/locore/trap.c:	 * If cpustacks[] is corrupted, the next trap back to the
+kern/arch/mips/locore/trap.c:	 * current thread's own stack. It cannot correctly be on
+kern/arch/mips/locore/trap.c:	 * either another thread's stack or in the kernel heap.
+kern/arch/mips/locore/trap.c:	KASSERT(SAME_STACK(cpustacks[curcpu->c_number]-1, (vaddr_t)tf));
+kern/arch/mips/locore/trap.c: * begin executing at the specified entry point. The stack pointer is
+kern/arch/mips/locore/trap.c: * initialized from the stackptr argument. Note that passing argc/argv
+kern/arch/mips/locore/trap.c: * may use additional stack space on some other platforms (but not on
+kern/arch/mips/locore/trap.c:		  vaddr_t stack, vaddr_t entry)
+kern/arch/mips/locore/trap.c:	tf.tf_sp = stack;
+kern/arch/mips/syscall/syscall.c: * stack, starting at sp+16 to skip over the slots for the
+kern/arch/mips/syscall/syscall.c:			 * get "whence" from the stack. Furthermore, the
+kern/arch/mips/syscall/syscall.c:	struct trapframe tf_stack;	
+kern/arch/mips/syscall/syscall.c:	// Copy over to stack
+kern/arch/mips/syscall/syscall.c:	tf_stack = *tf;	
+kern/arch/mips/syscall/syscall.c:	mips_usermode(&tf_stack);
+kern/arch/mips/thread/cpu.c: * Startup and exception-time stack hook.
+kern/arch/mips/thread/cpu.c: * or current thread stack upon trap entry from user mode. To deal
+kern/arch/mips/thread/cpu.c: * place possible, and then use that to index cpustacks[]. This gets
+kern/arch/mips/thread/cpu.c: * us the value to load as the stack pointer. We can then also load
+kern/arch/mips/thread/cpu.c:vaddr_t cpustacks[MAXCPUS];
+kern/arch/mips/thread/cpu.c:	vaddr_t stackpointer;
+kern/arch/mips/thread/cpu.c:	if (c->c_curthread->t_stack == NULL) {
+kern/arch/mips/thread/cpu.c:		 * Stick the stack in cpustacks[], and thread pointer
+kern/arch/mips/thread/cpu.c:		/* stack base address */
+kern/arch/mips/thread/cpu.c:		stackpointer = (vaddr_t) c->c_curthread->t_stack;
+kern/arch/mips/thread/cpu.c:		/* since stacks grow down, get the top */
+kern/arch/mips/thread/cpu.c:		stackpointer += STACK_SIZE;
+kern/arch/mips/thread/cpu.c:		cpustacks[c->c_number] = stackpointer;
+kern/arch/mips/thread/switch.S:    * The switchframe pointer is really the stack pointer. The other
+kern/arch/mips/thread/switch.S:    * registers get saved on the stack, namely:
+kern/arch/mips/thread/switch.S:   /* Allocate stack space for saving 10 registers. 10*4 = 40 */
+kern/arch/mips/thread/switch.S:   /* Store the old stack pointer in the old thread */
+kern/arch/mips/thread/switch.S:   /* Get the new stack pointer from the new thread */
+kern/arch/mips/thread/switchframe.c:	vaddr_t stacktop;
+kern/arch/mips/thread/switchframe.c:         * MIPS stacks grow down. t_stack is just a hunk of memory, so
+kern/arch/mips/thread/switchframe.c:         * top of the stack.
+kern/arch/mips/thread/switchframe.c:        stacktop = ((vaddr_t)thread->t_stack) + STACK_SIZE;
+kern/arch/mips/thread/switchframe.c:        sf = ((struct switchframe *) stacktop) - 1;
+kern/arch/mips/thread/switchframe.h: * Structure describing what is saved on the stack during a context switch.
+kern/arch/mips/thread/threadstart.S:   addiu sp, sp, -16    /* make our stack frame */
+kern/arch/mips/thread/threadstart.S:   move ra, $0          /* clear return addr so we're top of the call stack */
+kern/arch/mips/vm/dumbvm.c:/* under dumbvm, always have 72k of user stack */
+kern/arch/mips/vm/dumbvm.c:	vaddr_t vbase1, vtop1, vbase2, vtop2, stackbase, stacktop;
+kern/arch/mips/vm/dumbvm.c:	KASSERT(as->as_stackpbase != 0);
+kern/arch/mips/vm/dumbvm.c:	KASSERT((as->as_stackpbase & PAGE_FRAME) == as->as_stackpbase);
+kern/arch/mips/vm/dumbvm.c:	stackbase = USERSTACK - DUMBVM_STACKPAGES * PAGE_SIZE;
+kern/arch/mips/vm/dumbvm.c:	stacktop = USERSTACK;
+kern/arch/mips/vm/dumbvm.c:	else if (faultaddress >= stackbase && faultaddress < stacktop) {
+kern/arch/mips/vm/dumbvm.c:		paddr = (faultaddress - stackbase) + as->as_stackpbase;
+kern/arch/mips/vm/dumbvm.c:	as->as_stackpbase = 0;
+kern/arch/mips/vm/dumbvm.c:	KASSERT(as->as_stackpbase == 0);
+kern/arch/mips/vm/dumbvm.c:	as->as_stackpbase = getppages(DUMBVM_STACKPAGES);
+kern/arch/mips/vm/dumbvm.c:	if (as->as_stackpbase == 0) {
+kern/arch/mips/vm/dumbvm.c:	as_zero_region(as->as_stackpbase, DUMBVM_STACKPAGES);
+kern/arch/mips/vm/dumbvm.c:as_define_stack(struct addrspace *as, vaddr_t *stackptr)
+kern/arch/mips/vm/dumbvm.c:	KASSERT(as->as_stackpbase != 0);
+kern/arch/mips/vm/dumbvm.c:	*stackptr = USERSTACK;
+kern/arch/mips/vm/dumbvm.c:	KASSERT(new->as_stackpbase != 0);
+kern/arch/mips/vm/dumbvm.c:	memmove((void *)PADDR_TO_KVADDR(new->as_stackpbase),
+kern/arch/mips/vm/dumbvm.c:		(const void *)PADDR_TO_KVADDR(old->as_stackpbase),
+kern/arch/sys161/main/start.S:    * when we switch off the bootup stack. Otherwise, gdb gets very
+kern/arch/sys161/main/start.S:   .frame sp, 24, $0	/* 24-byte sp-relative frame; return addr on stack */
+kern/arch/sys161/main/start.S:    * The System/161 loader sets up a boot stack for the first
+kern/arch/sys161/main/start.S:    * string argument. The string lives on the very top of the stack.
+kern/arch/sys161/main/start.S:    *                         first thread's stack (1 page)
+kern/arch/sys161/main/start.S:   addi t0, t0, 4096	/* add one page to hold the stack */
+kern/arch/sys161/main/start.S:   move sp, t0		/* start the kernel stack for the first thread here */
+kern/arch/sys161/main/start.S:    * registers contain anything interesting (except the stack pointer).
+kern/arch/sys161/main/start.S:    * Now set up a stack frame on the real kernel stack: a dummy saved
+kern/arch/sys161/main/start.S:    * (This needs to match the stack frame set up at the top of the
+kern/arch/sys161/main/start.S:    * register. This is necessary to read from cpustacks[] and
+kern/arch/sys161/main/start.S:    * When we get here our stack points to the CRAM area of the bus
+kern/arch/sys161/main/start.S:    * indexing cpustacks[]. None of the other registers contain
+kern/arch/sys161/main/start.S:    * when we switch stacks. Otherwise, gdb gets very confused.
+kern/arch/sys161/main/start.S:   .frame sp, 24, $0	/* 24-byte sp-relative frame; return addr on stack */
+kern/arch/sys161/main/start.S:    * Fetch the stack out of cpustacks[].
+kern/arch/sys161/main/start.S:   lui t0, %hi(cpustacks)	/* load upper half of cpustacks base addr */
+kern/arch/sys161/main/start.S:   lw sp, %lo(cpustacks)(t0)	/* get the stack pointer */
+kern/arch/sys161/main/start.S:   lui t0, %hi(cputhreads)	/* load upper half of cpustacks base addr */
+kern/arch/sys161/main/start.S:    * Set up a stack frame. Store zero into the return address slot so
+kern/arch/sys161/main/start.S:    * we show as the top of the stack.
+Binary file kern/compile/ASST1/spl.o matches
+Binary file kern/compile/ASST1/start.o matches
+Binary file kern/compile/ASST1/stoplight.o matches
+Binary file kern/compile/ASST1/switchframe.o matches
+Binary file kern/compile/ASST1/synch.o matches
+Binary file kern/compile/ASST1/synchprobs.o matches
+Binary file kern/compile/ASST1/synchtest.o matches
+Binary file kern/compile/ASST1/syscall.o matches
+Binary file kern/compile/ASST1/thread.o matches
+Binary file kern/compile/ASST1/threadlist.o matches
+Binary file kern/compile/ASST1/threadlisttest.o matches
+Binary file kern/compile/ASST1/trap.o matches
+Binary file kern/compile/ASST1/uio.o matches
+Binary file kern/compile/ASST1/vfscwd.o matches
+Binary file kern/compile/ASST1/clock.o matches
+Binary file kern/compile/ASST1/console.o matches
+Binary file kern/compile/ASST1/copyinout.o matches
+Binary file kern/compile/ASST1/cpu.o matches
+Binary file kern/compile/ASST1/dumbvm.o matches
+Binary file kern/compile/ASST1/exception-mips1.o matches
+Binary file kern/compile/ASST1/hmacunit.o matches
+kern/compile/ASST1/includelinks/kern/machine/regdefs.h:#define sp  $29    /* stack pointer */
+kern/compile/ASST1/includelinks/kern/mips/regdefs.h:#define sp  $29    /* stack pointer */
+kern/compile/ASST1/includelinks/machine/current.h: * current cpu, the current thread, or even the kernel stack of the
+kern/compile/ASST1/includelinks/machine/current.h: * there's a canonical way to find at least the stack.)
+kern/compile/ASST1/includelinks/machine/current.h: *   both the kernel stack and curthread.
+kern/compile/ASST1/includelinks/machine/kern/regdefs.h:#define sp  $29    /* stack pointer */
+kern/compile/ASST1/includelinks/machine/trapframe.h: * Structure describing what is saved on the stack during entry to
+kern/compile/ASST1/includelinks/machine/trapframe.h: * be on the thread's own stack or bad things will happen.
+kern/compile/ASST1/includelinks/machine/trapframe.h: * Arrays used to load the kernel stack and curthread on trap entry.
+kern/compile/ASST1/includelinks/machine/trapframe.h:extern vaddr_t cpustacks[];
+kern/compile/ASST1/includelinks/machine/vm.h: * The starting value for the stack pointer at user level.  Because
+kern/compile/ASST1/includelinks/machine/vm.h: * the stack is subtract-then-store, this can start as the next
+kern/compile/ASST1/includelinks/machine/vm.h: * address after the stack area.
+kern/compile/ASST1/includelinks/machine/vm.h: * We put the stack at the very top of user virtual memory because it
+kern/compile/ASST1/includelinks/mips/current.h: * current cpu, the current thread, or even the kernel stack of the
+kern/compile/ASST1/includelinks/mips/current.h: * there's a canonical way to find at least the stack.)
+kern/compile/ASST1/includelinks/mips/current.h: *   both the kernel stack and curthread.
+kern/compile/ASST1/includelinks/mips/kern/regdefs.h:#define sp  $29    /* stack pointer */
+kern/compile/ASST1/includelinks/mips/trapframe.h: * Structure describing what is saved on the stack during entry to
+kern/compile/ASST1/includelinks/mips/trapframe.h: * be on the thread's own stack or bad things will happen.
+kern/compile/ASST1/includelinks/mips/trapframe.h: * Arrays used to load the kernel stack and curthread on trap entry.
+kern/compile/ASST1/includelinks/mips/trapframe.h:extern vaddr_t cpustacks[];
+kern/compile/ASST1/includelinks/mips/vm.h: * The starting value for the stack pointer at user level.  Because
+kern/compile/ASST1/includelinks/mips/vm.h: * the stack is subtract-then-store, this can start as the next
+kern/compile/ASST1/includelinks/mips/vm.h: * address after the stack area.
+kern/compile/ASST1/includelinks/mips/vm.h: * We put the stack at the very top of user virtual memory because it
+Binary file kern/compile/ASST1/kernel matches
+Binary file kern/compile/ASST1/kprintf.o matches
+Binary file kern/compile/ASST1/lamebus.o matches
+Binary file kern/compile/ASST1/lamebus_machdep.o matches
+Binary file kern/compile/ASST1/loadelf.o matches
+Binary file kern/compile/ASST1/main.o matches
+Binary file kern/compile/ASST1/proc.o matches
+Binary file kern/compile/ASST1/runprogram.o matches
+Binary file kern/compile/ASST1/rwtest.o matches
+Binary file kern/compile/ASST1/semfs_vnops.o matches
+Binary file kern/compile/ASST1/semunit.o matches
+Binary file kern/compile/ASST1/spinlock.o matches
+Binary file kern/compile/ASST2/spinlock.o matches
+Binary file kern/compile/ASST2/spl.o matches
+Binary file kern/compile/ASST2/start.o matches
+Binary file kern/compile/ASST2/switchframe.o matches
+Binary file kern/compile/ASST2/synch.o matches
+Binary file kern/compile/ASST2/synchtest.o matches
+Binary file kern/compile/ASST2/syscall.o matches
+Binary file kern/compile/ASST2/thread.o matches
+Binary file kern/compile/ASST2/threadlist.o matches
+Binary file kern/compile/ASST2/threadlisttest.o matches
+Binary file kern/compile/ASST2/trap.o matches
+Binary file kern/compile/ASST2/uio.o matches
+Binary file kern/compile/ASST2/vfscwd.o matches
+Binary file kern/compile/ASST2/clock.o matches
+Binary file kern/compile/ASST2/console.o matches
+Binary file kern/compile/ASST2/copyinout.o matches
+Binary file kern/compile/ASST2/cpu.o matches
+Binary file kern/compile/ASST2/dumbvm.o matches
+Binary file kern/compile/ASST2/exception-mips1.o matches
+Binary file kern/compile/ASST2/file_syscalls.o matches
+Binary file kern/compile/ASST2/hmacunit.o matches
+kern/compile/ASST2/includelinks/kern/machine/regdefs.h:#define sp  $29    /* stack pointer */
+kern/compile/ASST2/includelinks/kern/mips/regdefs.h:#define sp  $29    /* stack pointer */
+kern/compile/ASST2/includelinks/machine/current.h: * current cpu, the current thread, or even the kernel stack of the
+kern/compile/ASST2/includelinks/machine/current.h: * there's a canonical way to find at least the stack.)
+kern/compile/ASST2/includelinks/machine/current.h: *   both the kernel stack and curthread.
+kern/compile/ASST2/includelinks/machine/kern/regdefs.h:#define sp  $29    /* stack pointer */
+kern/compile/ASST2/includelinks/machine/trapframe.h: * Structure describing what is saved on the stack during entry to
+kern/compile/ASST2/includelinks/machine/trapframe.h: * be on the thread's own stack or bad things will happen.
+kern/compile/ASST2/includelinks/machine/trapframe.h: * Arrays used to load the kernel stack and curthread on trap entry.
+kern/compile/ASST2/includelinks/machine/trapframe.h:extern vaddr_t cpustacks[];
+kern/compile/ASST2/includelinks/machine/vm.h: * The starting value for the stack pointer at user level.  Because
+kern/compile/ASST2/includelinks/machine/vm.h: * the stack is subtract-then-store, this can start as the next
+kern/compile/ASST2/includelinks/machine/vm.h: * address after the stack area.
+kern/compile/ASST2/includelinks/machine/vm.h: * We put the stack at the very top of user virtual memory because it
+kern/compile/ASST2/includelinks/mips/current.h: * current cpu, the current thread, or even the kernel stack of the
+kern/compile/ASST2/includelinks/mips/current.h: * there's a canonical way to find at least the stack.)
+kern/compile/ASST2/includelinks/mips/current.h: *   both the kernel stack and curthread.
+kern/compile/ASST2/includelinks/mips/kern/regdefs.h:#define sp  $29    /* stack pointer */
+kern/compile/ASST2/includelinks/mips/trapframe.h: * Structure describing what is saved on the stack during entry to
+kern/compile/ASST2/includelinks/mips/trapframe.h: * be on the thread's own stack or bad things will happen.
+kern/compile/ASST2/includelinks/mips/trapframe.h: * Arrays used to load the kernel stack and curthread on trap entry.
+kern/compile/ASST2/includelinks/mips/trapframe.h:extern vaddr_t cpustacks[];
+kern/compile/ASST2/includelinks/mips/vm.h: * The starting value for the stack pointer at user level.  Because
+kern/compile/ASST2/includelinks/mips/vm.h: * the stack is subtract-then-store, this can start as the next
+kern/compile/ASST2/includelinks/mips/vm.h: * address after the stack area.
+kern/compile/ASST2/includelinks/mips/vm.h: * We put the stack at the very top of user virtual memory because it
+Binary file kern/compile/ASST2/kernel matches
+Binary file kern/compile/ASST2/kmalloctest.o matches
+Binary file kern/compile/ASST2/kprintf.o matches
+Binary file kern/compile/ASST2/lamebus.o matches
+Binary file kern/compile/ASST2/lamebus_machdep.o matches
+Binary file kern/compile/ASST2/loadelf.o matches
+Binary file kern/compile/ASST2/main.o matches
+Binary file kern/compile/ASST2/menu.o matches
+Binary file kern/compile/ASST2/proc.o matches
+Binary file kern/compile/ASST2/runprogram.o matches
+Binary file kern/compile/ASST2/rwtest.o matches
+Binary file kern/compile/ASST2/semfs_vnops.o matches
+Binary file kern/compile/ASST2/semunit.o matches
+Binary file kern/compile/ASST3/spinlock.o matches
+Binary file kern/compile/ASST3/spl.o matches
+Binary file kern/compile/ASST3/start.o matches
+Binary file kern/compile/ASST3/switchframe.o matches
+Binary file kern/compile/ASST3/synch.o matches
+Binary file kern/compile/ASST3/synchtest.o matches
+Binary file kern/compile/ASST3/syscall.o matches
+Binary file kern/compile/ASST3/thread.o matches
+Binary file kern/compile/ASST3/threadlist.o matches
+Binary file kern/compile/ASST3/threadlisttest.o matches
+Binary file kern/compile/ASST3/trap.o matches
+Binary file kern/compile/ASST3/uio.o matches
+Binary file kern/compile/ASST3/vfscwd.o matches
+Binary file kern/compile/ASST3/vm.o matches
+Binary file kern/compile/ASST3/addrspace.o matches
+Binary file kern/compile/ASST3/clock.o matches
+Binary file kern/compile/ASST3/console.o matches
+Binary file kern/compile/ASST3/copyinout.o matches
+Binary file kern/compile/ASST3/cpu.o matches
+Binary file kern/compile/ASST3/exception-mips1.o matches
+Binary file kern/compile/ASST3/file_syscalls.o matches
+Binary file kern/compile/ASST3/hmacunit.o matches
+kern/compile/ASST3/includelinks/kern/machine/regdefs.h:#define sp  $29    /* stack pointer */
+kern/compile/ASST3/includelinks/kern/mips/regdefs.h:#define sp  $29    /* stack pointer */
+kern/compile/ASST3/includelinks/machine/current.h: * current cpu, the current thread, or even the kernel stack of the
+kern/compile/ASST3/includelinks/machine/current.h: * there's a canonical way to find at least the stack.)
+kern/compile/ASST3/includelinks/machine/current.h: *   both the kernel stack and curthread.
+kern/compile/ASST3/includelinks/machine/kern/regdefs.h:#define sp  $29    /* stack pointer */
+kern/compile/ASST3/includelinks/machine/trapframe.h: * Structure describing what is saved on the stack during entry to
+kern/compile/ASST3/includelinks/machine/trapframe.h: * be on the thread's own stack or bad things will happen.
+kern/compile/ASST3/includelinks/machine/trapframe.h: * Arrays used to load the kernel stack and curthread on trap entry.
+kern/compile/ASST3/includelinks/machine/trapframe.h:extern vaddr_t cpustacks[];
+kern/compile/ASST3/includelinks/machine/vm.h: * The starting value for the stack pointer at user level.  Because
+kern/compile/ASST3/includelinks/machine/vm.h: * the stack is subtract-then-store, this can start as the next
+kern/compile/ASST3/includelinks/machine/vm.h: * address after the stack area.
+kern/compile/ASST3/includelinks/machine/vm.h: * We put the stack at the very top of user virtual memory because it
+kern/compile/ASST3/includelinks/mips/current.h: * current cpu, the current thread, or even the kernel stack of the
+kern/compile/ASST3/includelinks/mips/current.h: * there's a canonical way to find at least the stack.)
+kern/compile/ASST3/includelinks/mips/current.h: *   both the kernel stack and curthread.
+kern/compile/ASST3/includelinks/mips/kern/regdefs.h:#define sp  $29    /* stack pointer */
+kern/compile/ASST3/includelinks/mips/trapframe.h: * Structure describing what is saved on the stack during entry to
+kern/compile/ASST3/includelinks/mips/trapframe.h: * be on the thread's own stack or bad things will happen.
+kern/compile/ASST3/includelinks/mips/trapframe.h: * Arrays used to load the kernel stack and curthread on trap entry.
+kern/compile/ASST3/includelinks/mips/trapframe.h:extern vaddr_t cpustacks[];
+kern/compile/ASST3/includelinks/mips/vm.h: * The starting value for the stack pointer at user level.  Because
+kern/compile/ASST3/includelinks/mips/vm.h: * the stack is subtract-then-store, this can start as the next
+kern/compile/ASST3/includelinks/mips/vm.h: * address after the stack area.
+kern/compile/ASST3/includelinks/mips/vm.h: * We put the stack at the very top of user virtual memory because it
+Binary file kern/compile/ASST3/kernel matches
+Binary file kern/compile/ASST3/kmalloctest.o matches
+Binary file kern/compile/ASST3/kprintf.o matches
+Binary file kern/compile/ASST3/lamebus.o matches
+Binary file kern/compile/ASST3/lamebus_machdep.o matches
+Binary file kern/compile/ASST3/loadelf.o matches
+Binary file kern/compile/ASST3/main.o matches
+Binary file kern/compile/ASST3/menu.o matches
+Binary file kern/compile/ASST3/proc.o matches
+Binary file kern/compile/ASST3/runprogram.o matches
+Binary file kern/compile/ASST3/rwtest.o matches
+Binary file kern/compile/ASST3/semfs_vnops.o matches
+Binary file kern/compile/ASST3/semunit.o matches
+kern/conf/ASST1:#options net			# Network stack (not supported)
+kern/conf/ASST2:#options net			# Network stack (not supported)
+kern/conf/ASST3:#options net			# Network stack (not supported)
+kern/conf/DUMBVM:#options net			# Network stack (not supported)
+kern/conf/DUMBVM-OPT:#options net			# Network stack (not supported)
+kern/conf/GENERIC:#options net			# Network stack (not supported)
+kern/conf/GENERIC-OPT:#options net			# Network stack (not supported)
+kern/include/addrspace.h:/* ASST3 requires a 4MB stack (4096KB / PAGE_SIZE) = 1024 Pages. */
+kern/include/addrspace.h:        paddr_t as_stackpbase;
+kern/include/addrspace.h:	struct pentry *stack;		// Stack pages
+kern/include/addrspace.h: *    as_define_stack - set up the stack region in the address space.
+kern/include/addrspace.h: *                back the initial stack pointer for the new process.
+kern/include/addrspace.h:int               as_define_stack(struct addrspace *as, vaddr_t *initstackptr);
+kern/include/cpu.h: * cpu_hatch after having claimed the startup stack and thread created
+kern/include/kern/resource.h:	__counter_t ru_isrss;		/* stack memory usage (kb-ticks) */
+kern/include/kern/resource.h:#define RLIMIT_STACK		4	/* max stack size (bytes) */
+kern/include/kern/signal.h:#define SA_ONSTACK	1	/* Use sigaltstack() stack. */
+kern/include/kern/signal.h: * Struct for sigaltstack().
+kern/include/kern/signal.h:struct sigaltstack {
+kern/include/kern/syscall.h://#define SYS_sigaltstack 33
+kern/include/syscall.h:		       vaddr_t stackptr, vaddr_t entrypoint);
+kern/include/thread.h:/* Size of kernel stacks; must be power of 2 */
+kern/include/thread.h:/* Mask for extracting the stack base address of a kernel stack pointer */
+kern/include/thread.h:/* Macro to test if two addresses are on the same kernel stack */
+kern/include/thread.h:	void *t_stack;			/* Kernel-level stack */
+kern/include/thread.h:	struct switchframe *t_context;	/* Saved register context (on stack) */
+kern/syscall/proc_syscalls.c:	vaddr_t entrypoint, stackptr;
+kern/syscall/proc_syscalls.c:	/* Define the user stack in the address space */
+kern/syscall/proc_syscalls.c:	result = as_define_stack(as, &stackptr);
+kern/syscall/proc_syscalls.c:	/* Stackpointer contains ptr to beginning of user stack: where args need to go */
+kern/syscall/proc_syscalls.c:	vaddr_t stacksonstacks[num_args];
+kern/syscall/proc_syscalls.c:	//char *stacksonstacks;
+kern/syscall/proc_syscalls.c:	//stacksonstacks = kmalloc(sizeof(*stacksonstacks) * num_args);
+kern/syscall/proc_syscalls.c:		// Arguments are copied onto the stack backwards
+kern/syscall/proc_syscalls.c:		//stackptr -= arglist[argcounter]->len;
+kern/syscall/proc_syscalls.c:		stackptr -= length;
+kern/syscall/proc_syscalls.c:		stackptr -= adjust;
+kern/syscall/proc_syscalls.c:		copyoutstr(bigbuffer[argcounter], (userptr_t)stackptr, ARG_MAX, &outlen);
+kern/syscall/proc_syscalls.c:		/* Shift stackptr by the length of the argument */
+kern/syscall/proc_syscalls.c:		/* Put a copy of the stackptr in the array */
+kern/syscall/proc_syscalls.c:		stacksonstacks[argcounter] = stackptr;		
+kern/syscall/proc_syscalls.c:	stackptr -= 4;
+kern/syscall/proc_syscalls.c:	copyout(bigbuffer[num_args], (userptr_t)stackptr, 4);
+kern/syscall/proc_syscalls.c:	// Stackpointer still needs references to where args are on the stack.
+kern/syscall/proc_syscalls.c:		stackptr -= 4;
+kern/syscall/proc_syscalls.c:		result = copyout(&stacksonstacks[i-1], (userptr_t)stackptr, 4);
+kern/syscall/proc_syscalls.c:		//kprintf("Stackptr: %x\n", stackptr);
+kern/syscall/proc_syscalls.c:		//stackptr += 4;
+kern/syscall/proc_syscalls.c:		//stackptr-=4;
+kern/syscall/proc_syscalls.c:	//		  stackptr, entrypoint);
+kern/syscall/proc_syscalls.c:	//kfree(stacksonstacks);
+kern/syscall/proc_syscalls.c:	enter_new_process(num_args, (userptr_t)stackptr, NULL, stackptr, entrypoint);
+kern/syscall/runprogram.c:	vaddr_t entrypoint, stackptr;
+kern/syscall/runprogram.c:	/* Define the user stack in the address space */
+kern/syscall/runprogram.c:	result = as_define_stack(as, &stackptr);
+kern/syscall/runprogram.c:			  stackptr, entrypoint);
+kern/syscall/runprogram.c:	// Pass trapframe, separate stack copy made in method
+kern/syscall/runprogram.c:	vaddr_t entrypoint, stackptr;
+kern/syscall/runprogram.c:	/* Define the user stack in the address space */
+kern/syscall/runprogram.c:	result = as_define_stack(as, &stackptr);
+kern/syscall/runprogram.c:	// Array to keep stackpointer values in	
+kern/syscall/runprogram.c:	vaddr_t *stacksonstacks;
+kern/syscall/runprogram.c:	stacksonstacks = (vaddr_t *)kmalloc(sizeof(vaddr_t) * num_args);
+kern/syscall/runprogram.c:	/* Copy arguments to new stack; aligned by 4 */
+kern/syscall/runprogram.c:		/* Shift stackptr by the length of the argument & buffer */	
+kern/syscall/runprogram.c:		stackptr -= length;
+kern/syscall/runprogram.c:		stackptr -= adjust;
+kern/syscall/runprogram.c:		/* Actually copy to stack */
+kern/syscall/runprogram.c:		copyoutstr(bigbuffer[argcounter], (userptr_t)stackptr, ARG_MAX, &outlen);
+kern/syscall/runprogram.c:		/* Put a copy of the stackptr in the array */
+kern/syscall/runprogram.c:		stacksonstacks[argcounter] = stackptr;		
+kern/syscall/runprogram.c:	stackptr -= 4;
+kern/syscall/runprogram.c:	copyout(bigbuffer[num_args], (userptr_t)stackptr, 4);
+kern/syscall/runprogram.c:	// Stackpointer still needs references to where args are on the stack.
+kern/syscall/runprogram.c:		stackptr -= 4;
+kern/syscall/runprogram.c:		result = copyout(&stacksonstacks[i-1], (userptr_t)stackptr, 4);
+kern/syscall/runprogram.c:	kfree(stacksonstacks);
+kern/syscall/runprogram.c:	enter_new_process(num_args, (userptr_t)stackptr, NULL, stackptr, entrypoint);
+kern/test/kmalloctest.c:	// The array can go on the stack, we won't have that many
+kern/test/kmalloctest.c:	// Initially, there must be at least 1 page allocated for each thread stack,
+kern/test/synchprobs.c:	threads[index] = curthread->t_stack;
+kern/test/synchprobs.c:	failif((threads[index] != curthread->t_stack), "failed: incorrect thread type");
+kern/test/threadlisttest.c:	t->t_stack = FAKE_MAGIC;
+kern/test/threadlisttest.c:	KASSERT(t->t_stack == FAKE_MAGIC);
+kern/test/tt3.c:/* dimension of matrices (cannot be too large or will overflow stack) */
+kern/thread/thread.c:/* Magic number used as a guard value on kernel thread stacks. */
+kern/thread/thread.c: * Stick a magic number on the bottom end of the stack. This will
+kern/thread/thread.c: * (sometimes) catch kernel stack overflows. Use thread_checkstack()
+kern/thread/thread.c:thread_checkstack_init(struct thread *thread)
+kern/thread/thread.c:	((uint32_t *)thread->t_stack)[0] = THREAD_STACK_MAGIC;
+kern/thread/thread.c:	((uint32_t *)thread->t_stack)[1] = THREAD_STACK_MAGIC;
+kern/thread/thread.c:	((uint32_t *)thread->t_stack)[2] = THREAD_STACK_MAGIC;
+kern/thread/thread.c:	((uint32_t *)thread->t_stack)[3] = THREAD_STACK_MAGIC;
+kern/thread/thread.c: * Check the magic number we put on the bottom end of the stack in
+kern/thread/thread.c: * thread_checkstack_init. If these assertions go off, it most likely
+kern/thread/thread.c: * means you overflowed your stack at some point, which can cause all
+kern/thread/thread.c: * Note that when ->t_stack is NULL, which is the case if the stack
+kern/thread/thread.c: * cannot be freed (which in turn is the case if the stack is the boot
+kern/thread/thread.c: * stack, and the thread is the boot thread) this doesn't do anything.
+kern/thread/thread.c:thread_checkstack(struct thread *thread)
+kern/thread/thread.c:	if (thread->t_stack != NULL) {
+kern/thread/thread.c:		KASSERT(((uint32_t*)thread->t_stack)[0] == THREAD_STACK_MAGIC);
+kern/thread/thread.c:		KASSERT(((uint32_t*)thread->t_stack)[1] == THREAD_STACK_MAGIC);
+kern/thread/thread.c:		KASSERT(((uint32_t*)thread->t_stack)[2] == THREAD_STACK_MAGIC);
+kern/thread/thread.c:		KASSERT(((uint32_t*)thread->t_stack)[3] == THREAD_STACK_MAGIC);
+kern/thread/thread.c:	thread->t_stack = NULL;
+kern/thread/thread.c:		 * Leave c->c_curthread->t_stack NULL for the boot
+kern/thread/thread.c:		 * cpu. This means we're using the boot stack, which
+kern/thread/thread.c:		 * make it possible to free the boot stack?)
+kern/thread/thread.c:		/*c->c_curthread->t_stack = ... */
+kern/thread/thread.c:		c->c_curthread->t_stack = kmalloc(STACK_SIZE);
+kern/thread/thread.c:		if (c->c_curthread->t_stack == NULL) {
+kern/thread/thread.c:			panic("cpu_create: couldn't allocate stack");
+kern/thread/thread.c:		thread_checkstack_init(c->c_curthread);
+kern/thread/thread.c: * (Freeing the stack you're actually using to run is ... inadvisable.)
+kern/thread/thread.c:	if (thread->t_stack != NULL) {
+kern/thread/thread.c:		kfree(thread->t_stack);
+kern/thread/thread.c:	/* Allocate a stack */
+kern/thread/thread.c:	newthread->t_stack = kmalloc(STACK_SIZE);
+kern/thread/thread.c:	if (newthread->t_stack == NULL) {
+kern/thread/thread.c:	thread_checkstack_init(newthread);
+kern/thread/thread.c:		/* thread_destroy will clean up the stack */
+kern/thread/thread.c:	/* Check the stack guard band. */
+kern/thread/thread.c:	thread_checkstack(cur);
+kern/thread/thread.c:	 * different stack and different values in the local
+kern/thread/thread.c:	 *      same stack, we're back to the thread that
+kern/thread/thread.c:	 *    - At this point the thread whose stack we're now on may
+kern/thread/thread.c:	/* Check the stack guard band. */
+kern/thread/thread.c:	thread_checkstack(cur);
+kern/vm/addrspace.c:	as->stack = NULL;
+kern/vm/addrspace.c:	// Copy the stack by first reserving physical pages and then copying information
+kern/vm/addrspace.c:	vaddr_t fakestack;
+kern/vm/addrspace.c:	result = as_define_stack(newas, &fakestack);	
+kern/vm/addrspace.c:	struct pentry *printstack;
+kern/vm/addrspace.c:	printstack = old->stack;
+kern/vm/addrspace.c:	while(printstack != NULL){
+kern/vm/addrspace.c:		kprintf("0x%x\n", printstack->vaddr);
+kern/vm/addrspace.c:		printstack = printstack->next;
+kern/vm/addrspace.c:	panic("Done printing stack.\n");
+kern/vm/addrspace.c:	struct pentry *oldstack;
+kern/vm/addrspace.c:	struct pentry *newstack;
+kern/vm/addrspace.c:	oldstack = old->stack;
+kern/vm/addrspace.c:	newstack = newas->stack;
+kern/vm/addrspace.c:	while( oldstack != NULL && newstack != NULL ){
+kern/vm/addrspace.c:		//memcpy( (void *)newstack, (void *)oldstack, PAGE_SIZE );
+kern/vm/addrspace.c:		memmove( (void *)newstack->vaddr, (void *)oldstack->vaddr, PAGE_SIZE );
+kern/vm/addrspace.c:		kprintf("0x%x | 0x%x\n", oldstack->vaddr, newstack->vaddr);
+kern/vm/addrspace.c:		oldstack = oldstack->next;
+kern/vm/addrspace.c:		newstack = newstack->next;
+kern/vm/addrspace.c: * space including code areas ( but NOT stack and heap!). This
+kern/vm/addrspace.c: * (6) Reserve pages for the user stack. Preprocessor statement defines defualt stack pages.
+kern/vm/addrspace.c:	/* Set the location of the heap for the addrspace. The user can call as_define_stack
+kern/vm/addrspace.c: * we finish up the order by sending it to the "stack department" to finish!
+kern/vm/addrspace.c: * We need to actually reserve stack pages here and return the top of the stack.
+kern/vm/addrspace.c: * Essentially this is as_define_region exclusively for the stack.
+kern/vm/addrspace.c:as_define_stack(struct addrspace *as, vaddr_t *stackptr)
+kern/vm/addrspace.c:	if(as == NULL || stackptr == NULL){
+kern/vm/addrspace.c:	// User stack begins at the number of default stack pages from REAR of addrspace.
+kern/vm/addrspace.c:	vaddr_t stack_begin = USERSTACK - (PAGE_SIZE * ADDRSP_STACKSIZE);
+kern/vm/addrspace.c:	// Assigned pentry's for our stack (as->stack)
+kern/vm/addrspace.c:		KASSERT(stack_begin < USERSTACK);
+kern/vm/addrspace.c:		newpage->vaddr = vaddr_to_vpn(stack_begin);
+kern/vm/addrspace.c:		if( as->stack == NULL ){
+kern/vm/addrspace.c:			as->stack = newpage;
+kern/vm/addrspace.c:			traverse = as->stack;
+kern/vm/addrspace.c:		stack_begin += PAGE_SIZE;
+kern/vm/addrspace.c:	*stackptr = USERSTACK;
+kern/vm/copyinout.c: * stack to where setjmp() was called. At that point we return EFAULT.
+kern/vm/vm.c:		load_page = addrsp->stack;
+kern/vm/vm.c:		struct pentry *dumpstack;
+kern/vm/vm.c:		dumpstack = addrsp->stack;
+kern/vm/vm.c:		while(dumpstack != NULL){
+kern/vm/vm.c:			kprintf("0x%x, ", dumpstack->vaddr);
+kern/vm/vm.c:			dumpstack = dumpstack->next;
+kern/vm/vm.c: * (2) Check to make sure we don't collide with our stack.
+kern/vm/vm.c:		// Check to make sure we don't collide with stack.
+man/libc/setjmp.html:<tt>setjmp</tt> saves the current stack frame and processor state in
+man/libc/setjmp.html:If the stack frame that called <tt>setjmp</tt> returns before
+man/testbin/forktest.html:has its own data and stack.
+test161/commands/vm.tc:  - name: /testbin/stacktest
+test161/targets/asst3.tt:  - id: vm/stacktest.t
+test161/tests/vm/stacktest.t:  Tests your VM stack handling by running the bigexec test from ASST2.
+test161/tests/vm/stacktest.t:$ /testbin/stacktest
+userland/include/setjmp.h: * If the stack frame that called setjmp returns before longjmp is
+userland/lib/crt0/mips/crt0.S:	 * complete stack frame, however.
+userland/lib/crt0/mips/crt0.S:	 * space in the bottom of its stack frame for writing back the
+userland/lib/crt0/mips/crt0.S:	 * than four arguments. It also requires the stack to be aligned
+userland/lib/crt0/mips/crt0.S:	li t0, 0xfffffff8		/* mask for stack alignment */
+userland/lib/crt0/mips/crt0.S:	and sp, sp, t0			/* align the stack */
+userland/lib/libc/arch/mips/syscalls-mips.S: *    call: four args in a0-a3, the other args on the stack.
+userland/testbin/parallelvm/parallelvm.c: * of its processes needs to allocate a kernel stack, and those add up
+userland/testbin/stacktest/Makefile:PROG=stacktest
+userland/testbin/stacktest/Makefile:SRCS=stacktest.c
+userland/testbin/stacktest/stacktest.c: * stacktest.c
+userland/testbin/stacktest/stacktest.c: * Tests the VM system's stack by allocating a large array on the stack and
+userland/testbin/stacktest/stacktest.c: * on the stack. However, we only touch 1/4 of it, meaning this test should
+userland/testbin/stacktest/stacktest.c: * run when with <=2M of memory if stack pages are allocated on demand.
+userland/testbin/stacktest/stacktest.c:stacktest1()
+userland/testbin/stacktest/stacktest.c:		// This is a fresh stack frame, so it better be zeroed. Otherwise,
+userland/testbin/stacktest/stacktest.c:				errx(1, "Your stack pages are leaking data!");
+userland/testbin/stacktest/stacktest.c:	int total = stacktest1();
+userland/testbin/stacktest/stacktest.c:	success(TEST161_SUCCESS, SECRET, "/testbin/stacktest");
+userland/testbin/tail/tail.c:/* much data space as required, but stack space is tight. */

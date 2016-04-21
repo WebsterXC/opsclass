@@ -245,15 +245,16 @@ sys_fork(struct trapframe *frame, int32_t *childpid){
 		lock_release(gpll_lock);
 		return ENOMEM;
 	}
-	kprintf("Before AS Copy.\n");
+
 	as_copy(curproc->p_addrspace, &childproc->p_addrspace);
-	
+		
 	//lock_release(gpll_lock);
 	
 	// Fork the process. Copy the filetable over to the child and increment
 	// the child's semaphore so it knows to continue the fork.
 	kprintf("Before Thread_Fork\n");
 	result = thread_fork(curproc->p_name, childproc, child, trap, 0);  	 
+	kprintf("Fork complete.\n");	
 
 	filetable_copy(curproc->p_filetable, &childproc->p_filetable);
 	

@@ -60,7 +60,6 @@ as_create(void)
 	
 	as->segments = NULL;
 
-	// Heap and stack not generated yet. Setting these to 1 is important for as_prepare_load.
 	as->as_heap_start = 0;
 	as->as_heap_end = 0;
 
@@ -106,6 +105,56 @@ add_table_entries(struct area *segment, vaddr_t start, unsigned int add, unsigne
 	return;
 }
 
+/* Copy all pages in an already created segment and prepare it for addition to a linked list. */
+static void
+seg_copy(struct area **out, struct area *src){
+	
+	struct pentry *copyable;
+
+	struct area *dest;
+	dest = (struct area *)kmalloc(sizeof(*dest));
+	
+	dest->vstart = src->vstart;
+	dest->pagecount = src->pagecount;
+	dest->bytesize = src->bytesize;
+	dest->options = 7;
+	dest->next = NULL;
+	dest->pages = NULL;
+
+	// Copy pages
+	copyable = src->pages;
+	while(copyable != NULL){
+		struct pentry *newpage;
+		newpage = (struct pentry *)kmalloc(sizeof(*newpage));
+		if(newpage == NULL){
+			panic("Out of memory trying to copy segments.\n");
+		}
+		newpage->vaddr = copyable->vaddr;
+		newpage->options = 31;
+		newpage->next = NULL;
+
+		memmove((void *)newpage->vaddr, (void *)copyable->vaddr, PAGE_SIZE);
+		kprintf("Pagegen: 0x%x\n", newpage->vaddr);		
+
+		// Add to new segment pages
+		if(dest->pages == NULL){
+			dest->pages = newpage;
+		}else{
+
+			struct pentry *find;
+			find = dest->pages;
+			while(find->next != NULL){
+				find = find->next;
+			}
+			find->next = newpage;
+		}
+
+		copyable = copyable->next;
+	}
+
+	*out = dest;
+	return;
+}
 /* Copy an address space. Needs to be loaded into memory */
 /* (1) Create a new address space "object"
  * (2) Copy segments using as_define_region 
@@ -137,54 +186,34 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 	if (newas == NULL) {
 		return ENOMEM;
 	}
-
+	
 	/* The core functionality of as_copy. We need to copy the
 	 * address space's segment information. However, since the
 	 * function must return an EXACT copy of the address space
 	 * in question, all page information must be copied over too.
-	 */	
+	 */
 	struct area *oldseg;
 	
 	oldseg = old->segments;
 	while( oldseg != NULL ){
-		// Extract our R-W-X privledges
-		int read = (oldseg->options)>>2;
-		int write = (oldseg->options & 2)>>1;
-		int execute = (oldseg->options & 1); 	
+		struct area *newseg;
+		
+		seg_copy(&newseg, oldseg);
+		KASSERT(newseg->pages != NULL);	
 
-		// Create a new segment in the new addrspace
-		result = as_define_region(newas, oldseg->vstart, oldseg->bytesize, read, write, execute);
-		if(result){
-			as_destroy(newas);
-			if(result == ENOMEM){
-				return ENOMEM;
-			}else{
-				return EFAULT;
+		newseg->next = NULL;
+
+		// Append to linked list
+		if(newas->segments == NULL){
+			newas->segments = newseg;
+		}else{
+			struct area *tail;
+			tail = newas->segments;
+			while(tail->next != NULL){
+				tail = tail->next;
 			}
-		}
-
-		// Navigate to the region just created
-		struct area *defined;
-		defined = newas->segments;
-		while( defined->next != NULL ){
-			defined = defined->next;
-		}
-
-		// Generate pentries for the segment
-		add_table_entries(defined, defined->vstart, defined->pagecount, defined->options, 1, 0);
-
-		// Copy page information to new segment for all pages in the old segment
-		struct pentry *oldpage;
-		struct pentry *curpage;
-
-		oldpage = oldseg->pages;
-		curpage = defined->pages;
-		while( curpage != NULL ){
-			memcpy( (void *)curpage, (void *)oldpage, PAGE_SIZE);
-			//kprintf("Old Page: 0x%x, New Page: 0x%x\n", oldpage->vaddr, curpage->vaddr);
-
-			oldpage = oldpage->next;
-			curpage = curpage->next;
+				
+			tail->next = newseg;
 		}
 
 		oldseg = oldseg->next;
@@ -193,7 +222,7 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 	// Ensure we set everything up correctly	
 	KASSERT(newas->segments != NULL);
 
-	// Copy the stack by first reserving physical pages and then copying information
+	// Copy the stack by first making pentries and then copying information
 	vaddr_t fakestack;
 	result = as_define_stack(newas, &fakestack);	
 	if(result){
@@ -201,18 +230,6 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 		return EFAULT;
 	}
 
-	//TODO This print works for some reason
-/*
-	struct pentry *printstack;
-	printstack = newas->stack;
-	while(printstack != NULL){
-		kprintf("0x%x\n", printstack->vaddr);
-		printstack = printstack->next;
-	}
-*/
-	// This copy DOESN'T work and steps on memory
-	// The old addrspace is corrupt!
-	/*
 	struct pentry *oldstack;
 	struct pentry *newstack;
 
@@ -221,12 +238,11 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 	while( oldstack != NULL && newstack != NULL ){
 		//memcpy( (void *)newstack, (void *)oldstack, PAGE_SIZE );
 		memmove( (void *)newstack->vaddr, (void *)oldstack->vaddr, PAGE_SIZE );
-		KASSERT(newstack->vaddr == oldstack->vaddr);
-		kprintf("0x%x | 0x%x\n", oldstack->vaddr, newstack->vaddr);
+		//kprintf("0x%x | 0x%x\n", oldstack->vaddr, newstack->vaddr);
 		oldstack = oldstack->next;
 		newstack = newstack->next;
 	}
-	*/
+
 	// Copy the heap
 	struct pentry *oldheap;
 	struct pentry *newheap;
@@ -234,7 +250,7 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 	oldheap = old->heap;
 	newheap = newas->heap;
 	while( oldheap != NULL ){
-		memcpy( (void *)newheap, (void *)oldheap, PAGE_SIZE );
+		memmove( (void *)newheap->vaddr, (void *)oldheap->vaddr, PAGE_SIZE );
 
 		oldheap = oldheap->next;
 		newheap = newheap->next;
@@ -242,7 +258,7 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 	
 	newas->as_heap_start = old->as_heap_start;
 	newas->as_heap_end = old->as_heap_end;
-	
+
 	*ret = newas;
 	return 0;
 }
@@ -259,6 +275,7 @@ as_destroy(struct addrspace *as)
 		return;
 	}
 
+	kprintf("as_destroy\n");
 	struct area *seg;
 	struct area *move;
 	
@@ -488,7 +505,7 @@ as_define_stack(struct addrspace *as, vaddr_t *stackptr)
 	
 	// Assigned pentry's for our stack (as->stack)
 	for(int i = 0; i < ADDRSP_STACKSIZE; i++){
-		KASSERT(stack_begin <= USERSTACK);
+		KASSERT(stack_begin < USERSTACK);
 		struct pentry *newpage;
 		newpage = kmalloc(sizeof(*newpage));
 		if(newpage == NULL){

@@ -338,7 +338,7 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 	switch(faulttype){
 		case VM_FAULT_READONLY:
 			// Danger: Insufficient access permissions.
-			//kprintf("VM_FAULT_READONLY at 0x%x\n", faultaddress);
+			kprintf("VM_FAULT_READONLY at 0x%x\n", faultaddress);
 			return EFAULT;
 		
 		case VM_FAULT_READ:
@@ -371,29 +371,27 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 	 * (2) Stack
 	 * (3) Heap
 	 */
-	useg = addrsp->segments;
-	while( useg != NULL ){
-		// (1)
-		if( faultaddress >= useg->vstart && faultaddress <= (useg->vstart + useg->bytesize) ){
-			is_valid_faultaddr = true;
-			load_page = useg->pages;
-			break;
-		} 
-		
-		useg = useg->next;
-	}
 	if( faultaddress >= (USERSTACK-(ADDRSP_STACKSIZE*PAGE_SIZE)) && faultaddress < USERSTACK ){
 		is_valid_faultaddr = true; //(2)
 		load_page = addrsp->stack;
 	}else if( faultaddress >= addrsp->as_heap_start && faultaddress <= addrsp->as_heap_end ){
 		is_valid_faultaddr = true; //(3)
 		load_page = addrsp->heap;
+	}else{
+		useg = addrsp->segments;
+		while( useg != NULL ){
+			if( faultaddress >= useg->vstart && faultaddress < (useg->vstart + useg->bytesize) ){
+				is_valid_faultaddr = true;
+				load_page = useg->pages;
+				break;
+			}
+			useg = useg->next;
+		}
 	}
-
 	// Check yoself b4 u rek yoself
 	if(!is_valid_faultaddr){
-		panic("Tried to access an invalid memory region: 0x%x.\n", faultaddress);
-		//return EFAULT;
+		//panic("Tried to access an invalid memory region: 0x%x.\n", faultaddress);
+		return EFAULT;
 	}
 
 	bool page_fault = true;
@@ -412,14 +410,6 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 	}
 
 	if(load_page == NULL){
-		/*
-		struct pentry *dumpstack;
-		dumpstack = addrsp->stack;
-		while(dumpstack != NULL){
-			kprintf("0x%x, ", dumpstack->vaddr);
-			dumpstack = dumpstack->next;
-		}
-		*/
 		panic("Couldn't find a page searching for 0x%x\n", faultaddress);
 	}
 
