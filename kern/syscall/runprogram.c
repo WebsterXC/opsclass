@@ -225,11 +225,6 @@ sys_fork(struct trapframe *frame, int32_t *childpid){
 	int result;	
 		
 	lock_acquire(gpll_lock);	
-	// 9 or fewer processes at once (memory managment)
-	//while( proc_rollcall() > 10 ){
-	//	cv_wait(gpll_cv, gpll_lock);
-	//}
-
 	// Make a copy of the trapframe on the heap
 	trap = kmalloc(sizeof(*trap));
 	if(trap == NULL){
@@ -241,27 +236,41 @@ sys_fork(struct trapframe *frame, int32_t *childpid){
 	// Generate an exact copy of this process and copy the current
 	// process' addrspace to the copy
 	result = proc_fork(&childproc);
-	if(result || proc_rollcall() > 24){
+	if(result){
+		lock_release(gpll_lock);
+		sys__exit(1);
+		return ENOMEM;
+	}
+
+	result = as_copy(curproc->p_addrspace, &childproc->p_addrspace);
+	if(result){
+		proc_destroy(childproc);
+		lock_release(gpll_lock);
+		if(curproc->parent != NULL){
+			sys__exit(1);
+		}
+		return ENOMEM;
+	}
+	// Fork the process. Copy the filetable over to the child and increment
+	// the child's semaphore so it knows to continue the fork.
+	result = thread_fork(curproc->p_name, childproc, child, trap, 0);  	 
+	if(result){
+		proc_destroy(childproc);
+		lock_release(gpll_lock);
+		if(curproc->parent != NULL){
+			sys__exit(1);
+		}
+		return ENOMEM;
+	}
+
+	result = filetable_copy(curproc->p_filetable, &childproc->p_filetable);
+	if(result){
+		proc_destroy(childproc);
 		lock_release(gpll_lock);
 		return ENOMEM;
 	}
 
-	as_copy(curproc->p_addrspace, &childproc->p_addrspace);
-	//lock_release(gpll_lock);
-	
-	// Fork the process. Copy the filetable over to the child and increment
-	// the child's semaphore so it knows to continue the fork.
-	result = thread_fork(curproc->p_name, childproc, child, trap, 0);  	 
-
-	filetable_copy(curproc->p_filetable, &childproc->p_filetable);
-
 	V(childproc->forksem);
-
-	if(result == ENOMEM){
-		return ENOMEM;
-	}else if(result){
-		return -1;
-	}
 	
 	// Return with child's PID
 	*childpid = proc_getpid(childproc);
@@ -313,14 +322,6 @@ sys_waitpid(pid_t pid, int *status, int options, int *childpid){
 		lock_release(gpll_lock);
 		return ECHILD;	
 	}
-	/*if( childnode->pid == pid && childnode->busy == true){
-		lock_release(gpll_lock);
-		return ECHILD;
-	}*/
-	/*if( childnode->pid_parent == pid ){
-		lock_release(gpll_lock);
-		return ECHILD;
-	}*/
 
 	// Controls whether or not _exit() destroys the process. In this
 	// case, we will manually destroy it after waiting.

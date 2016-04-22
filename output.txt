@@ -1,605 +1,159 @@
-Binary file .git/index matches
-.root/include/setjmp.h: * If the stack frame that called setjmp returns before longjmp is
-.root/include/kern/syscall.h://#define SYS_sigaltstack 33
-.root/include/kern/resource.h:	__counter_t ru_isrss;		/* stack memory usage (kb-ticks) */
-.root/include/kern/resource.h:#define RLIMIT_STACK		4	/* max stack size (bytes) */
-.root/include/kern/mips/regdefs.h:#define sp  $29    /* stack pointer */
-.root/include/kern/signal.h:#define SA_ONSTACK	1	/* Use sigaltstack() stack. */
-.root/include/kern/signal.h: * Struct for sigaltstack().
-.root/include/kern/signal.h:struct sigaltstack {
-Binary file .root/kernel-ASST1 matches
-Binary file .root/kernel matches
-.root/man/testbin/forktest.html:has its own data and stack.
-.root/man/libc/setjmp.html:<tt>setjmp</tt> saves the current stack frame and processor state in
-.root/man/libc/setjmp.html:If the stack frame that called <tt>setjmp</tt> returns before
-Binary file .root/kernel-DUMBVM matches
-Binary file .root/hostbin/host-poisondisk matches
-Binary file .root/hostbin/host-psort matches
-Binary file .root/hostbin/host-mksfs matches
-Binary file .root/hostbin/host-hash matches
-Binary file .root/hostbin/host-sfsck matches
-Binary file .root/hostbin/host-dumpsfs matches
-Binary file .root/kernel-ASST3 matches
-Binary file .root/kernel-ASST2 matches
-Binary file build/install/hostbin/host-dumpsfs matches
-Binary file build/install/hostbin/host-hash matches
-Binary file build/install/hostbin/host-mksfs matches
-Binary file build/install/hostbin/host-poisondisk matches
-Binary file build/install/hostbin/host-psort matches
-Binary file build/install/hostbin/host-sfsck matches
-build/install/hostinclude/kern/machine/regdefs.h:#define sp  $29    /* stack pointer */
-build/install/hostinclude/kern/mips/regdefs.h:#define sp  $29    /* stack pointer */
-build/install/hostinclude/kern/resource.h:	__counter_t ru_isrss;		/* stack memory usage (kb-ticks) */
-build/install/hostinclude/kern/resource.h:#define RLIMIT_STACK		4	/* max stack size (bytes) */
-build/install/hostinclude/kern/signal.h:#define SA_ONSTACK	1	/* Use sigaltstack() stack. */
-build/install/hostinclude/kern/signal.h: * Struct for sigaltstack().
-build/install/hostinclude/kern/signal.h:struct sigaltstack {
-build/install/hostinclude/kern/syscall.h://#define SYS_sigaltstack 33
-build/install/include/kern/machine/regdefs.h:#define sp  $29    /* stack pointer */
-build/install/include/kern/mips/regdefs.h:#define sp  $29    /* stack pointer */
-build/install/include/kern/resource.h:	__counter_t ru_isrss;		/* stack memory usage (kb-ticks) */
-build/install/include/kern/resource.h:#define RLIMIT_STACK		4	/* max stack size (bytes) */
-build/install/include/kern/signal.h:#define SA_ONSTACK	1	/* Use sigaltstack() stack. */
-build/install/include/kern/signal.h: * Struct for sigaltstack().
-build/install/include/kern/signal.h:struct sigaltstack {
-build/install/include/kern/syscall.h://#define SYS_sigaltstack 33
-build/install/include/machine/regdefs.h:#define sp  $29    /* stack pointer */
-build/install/include/setjmp.h: * If the stack frame that called setjmp returns before longjmp is
-build/install/man/libc/setjmp.html:<tt>setjmp</tt> saves the current stack frame and processor state in
-build/install/man/libc/setjmp.html:If the stack frame that called <tt>setjmp</tt> returns before
-build/install/man/testbin/forktest.html:has its own data and stack.
-Binary file build/tooldir/hostlib/libhostcompat.a matches
-Binary file build/userland/lib/hostcompat/err.ho matches
-Binary file build/userland/lib/hostcompat/hostcompat.ho matches
-Binary file build/userland/lib/hostcompat/libhostcompat.a matches
-Binary file build/userland/lib/hostcompat/ntohll.ho matches
-Binary file build/userland/lib/hostcompat/time.ho matches
-Binary file build/userland/lib/hostcompat/tprintf.ho matches
-build/userland/lib/libc/syscalls.S: *    call: four args in a0-a3, the other args on the stack.
-Binary file build/userland/sbin/dumpsfs/disk.ho matches
-Binary file build/userland/sbin/dumpsfs/dumpsfs.ho matches
-Binary file build/userland/sbin/dumpsfs/host-dumpsfs matches
-Binary file build/userland/sbin/dumpsfs/support.ho matches
-Binary file build/userland/sbin/mksfs/disk.ho matches
-Binary file build/userland/sbin/mksfs/host-mksfs matches
-Binary file build/userland/sbin/mksfs/mksfs.ho matches
-Binary file build/userland/sbin/mksfs/support.ho matches
-Binary file build/userland/sbin/sfsck/disk.ho matches
-Binary file build/userland/sbin/sfsck/freemap.ho matches
-Binary file build/userland/sbin/sfsck/host-sfsck matches
-Binary file build/userland/sbin/sfsck/inode.ho matches
-Binary file build/userland/sbin/sfsck/main.ho matches
-Binary file build/userland/sbin/sfsck/pass1.ho matches
-Binary file build/userland/sbin/sfsck/pass2.ho matches
-Binary file build/userland/sbin/sfsck/sb.ho matches
-Binary file build/userland/sbin/sfsck/sfs.ho matches
-Binary file build/userland/sbin/sfsck/support.ho matches
-Binary file build/userland/sbin/sfsck/utils.ho matches
-Binary file build/userland/testbin/hash/hash.ho matches
-Binary file build/userland/testbin/hash/host-hash matches
-Binary file build/userland/testbin/poisondisk/disk.ho matches
-Binary file build/userland/testbin/poisondisk/host-poisondisk matches
-Binary file build/userland/testbin/poisondisk/poisondisk.ho matches
-Binary file build/userland/testbin/poisondisk/support.ho matches
-Binary file build/userland/testbin/psort/host-psort matches
-Binary file build/userland/testbin/psort/psort.ho matches
-Binary file build/userland/testbin/usemtest/usemtest.ho matches
-CHANGES:20090219 dholland	Make stack frames in assembly code 64-bit aligned.
-CHANGES:20031224 dholland	Update stack assertions in mips/trap.c for 4k stacks.
-CHANGES:20030129 dholland	Make first thread stack also 4k rather than 8k.
-CHANGES:20020830 dholland	Shrink kernel stacks from 8k to 4k.
-CHANGES:20020515 dholland	Initialize mips stacks better, for gdb's benefit.
-CHANGES:20020208 dholland	Fix stack frame of mips __start for gdb's benefit.
-CHANGES:20020117 dholland	Check for stack overflow during context switch.
-CHANGES.syscalls:20140916 dholland	Don't allocate char[PATH_MAX] on the kernel stack.
-common/libc/arch/mips/setjmp.S:    * only need to save registers, not the whole contents of the stack.)
-common/libtest161/config.h: * Enable the buffer allocator implementation that makes use of a (stack)
-common/libtest161/secure.c:	// We use a total of 320 bytes of array data on the stack
-kern/arch/mips/include/current.h: * current cpu, the current thread, or even the kernel stack of the
-kern/arch/mips/include/current.h: * there's a canonical way to find at least the stack.)
-kern/arch/mips/include/current.h: *   both the kernel stack and curthread.
-kern/arch/mips/include/kern/regdefs.h:#define sp  $29    /* stack pointer */
-kern/arch/mips/include/trapframe.h: * Structure describing what is saved on the stack during entry to
-kern/arch/mips/include/trapframe.h: * be on the thread's own stack or bad things will happen.
-kern/arch/mips/include/trapframe.h: * Arrays used to load the kernel stack and curthread on trap entry.
-kern/arch/mips/include/trapframe.h:extern vaddr_t cpustacks[];
-kern/arch/mips/include/vm.h: * The starting value for the stack pointer at user level.  Because
-kern/arch/mips/include/vm.h: * the stack is subtract-then-store, this can start as the next
-kern/arch/mips/include/vm.h: * address after the stack area.
-kern/arch/mips/include/vm.h: * We put the stack at the very top of user virtual memory because it
-kern/arch/mips/locore/exception-mips1.S:   beq	k0, $0, 1f		/* If clear, from kernel, already have stack */
-kern/arch/mips/locore/exception-mips1.S:   /* Coming from user mode - find kernel stack */
-kern/arch/mips/locore/exception-mips1.S:   lui k0, %hi(cpustacks)	/* get base address of cpustacks[] */
-kern/arch/mips/locore/exception-mips1.S:   move k1, sp			/* Save previous stack pointer in k1 */
-kern/arch/mips/locore/exception-mips1.S:   lw sp, %lo(cpustacks)(k0)	/* Load kernel stack pointer (in delay slot) */
-kern/arch/mips/locore/exception-mips1.S:   move k1, sp			/* Save previous stack in k1 (delay slot) */
-kern/arch/mips/locore/exception-mips1.S:    *      k1 contains the old stack pointer.
-kern/arch/mips/locore/exception-mips1.S:    *      sp points into the kernel stack.
-kern/arch/mips/locore/exception-mips1.S:    * Allocate stack space for 37 words to hold the trap frame,
-kern/arch/mips/locore/exception-mips1.S:    * one more for proper (64-bit) stack alignment.
-kern/arch/mips/locore/exception-mips1.S:    * able to trace the stack back through here, we play some silly
-kern/arch/mips/locore/exception-mips1.S:    *        think it's the stack pointer slot. Then we store the real
-kern/arch/mips/locore/exception-mips1.S:   /* Something must be here or gdb doesn't find the stack frame. */
-kern/arch/mips/locore/exception-mips1.S:   /*     152(sp)		   stack pointer - below */
-kern/arch/mips/locore/exception-mips1.S:    * It's allocated on our stack.
-kern/arch/mips/locore/exception-mips1.S:    * Move it to the stack pointer - we don't need the actual stack
-kern/arch/mips/locore/exception-mips1.S:    * position any more. (When we come back from usermode, cpustacks[]
-kern/arch/mips/locore/exception-mips1.S:    * will be used to reinitialize our stack pointer, and that was
-kern/arch/mips/locore/trap.c:	/* Make sure we haven't run off our stack */
-kern/arch/mips/locore/trap.c:	if (curthread != NULL && curthread->t_stack != NULL) {
-kern/arch/mips/locore/trap.c:		KASSERT((vaddr_t)tf > (vaddr_t)curthread->t_stack);
-kern/arch/mips/locore/trap.c:		KASSERT((vaddr_t)tf < (vaddr_t)(curthread->t_stack
-kern/arch/mips/locore/trap.c:	 * cpustacks[]. Just return.
-kern/arch/mips/locore/trap.c:	if (curthread->t_stack == NULL) {
-kern/arch/mips/locore/trap.c:	cpustacks[curcpu->c_number] = (vaddr_t)curthread->t_stack + STACK_SIZE;
-kern/arch/mips/locore/trap.c:	 *   (1) curthread->t_stack is corrupted, or
-kern/arch/mips/locore/trap.c:	 *   (2) the trap frame is somehow on the wrong kernel stack.
-kern/arch/mips/locore/trap.c:	 * If cpustacks[] is corrupted, the next trap back to the
-kern/arch/mips/locore/trap.c:	KASSERT(SAME_STACK(cpustacks[curcpu->c_number]-1, (vaddr_t)tf));
-kern/arch/mips/locore/trap.c:	cpustacks[curcpu->c_number] = (vaddr_t)curthread->t_stack + STACK_SIZE;
-kern/arch/mips/locore/trap.c:	 *   (1) cpustacks[] is corrupted, or
-kern/arch/mips/locore/trap.c:	 *   (2) the trap frame is not on our own kernel stack, or
-kern/arch/mips/locore/trap.c:	 * If cpustacks[] is corrupted, the next trap back to the
-kern/arch/mips/locore/trap.c:	 * current thread's own stack. It cannot correctly be on
-kern/arch/mips/locore/trap.c:	 * either another thread's stack or in the kernel heap.
-kern/arch/mips/locore/trap.c:	KASSERT(SAME_STACK(cpustacks[curcpu->c_number]-1, (vaddr_t)tf));
-kern/arch/mips/locore/trap.c: * begin executing at the specified entry point. The stack pointer is
-kern/arch/mips/locore/trap.c: * initialized from the stackptr argument. Note that passing argc/argv
-kern/arch/mips/locore/trap.c: * may use additional stack space on some other platforms (but not on
-kern/arch/mips/locore/trap.c:		  vaddr_t stack, vaddr_t entry)
-kern/arch/mips/locore/trap.c:	tf.tf_sp = stack;
-kern/arch/mips/syscall/syscall.c: * stack, starting at sp+16 to skip over the slots for the
-kern/arch/mips/syscall/syscall.c:			 * get "whence" from the stack. Furthermore, the
-kern/arch/mips/syscall/syscall.c:	struct trapframe tf_stack;	
-kern/arch/mips/syscall/syscall.c:	// Copy over to stack
-kern/arch/mips/syscall/syscall.c:	tf_stack = *tf;	
-kern/arch/mips/syscall/syscall.c:	mips_usermode(&tf_stack);
-kern/arch/mips/thread/cpu.c: * Startup and exception-time stack hook.
-kern/arch/mips/thread/cpu.c: * or current thread stack upon trap entry from user mode. To deal
-kern/arch/mips/thread/cpu.c: * place possible, and then use that to index cpustacks[]. This gets
-kern/arch/mips/thread/cpu.c: * us the value to load as the stack pointer. We can then also load
-kern/arch/mips/thread/cpu.c:vaddr_t cpustacks[MAXCPUS];
-kern/arch/mips/thread/cpu.c:	vaddr_t stackpointer;
-kern/arch/mips/thread/cpu.c:	if (c->c_curthread->t_stack == NULL) {
-kern/arch/mips/thread/cpu.c:		 * Stick the stack in cpustacks[], and thread pointer
-kern/arch/mips/thread/cpu.c:		/* stack base address */
-kern/arch/mips/thread/cpu.c:		stackpointer = (vaddr_t) c->c_curthread->t_stack;
-kern/arch/mips/thread/cpu.c:		/* since stacks grow down, get the top */
-kern/arch/mips/thread/cpu.c:		stackpointer += STACK_SIZE;
-kern/arch/mips/thread/cpu.c:		cpustacks[c->c_number] = stackpointer;
-kern/arch/mips/thread/switch.S:    * The switchframe pointer is really the stack pointer. The other
-kern/arch/mips/thread/switch.S:    * registers get saved on the stack, namely:
-kern/arch/mips/thread/switch.S:   /* Allocate stack space for saving 10 registers. 10*4 = 40 */
-kern/arch/mips/thread/switch.S:   /* Store the old stack pointer in the old thread */
-kern/arch/mips/thread/switch.S:   /* Get the new stack pointer from the new thread */
-kern/arch/mips/thread/switchframe.c:	vaddr_t stacktop;
-kern/arch/mips/thread/switchframe.c:         * MIPS stacks grow down. t_stack is just a hunk of memory, so
-kern/arch/mips/thread/switchframe.c:         * top of the stack.
-kern/arch/mips/thread/switchframe.c:        stacktop = ((vaddr_t)thread->t_stack) + STACK_SIZE;
-kern/arch/mips/thread/switchframe.c:        sf = ((struct switchframe *) stacktop) - 1;
-kern/arch/mips/thread/switchframe.h: * Structure describing what is saved on the stack during a context switch.
-kern/arch/mips/thread/threadstart.S:   addiu sp, sp, -16    /* make our stack frame */
-kern/arch/mips/thread/threadstart.S:   move ra, $0          /* clear return addr so we're top of the call stack */
-kern/arch/mips/vm/dumbvm.c:/* under dumbvm, always have 72k of user stack */
-kern/arch/mips/vm/dumbvm.c:	vaddr_t vbase1, vtop1, vbase2, vtop2, stackbase, stacktop;
-kern/arch/mips/vm/dumbvm.c:	KASSERT(as->as_stackpbase != 0);
-kern/arch/mips/vm/dumbvm.c:	KASSERT((as->as_stackpbase & PAGE_FRAME) == as->as_stackpbase);
-kern/arch/mips/vm/dumbvm.c:	stackbase = USERSTACK - DUMBVM_STACKPAGES * PAGE_SIZE;
-kern/arch/mips/vm/dumbvm.c:	stacktop = USERSTACK;
-kern/arch/mips/vm/dumbvm.c:	else if (faultaddress >= stackbase && faultaddress < stacktop) {
-kern/arch/mips/vm/dumbvm.c:		paddr = (faultaddress - stackbase) + as->as_stackpbase;
-kern/arch/mips/vm/dumbvm.c:	as->as_stackpbase = 0;
-kern/arch/mips/vm/dumbvm.c:	KASSERT(as->as_stackpbase == 0);
-kern/arch/mips/vm/dumbvm.c:	as->as_stackpbase = getppages(DUMBVM_STACKPAGES);
-kern/arch/mips/vm/dumbvm.c:	if (as->as_stackpbase == 0) {
-kern/arch/mips/vm/dumbvm.c:	as_zero_region(as->as_stackpbase, DUMBVM_STACKPAGES);
-kern/arch/mips/vm/dumbvm.c:as_define_stack(struct addrspace *as, vaddr_t *stackptr)
-kern/arch/mips/vm/dumbvm.c:	KASSERT(as->as_stackpbase != 0);
-kern/arch/mips/vm/dumbvm.c:	*stackptr = USERSTACK;
-kern/arch/mips/vm/dumbvm.c:	KASSERT(new->as_stackpbase != 0);
-kern/arch/mips/vm/dumbvm.c:	memmove((void *)PADDR_TO_KVADDR(new->as_stackpbase),
-kern/arch/mips/vm/dumbvm.c:		(const void *)PADDR_TO_KVADDR(old->as_stackpbase),
-kern/arch/sys161/main/start.S:    * when we switch off the bootup stack. Otherwise, gdb gets very
-kern/arch/sys161/main/start.S:   .frame sp, 24, $0	/* 24-byte sp-relative frame; return addr on stack */
-kern/arch/sys161/main/start.S:    * The System/161 loader sets up a boot stack for the first
-kern/arch/sys161/main/start.S:    * string argument. The string lives on the very top of the stack.
-kern/arch/sys161/main/start.S:    *                         first thread's stack (1 page)
-kern/arch/sys161/main/start.S:   addi t0, t0, 4096	/* add one page to hold the stack */
-kern/arch/sys161/main/start.S:   move sp, t0		/* start the kernel stack for the first thread here */
-kern/arch/sys161/main/start.S:    * registers contain anything interesting (except the stack pointer).
-kern/arch/sys161/main/start.S:    * Now set up a stack frame on the real kernel stack: a dummy saved
-kern/arch/sys161/main/start.S:    * (This needs to match the stack frame set up at the top of the
-kern/arch/sys161/main/start.S:    * register. This is necessary to read from cpustacks[] and
-kern/arch/sys161/main/start.S:    * When we get here our stack points to the CRAM area of the bus
-kern/arch/sys161/main/start.S:    * indexing cpustacks[]. None of the other registers contain
-kern/arch/sys161/main/start.S:    * when we switch stacks. Otherwise, gdb gets very confused.
-kern/arch/sys161/main/start.S:   .frame sp, 24, $0	/* 24-byte sp-relative frame; return addr on stack */
-kern/arch/sys161/main/start.S:    * Fetch the stack out of cpustacks[].
-kern/arch/sys161/main/start.S:   lui t0, %hi(cpustacks)	/* load upper half of cpustacks base addr */
-kern/arch/sys161/main/start.S:   lw sp, %lo(cpustacks)(t0)	/* get the stack pointer */
-kern/arch/sys161/main/start.S:   lui t0, %hi(cputhreads)	/* load upper half of cpustacks base addr */
-kern/arch/sys161/main/start.S:    * Set up a stack frame. Store zero into the return address slot so
-kern/arch/sys161/main/start.S:    * we show as the top of the stack.
-Binary file kern/compile/ASST1/spl.o matches
-Binary file kern/compile/ASST1/start.o matches
-Binary file kern/compile/ASST1/stoplight.o matches
-Binary file kern/compile/ASST1/switchframe.o matches
-Binary file kern/compile/ASST1/synch.o matches
-Binary file kern/compile/ASST1/synchprobs.o matches
-Binary file kern/compile/ASST1/synchtest.o matches
-Binary file kern/compile/ASST1/syscall.o matches
-Binary file kern/compile/ASST1/thread.o matches
-Binary file kern/compile/ASST1/threadlist.o matches
-Binary file kern/compile/ASST1/threadlisttest.o matches
-Binary file kern/compile/ASST1/trap.o matches
-Binary file kern/compile/ASST1/uio.o matches
-Binary file kern/compile/ASST1/vfscwd.o matches
-Binary file kern/compile/ASST1/clock.o matches
-Binary file kern/compile/ASST1/console.o matches
-Binary file kern/compile/ASST1/copyinout.o matches
-Binary file kern/compile/ASST1/cpu.o matches
-Binary file kern/compile/ASST1/dumbvm.o matches
-Binary file kern/compile/ASST1/exception-mips1.o matches
-Binary file kern/compile/ASST1/hmacunit.o matches
-kern/compile/ASST1/includelinks/kern/machine/regdefs.h:#define sp  $29    /* stack pointer */
-kern/compile/ASST1/includelinks/kern/mips/regdefs.h:#define sp  $29    /* stack pointer */
-kern/compile/ASST1/includelinks/machine/current.h: * current cpu, the current thread, or even the kernel stack of the
-kern/compile/ASST1/includelinks/machine/current.h: * there's a canonical way to find at least the stack.)
-kern/compile/ASST1/includelinks/machine/current.h: *   both the kernel stack and curthread.
-kern/compile/ASST1/includelinks/machine/kern/regdefs.h:#define sp  $29    /* stack pointer */
-kern/compile/ASST1/includelinks/machine/trapframe.h: * Structure describing what is saved on the stack during entry to
-kern/compile/ASST1/includelinks/machine/trapframe.h: * be on the thread's own stack or bad things will happen.
-kern/compile/ASST1/includelinks/machine/trapframe.h: * Arrays used to load the kernel stack and curthread on trap entry.
-kern/compile/ASST1/includelinks/machine/trapframe.h:extern vaddr_t cpustacks[];
-kern/compile/ASST1/includelinks/machine/vm.h: * The starting value for the stack pointer at user level.  Because
-kern/compile/ASST1/includelinks/machine/vm.h: * the stack is subtract-then-store, this can start as the next
-kern/compile/ASST1/includelinks/machine/vm.h: * address after the stack area.
-kern/compile/ASST1/includelinks/machine/vm.h: * We put the stack at the very top of user virtual memory because it
-kern/compile/ASST1/includelinks/mips/current.h: * current cpu, the current thread, or even the kernel stack of the
-kern/compile/ASST1/includelinks/mips/current.h: * there's a canonical way to find at least the stack.)
-kern/compile/ASST1/includelinks/mips/current.h: *   both the kernel stack and curthread.
-kern/compile/ASST1/includelinks/mips/kern/regdefs.h:#define sp  $29    /* stack pointer */
-kern/compile/ASST1/includelinks/mips/trapframe.h: * Structure describing what is saved on the stack during entry to
-kern/compile/ASST1/includelinks/mips/trapframe.h: * be on the thread's own stack or bad things will happen.
-kern/compile/ASST1/includelinks/mips/trapframe.h: * Arrays used to load the kernel stack and curthread on trap entry.
-kern/compile/ASST1/includelinks/mips/trapframe.h:extern vaddr_t cpustacks[];
-kern/compile/ASST1/includelinks/mips/vm.h: * The starting value for the stack pointer at user level.  Because
-kern/compile/ASST1/includelinks/mips/vm.h: * the stack is subtract-then-store, this can start as the next
-kern/compile/ASST1/includelinks/mips/vm.h: * address after the stack area.
-kern/compile/ASST1/includelinks/mips/vm.h: * We put the stack at the very top of user virtual memory because it
-Binary file kern/compile/ASST1/kernel matches
-Binary file kern/compile/ASST1/kprintf.o matches
-Binary file kern/compile/ASST1/lamebus.o matches
-Binary file kern/compile/ASST1/lamebus_machdep.o matches
-Binary file kern/compile/ASST1/loadelf.o matches
-Binary file kern/compile/ASST1/main.o matches
-Binary file kern/compile/ASST1/proc.o matches
-Binary file kern/compile/ASST1/runprogram.o matches
-Binary file kern/compile/ASST1/rwtest.o matches
-Binary file kern/compile/ASST1/semfs_vnops.o matches
-Binary file kern/compile/ASST1/semunit.o matches
-Binary file kern/compile/ASST1/spinlock.o matches
-Binary file kern/compile/ASST2/spinlock.o matches
-Binary file kern/compile/ASST2/spl.o matches
-Binary file kern/compile/ASST2/start.o matches
-Binary file kern/compile/ASST2/switchframe.o matches
-Binary file kern/compile/ASST2/synch.o matches
-Binary file kern/compile/ASST2/synchtest.o matches
-Binary file kern/compile/ASST2/syscall.o matches
-Binary file kern/compile/ASST2/thread.o matches
-Binary file kern/compile/ASST2/threadlist.o matches
-Binary file kern/compile/ASST2/threadlisttest.o matches
-Binary file kern/compile/ASST2/trap.o matches
-Binary file kern/compile/ASST2/uio.o matches
-Binary file kern/compile/ASST2/vfscwd.o matches
-Binary file kern/compile/ASST2/clock.o matches
-Binary file kern/compile/ASST2/console.o matches
-Binary file kern/compile/ASST2/copyinout.o matches
-Binary file kern/compile/ASST2/cpu.o matches
-Binary file kern/compile/ASST2/dumbvm.o matches
-Binary file kern/compile/ASST2/exception-mips1.o matches
-Binary file kern/compile/ASST2/file_syscalls.o matches
-Binary file kern/compile/ASST2/hmacunit.o matches
-kern/compile/ASST2/includelinks/kern/machine/regdefs.h:#define sp  $29    /* stack pointer */
-kern/compile/ASST2/includelinks/kern/mips/regdefs.h:#define sp  $29    /* stack pointer */
-kern/compile/ASST2/includelinks/machine/current.h: * current cpu, the current thread, or even the kernel stack of the
-kern/compile/ASST2/includelinks/machine/current.h: * there's a canonical way to find at least the stack.)
-kern/compile/ASST2/includelinks/machine/current.h: *   both the kernel stack and curthread.
-kern/compile/ASST2/includelinks/machine/kern/regdefs.h:#define sp  $29    /* stack pointer */
-kern/compile/ASST2/includelinks/machine/trapframe.h: * Structure describing what is saved on the stack during entry to
-kern/compile/ASST2/includelinks/machine/trapframe.h: * be on the thread's own stack or bad things will happen.
-kern/compile/ASST2/includelinks/machine/trapframe.h: * Arrays used to load the kernel stack and curthread on trap entry.
-kern/compile/ASST2/includelinks/machine/trapframe.h:extern vaddr_t cpustacks[];
-kern/compile/ASST2/includelinks/machine/vm.h: * The starting value for the stack pointer at user level.  Because
-kern/compile/ASST2/includelinks/machine/vm.h: * the stack is subtract-then-store, this can start as the next
-kern/compile/ASST2/includelinks/machine/vm.h: * address after the stack area.
-kern/compile/ASST2/includelinks/machine/vm.h: * We put the stack at the very top of user virtual memory because it
-kern/compile/ASST2/includelinks/mips/current.h: * current cpu, the current thread, or even the kernel stack of the
-kern/compile/ASST2/includelinks/mips/current.h: * there's a canonical way to find at least the stack.)
-kern/compile/ASST2/includelinks/mips/current.h: *   both the kernel stack and curthread.
-kern/compile/ASST2/includelinks/mips/kern/regdefs.h:#define sp  $29    /* stack pointer */
-kern/compile/ASST2/includelinks/mips/trapframe.h: * Structure describing what is saved on the stack during entry to
-kern/compile/ASST2/includelinks/mips/trapframe.h: * be on the thread's own stack or bad things will happen.
-kern/compile/ASST2/includelinks/mips/trapframe.h: * Arrays used to load the kernel stack and curthread on trap entry.
-kern/compile/ASST2/includelinks/mips/trapframe.h:extern vaddr_t cpustacks[];
-kern/compile/ASST2/includelinks/mips/vm.h: * The starting value for the stack pointer at user level.  Because
-kern/compile/ASST2/includelinks/mips/vm.h: * the stack is subtract-then-store, this can start as the next
-kern/compile/ASST2/includelinks/mips/vm.h: * address after the stack area.
-kern/compile/ASST2/includelinks/mips/vm.h: * We put the stack at the very top of user virtual memory because it
-Binary file kern/compile/ASST2/kernel matches
-Binary file kern/compile/ASST2/kmalloctest.o matches
-Binary file kern/compile/ASST2/kprintf.o matches
-Binary file kern/compile/ASST2/lamebus.o matches
-Binary file kern/compile/ASST2/lamebus_machdep.o matches
-Binary file kern/compile/ASST2/loadelf.o matches
-Binary file kern/compile/ASST2/main.o matches
-Binary file kern/compile/ASST2/menu.o matches
-Binary file kern/compile/ASST2/proc.o matches
-Binary file kern/compile/ASST2/runprogram.o matches
-Binary file kern/compile/ASST2/rwtest.o matches
-Binary file kern/compile/ASST2/semfs_vnops.o matches
-Binary file kern/compile/ASST2/semunit.o matches
-Binary file kern/compile/ASST3/spinlock.o matches
-Binary file kern/compile/ASST3/spl.o matches
-Binary file kern/compile/ASST3/start.o matches
-Binary file kern/compile/ASST3/switchframe.o matches
-Binary file kern/compile/ASST3/synch.o matches
-Binary file kern/compile/ASST3/synchtest.o matches
-Binary file kern/compile/ASST3/syscall.o matches
-Binary file kern/compile/ASST3/thread.o matches
-Binary file kern/compile/ASST3/threadlist.o matches
-Binary file kern/compile/ASST3/threadlisttest.o matches
-Binary file kern/compile/ASST3/trap.o matches
-Binary file kern/compile/ASST3/uio.o matches
-Binary file kern/compile/ASST3/vfscwd.o matches
-Binary file kern/compile/ASST3/vm.o matches
-Binary file kern/compile/ASST3/addrspace.o matches
-Binary file kern/compile/ASST3/clock.o matches
-Binary file kern/compile/ASST3/console.o matches
-Binary file kern/compile/ASST3/copyinout.o matches
-Binary file kern/compile/ASST3/cpu.o matches
-Binary file kern/compile/ASST3/exception-mips1.o matches
-Binary file kern/compile/ASST3/file_syscalls.o matches
-Binary file kern/compile/ASST3/hmacunit.o matches
-kern/compile/ASST3/includelinks/kern/machine/regdefs.h:#define sp  $29    /* stack pointer */
-kern/compile/ASST3/includelinks/kern/mips/regdefs.h:#define sp  $29    /* stack pointer */
-kern/compile/ASST3/includelinks/machine/current.h: * current cpu, the current thread, or even the kernel stack of the
-kern/compile/ASST3/includelinks/machine/current.h: * there's a canonical way to find at least the stack.)
-kern/compile/ASST3/includelinks/machine/current.h: *   both the kernel stack and curthread.
-kern/compile/ASST3/includelinks/machine/kern/regdefs.h:#define sp  $29    /* stack pointer */
-kern/compile/ASST3/includelinks/machine/trapframe.h: * Structure describing what is saved on the stack during entry to
-kern/compile/ASST3/includelinks/machine/trapframe.h: * be on the thread's own stack or bad things will happen.
-kern/compile/ASST3/includelinks/machine/trapframe.h: * Arrays used to load the kernel stack and curthread on trap entry.
-kern/compile/ASST3/includelinks/machine/trapframe.h:extern vaddr_t cpustacks[];
-kern/compile/ASST3/includelinks/machine/vm.h: * The starting value for the stack pointer at user level.  Because
-kern/compile/ASST3/includelinks/machine/vm.h: * the stack is subtract-then-store, this can start as the next
-kern/compile/ASST3/includelinks/machine/vm.h: * address after the stack area.
-kern/compile/ASST3/includelinks/machine/vm.h: * We put the stack at the very top of user virtual memory because it
-kern/compile/ASST3/includelinks/mips/current.h: * current cpu, the current thread, or even the kernel stack of the
-kern/compile/ASST3/includelinks/mips/current.h: * there's a canonical way to find at least the stack.)
-kern/compile/ASST3/includelinks/mips/current.h: *   both the kernel stack and curthread.
-kern/compile/ASST3/includelinks/mips/kern/regdefs.h:#define sp  $29    /* stack pointer */
-kern/compile/ASST3/includelinks/mips/trapframe.h: * Structure describing what is saved on the stack during entry to
-kern/compile/ASST3/includelinks/mips/trapframe.h: * be on the thread's own stack or bad things will happen.
-kern/compile/ASST3/includelinks/mips/trapframe.h: * Arrays used to load the kernel stack and curthread on trap entry.
-kern/compile/ASST3/includelinks/mips/trapframe.h:extern vaddr_t cpustacks[];
-kern/compile/ASST3/includelinks/mips/vm.h: * The starting value for the stack pointer at user level.  Because
-kern/compile/ASST3/includelinks/mips/vm.h: * the stack is subtract-then-store, this can start as the next
-kern/compile/ASST3/includelinks/mips/vm.h: * address after the stack area.
-kern/compile/ASST3/includelinks/mips/vm.h: * We put the stack at the very top of user virtual memory because it
-Binary file kern/compile/ASST3/kernel matches
-Binary file kern/compile/ASST3/kmalloctest.o matches
-Binary file kern/compile/ASST3/kprintf.o matches
-Binary file kern/compile/ASST3/lamebus.o matches
-Binary file kern/compile/ASST3/lamebus_machdep.o matches
-Binary file kern/compile/ASST3/loadelf.o matches
-Binary file kern/compile/ASST3/main.o matches
-Binary file kern/compile/ASST3/menu.o matches
-Binary file kern/compile/ASST3/proc.o matches
-Binary file kern/compile/ASST3/runprogram.o matches
-Binary file kern/compile/ASST3/rwtest.o matches
-Binary file kern/compile/ASST3/semfs_vnops.o matches
-Binary file kern/compile/ASST3/semunit.o matches
-kern/conf/ASST1:#options net			# Network stack (not supported)
-kern/conf/ASST2:#options net			# Network stack (not supported)
-kern/conf/ASST3:#options net			# Network stack (not supported)
-kern/conf/DUMBVM:#options net			# Network stack (not supported)
-kern/conf/DUMBVM-OPT:#options net			# Network stack (not supported)
-kern/conf/GENERIC:#options net			# Network stack (not supported)
-kern/conf/GENERIC-OPT:#options net			# Network stack (not supported)
-kern/include/addrspace.h:/* ASST3 requires a 4MB stack (4096KB / PAGE_SIZE) = 1024 Pages. */
-kern/include/addrspace.h:        paddr_t as_stackpbase;
-kern/include/addrspace.h:	struct pentry *stack;		// Stack pages
-kern/include/addrspace.h: *    as_define_stack - set up the stack region in the address space.
-kern/include/addrspace.h: *                back the initial stack pointer for the new process.
-kern/include/addrspace.h:int               as_define_stack(struct addrspace *as, vaddr_t *initstackptr);
-kern/include/cpu.h: * cpu_hatch after having claimed the startup stack and thread created
-kern/include/kern/resource.h:	__counter_t ru_isrss;		/* stack memory usage (kb-ticks) */
-kern/include/kern/resource.h:#define RLIMIT_STACK		4	/* max stack size (bytes) */
-kern/include/kern/signal.h:#define SA_ONSTACK	1	/* Use sigaltstack() stack. */
-kern/include/kern/signal.h: * Struct for sigaltstack().
-kern/include/kern/signal.h:struct sigaltstack {
-kern/include/kern/syscall.h://#define SYS_sigaltstack 33
-kern/include/syscall.h:		       vaddr_t stackptr, vaddr_t entrypoint);
-kern/include/thread.h:/* Size of kernel stacks; must be power of 2 */
-kern/include/thread.h:/* Mask for extracting the stack base address of a kernel stack pointer */
-kern/include/thread.h:/* Macro to test if two addresses are on the same kernel stack */
-kern/include/thread.h:	void *t_stack;			/* Kernel-level stack */
-kern/include/thread.h:	struct switchframe *t_context;	/* Saved register context (on stack) */
-kern/syscall/proc_syscalls.c:	vaddr_t entrypoint, stackptr;
-kern/syscall/proc_syscalls.c:	/* Define the user stack in the address space */
-kern/syscall/proc_syscalls.c:	result = as_define_stack(as, &stackptr);
-kern/syscall/proc_syscalls.c:	/* Stackpointer contains ptr to beginning of user stack: where args need to go */
-kern/syscall/proc_syscalls.c:	vaddr_t stacksonstacks[num_args];
-kern/syscall/proc_syscalls.c:	//char *stacksonstacks;
-kern/syscall/proc_syscalls.c:	//stacksonstacks = kmalloc(sizeof(*stacksonstacks) * num_args);
-kern/syscall/proc_syscalls.c:		// Arguments are copied onto the stack backwards
-kern/syscall/proc_syscalls.c:		//stackptr -= arglist[argcounter]->len;
-kern/syscall/proc_syscalls.c:		stackptr -= length;
-kern/syscall/proc_syscalls.c:		stackptr -= adjust;
-kern/syscall/proc_syscalls.c:		copyoutstr(bigbuffer[argcounter], (userptr_t)stackptr, ARG_MAX, &outlen);
-kern/syscall/proc_syscalls.c:		/* Shift stackptr by the length of the argument */
-kern/syscall/proc_syscalls.c:		/* Put a copy of the stackptr in the array */
-kern/syscall/proc_syscalls.c:		stacksonstacks[argcounter] = stackptr;		
-kern/syscall/proc_syscalls.c:	stackptr -= 4;
-kern/syscall/proc_syscalls.c:	copyout(bigbuffer[num_args], (userptr_t)stackptr, 4);
-kern/syscall/proc_syscalls.c:	// Stackpointer still needs references to where args are on the stack.
-kern/syscall/proc_syscalls.c:		stackptr -= 4;
-kern/syscall/proc_syscalls.c:		result = copyout(&stacksonstacks[i-1], (userptr_t)stackptr, 4);
-kern/syscall/proc_syscalls.c:		//kprintf("Stackptr: %x\n", stackptr);
-kern/syscall/proc_syscalls.c:		//stackptr += 4;
-kern/syscall/proc_syscalls.c:		//stackptr-=4;
-kern/syscall/proc_syscalls.c:	//		  stackptr, entrypoint);
-kern/syscall/proc_syscalls.c:	//kfree(stacksonstacks);
-kern/syscall/proc_syscalls.c:	enter_new_process(num_args, (userptr_t)stackptr, NULL, stackptr, entrypoint);
-kern/syscall/runprogram.c:	vaddr_t entrypoint, stackptr;
-kern/syscall/runprogram.c:	/* Define the user stack in the address space */
-kern/syscall/runprogram.c:	result = as_define_stack(as, &stackptr);
-kern/syscall/runprogram.c:			  stackptr, entrypoint);
-kern/syscall/runprogram.c:	// Pass trapframe, separate stack copy made in method
-kern/syscall/runprogram.c:	vaddr_t entrypoint, stackptr;
-kern/syscall/runprogram.c:	/* Define the user stack in the address space */
-kern/syscall/runprogram.c:	result = as_define_stack(as, &stackptr);
-kern/syscall/runprogram.c:	// Array to keep stackpointer values in	
-kern/syscall/runprogram.c:	vaddr_t *stacksonstacks;
-kern/syscall/runprogram.c:	stacksonstacks = (vaddr_t *)kmalloc(sizeof(vaddr_t) * num_args);
-kern/syscall/runprogram.c:	/* Copy arguments to new stack; aligned by 4 */
-kern/syscall/runprogram.c:		/* Shift stackptr by the length of the argument & buffer */	
-kern/syscall/runprogram.c:		stackptr -= length;
-kern/syscall/runprogram.c:		stackptr -= adjust;
-kern/syscall/runprogram.c:		/* Actually copy to stack */
-kern/syscall/runprogram.c:		copyoutstr(bigbuffer[argcounter], (userptr_t)stackptr, ARG_MAX, &outlen);
-kern/syscall/runprogram.c:		/* Put a copy of the stackptr in the array */
-kern/syscall/runprogram.c:		stacksonstacks[argcounter] = stackptr;		
-kern/syscall/runprogram.c:	stackptr -= 4;
-kern/syscall/runprogram.c:	copyout(bigbuffer[num_args], (userptr_t)stackptr, 4);
-kern/syscall/runprogram.c:	// Stackpointer still needs references to where args are on the stack.
-kern/syscall/runprogram.c:		stackptr -= 4;
-kern/syscall/runprogram.c:		result = copyout(&stacksonstacks[i-1], (userptr_t)stackptr, 4);
-kern/syscall/runprogram.c:	kfree(stacksonstacks);
-kern/syscall/runprogram.c:	enter_new_process(num_args, (userptr_t)stackptr, NULL, stackptr, entrypoint);
-kern/test/kmalloctest.c:	// The array can go on the stack, we won't have that many
-kern/test/kmalloctest.c:	// Initially, there must be at least 1 page allocated for each thread stack,
-kern/test/synchprobs.c:	threads[index] = curthread->t_stack;
-kern/test/synchprobs.c:	failif((threads[index] != curthread->t_stack), "failed: incorrect thread type");
-kern/test/threadlisttest.c:	t->t_stack = FAKE_MAGIC;
-kern/test/threadlisttest.c:	KASSERT(t->t_stack == FAKE_MAGIC);
-kern/test/tt3.c:/* dimension of matrices (cannot be too large or will overflow stack) */
-kern/thread/thread.c:/* Magic number used as a guard value on kernel thread stacks. */
-kern/thread/thread.c: * Stick a magic number on the bottom end of the stack. This will
-kern/thread/thread.c: * (sometimes) catch kernel stack overflows. Use thread_checkstack()
-kern/thread/thread.c:thread_checkstack_init(struct thread *thread)
-kern/thread/thread.c:	((uint32_t *)thread->t_stack)[0] = THREAD_STACK_MAGIC;
-kern/thread/thread.c:	((uint32_t *)thread->t_stack)[1] = THREAD_STACK_MAGIC;
-kern/thread/thread.c:	((uint32_t *)thread->t_stack)[2] = THREAD_STACK_MAGIC;
-kern/thread/thread.c:	((uint32_t *)thread->t_stack)[3] = THREAD_STACK_MAGIC;
-kern/thread/thread.c: * Check the magic number we put on the bottom end of the stack in
-kern/thread/thread.c: * thread_checkstack_init. If these assertions go off, it most likely
-kern/thread/thread.c: * means you overflowed your stack at some point, which can cause all
-kern/thread/thread.c: * Note that when ->t_stack is NULL, which is the case if the stack
-kern/thread/thread.c: * cannot be freed (which in turn is the case if the stack is the boot
-kern/thread/thread.c: * stack, and the thread is the boot thread) this doesn't do anything.
-kern/thread/thread.c:thread_checkstack(struct thread *thread)
-kern/thread/thread.c:	if (thread->t_stack != NULL) {
-kern/thread/thread.c:		KASSERT(((uint32_t*)thread->t_stack)[0] == THREAD_STACK_MAGIC);
-kern/thread/thread.c:		KASSERT(((uint32_t*)thread->t_stack)[1] == THREAD_STACK_MAGIC);
-kern/thread/thread.c:		KASSERT(((uint32_t*)thread->t_stack)[2] == THREAD_STACK_MAGIC);
-kern/thread/thread.c:		KASSERT(((uint32_t*)thread->t_stack)[3] == THREAD_STACK_MAGIC);
-kern/thread/thread.c:	thread->t_stack = NULL;
-kern/thread/thread.c:		 * Leave c->c_curthread->t_stack NULL for the boot
-kern/thread/thread.c:		 * cpu. This means we're using the boot stack, which
-kern/thread/thread.c:		 * make it possible to free the boot stack?)
-kern/thread/thread.c:		/*c->c_curthread->t_stack = ... */
-kern/thread/thread.c:		c->c_curthread->t_stack = kmalloc(STACK_SIZE);
-kern/thread/thread.c:		if (c->c_curthread->t_stack == NULL) {
-kern/thread/thread.c:			panic("cpu_create: couldn't allocate stack");
-kern/thread/thread.c:		thread_checkstack_init(c->c_curthread);
-kern/thread/thread.c: * (Freeing the stack you're actually using to run is ... inadvisable.)
-kern/thread/thread.c:	if (thread->t_stack != NULL) {
-kern/thread/thread.c:		kfree(thread->t_stack);
-kern/thread/thread.c:	/* Allocate a stack */
-kern/thread/thread.c:	newthread->t_stack = kmalloc(STACK_SIZE);
-kern/thread/thread.c:	if (newthread->t_stack == NULL) {
-kern/thread/thread.c:	thread_checkstack_init(newthread);
-kern/thread/thread.c:		/* thread_destroy will clean up the stack */
-kern/thread/thread.c:	/* Check the stack guard band. */
-kern/thread/thread.c:	thread_checkstack(cur);
-kern/thread/thread.c:	 * different stack and different values in the local
-kern/thread/thread.c:	 *      same stack, we're back to the thread that
-kern/thread/thread.c:	 *    - At this point the thread whose stack we're now on may
-kern/thread/thread.c:	/* Check the stack guard band. */
-kern/thread/thread.c:	thread_checkstack(cur);
-kern/vm/addrspace.c:	as->stack = NULL;
-kern/vm/addrspace.c:	// Copy the stack by first reserving physical pages and then copying information
-kern/vm/addrspace.c:	vaddr_t fakestack;
-kern/vm/addrspace.c:	result = as_define_stack(newas, &fakestack);	
-kern/vm/addrspace.c:	struct pentry *printstack;
-kern/vm/addrspace.c:	printstack = old->stack;
-kern/vm/addrspace.c:	while(printstack != NULL){
-kern/vm/addrspace.c:		kprintf("0x%x\n", printstack->vaddr);
-kern/vm/addrspace.c:		printstack = printstack->next;
-kern/vm/addrspace.c:	panic("Done printing stack.\n");
-kern/vm/addrspace.c:	struct pentry *oldstack;
-kern/vm/addrspace.c:	struct pentry *newstack;
-kern/vm/addrspace.c:	oldstack = old->stack;
-kern/vm/addrspace.c:	newstack = newas->stack;
-kern/vm/addrspace.c:	while( oldstack != NULL && newstack != NULL ){
-kern/vm/addrspace.c:		//memcpy( (void *)newstack, (void *)oldstack, PAGE_SIZE );
-kern/vm/addrspace.c:		memmove( (void *)newstack->vaddr, (void *)oldstack->vaddr, PAGE_SIZE );
-kern/vm/addrspace.c:		kprintf("0x%x | 0x%x\n", oldstack->vaddr, newstack->vaddr);
-kern/vm/addrspace.c:		oldstack = oldstack->next;
-kern/vm/addrspace.c:		newstack = newstack->next;
-kern/vm/addrspace.c: * space including code areas ( but NOT stack and heap!). This
-kern/vm/addrspace.c: * (6) Reserve pages for the user stack. Preprocessor statement defines defualt stack pages.
-kern/vm/addrspace.c:	/* Set the location of the heap for the addrspace. The user can call as_define_stack
-kern/vm/addrspace.c: * we finish up the order by sending it to the "stack department" to finish!
-kern/vm/addrspace.c: * We need to actually reserve stack pages here and return the top of the stack.
-kern/vm/addrspace.c: * Essentially this is as_define_region exclusively for the stack.
-kern/vm/addrspace.c:as_define_stack(struct addrspace *as, vaddr_t *stackptr)
-kern/vm/addrspace.c:	if(as == NULL || stackptr == NULL){
-kern/vm/addrspace.c:	// User stack begins at the number of default stack pages from REAR of addrspace.
-kern/vm/addrspace.c:	vaddr_t stack_begin = USERSTACK - (PAGE_SIZE * ADDRSP_STACKSIZE);
-kern/vm/addrspace.c:	// Assigned pentry's for our stack (as->stack)
-kern/vm/addrspace.c:		KASSERT(stack_begin < USERSTACK);
-kern/vm/addrspace.c:		newpage->vaddr = vaddr_to_vpn(stack_begin);
-kern/vm/addrspace.c:		if( as->stack == NULL ){
-kern/vm/addrspace.c:			as->stack = newpage;
-kern/vm/addrspace.c:			traverse = as->stack;
-kern/vm/addrspace.c:		stack_begin += PAGE_SIZE;
-kern/vm/addrspace.c:	*stackptr = USERSTACK;
-kern/vm/copyinout.c: * stack to where setjmp() was called. At that point we return EFAULT.
-kern/vm/vm.c:		load_page = addrsp->stack;
-kern/vm/vm.c:		struct pentry *dumpstack;
-kern/vm/vm.c:		dumpstack = addrsp->stack;
-kern/vm/vm.c:		while(dumpstack != NULL){
-kern/vm/vm.c:			kprintf("0x%x, ", dumpstack->vaddr);
-kern/vm/vm.c:			dumpstack = dumpstack->next;
-kern/vm/vm.c: * (2) Check to make sure we don't collide with our stack.
-kern/vm/vm.c:		// Check to make sure we don't collide with stack.
-man/libc/setjmp.html:<tt>setjmp</tt> saves the current stack frame and processor state in
-man/libc/setjmp.html:If the stack frame that called <tt>setjmp</tt> returns before
-man/testbin/forktest.html:has its own data and stack.
-test161/commands/vm.tc:  - name: /testbin/stacktest
-test161/targets/asst3.tt:  - id: vm/stacktest.t
-test161/tests/vm/stacktest.t:  Tests your VM stack handling by running the bigexec test from ASST2.
-test161/tests/vm/stacktest.t:$ /testbin/stacktest
-userland/include/setjmp.h: * If the stack frame that called setjmp returns before longjmp is
-userland/lib/crt0/mips/crt0.S:	 * complete stack frame, however.
-userland/lib/crt0/mips/crt0.S:	 * space in the bottom of its stack frame for writing back the
-userland/lib/crt0/mips/crt0.S:	 * than four arguments. It also requires the stack to be aligned
-userland/lib/crt0/mips/crt0.S:	li t0, 0xfffffff8		/* mask for stack alignment */
-userland/lib/crt0/mips/crt0.S:	and sp, sp, t0			/* align the stack */
-userland/lib/libc/arch/mips/syscalls-mips.S: *    call: four args in a0-a3, the other args on the stack.
-userland/testbin/parallelvm/parallelvm.c: * of its processes needs to allocate a kernel stack, and those add up
-userland/testbin/stacktest/Makefile:PROG=stacktest
-userland/testbin/stacktest/Makefile:SRCS=stacktest.c
-userland/testbin/stacktest/stacktest.c: * stacktest.c
-userland/testbin/stacktest/stacktest.c: * Tests the VM system's stack by allocating a large array on the stack and
-userland/testbin/stacktest/stacktest.c: * on the stack. However, we only touch 1/4 of it, meaning this test should
-userland/testbin/stacktest/stacktest.c: * run when with <=2M of memory if stack pages are allocated on demand.
-userland/testbin/stacktest/stacktest.c:stacktest1()
-userland/testbin/stacktest/stacktest.c:		// This is a fresh stack frame, so it better be zeroed. Otherwise,
-userland/testbin/stacktest/stacktest.c:				errx(1, "Your stack pages are leaking data!");
-userland/testbin/stacktest/stacktest.c:	int total = stacktest1();
-userland/testbin/stacktest/stacktest.c:	success(TEST161_SUCCESS, SECRET, "/testbin/stacktest");
-userland/testbin/tail/tail.c:/* much data space as required, but stack space is tight. */
+
+badcall
+     stability/badcall/badcall-close.t
+     stability/badcall/badcall-dup2.t
+     stability/badcall/badcall-execv.t
+     stability/badcall/badcall-lseek.t
+     stability/badcall/badcall-open.t
+     stability/badcall/badcall-read.t
+     stability/badcall/badcall-waitpid.t
+     stability/badcall/badcall-write.t
+boot
+     boot.t
+console
+     syscalls/consoletest.t
+coremap
+     coremap/coremap-loose.t
+     coremap/coremap-tight.t
+     coremap/km1.t
+     coremap/km2.t
+     coremap/km3.t
+     coremap/km4.t
+     coremap/not-dumbvm.t
+crash
+     stability/crash/crash-allS.t
+cvs
+     synch/cvt1.t
+     synch/cvt2.t
+     synch/cvt3.t
+     synch/cvt4.t
+     synch/cvt5.t
+filesyscalls
+     syscalls/closetest.t
+     syscalls/fileonlytest.t
+     syscalls/opentest.t
+     syscalls/readwritetest.t
+     syscalls/redirect.t
+     syscalls/sparsefile.t
+kleaks
+     synch/cvt1.t
+     synch/cvt2.t
+     synch/cvt5.t
+     synch/lt1.t
+     synch/rwt1.t
+     synch/rwt2.t
+     synch/sem1.t
+locks
+     synch/lt1.t
+     synch/lt2.t
+     synch/lt3.t
+not-dumbvm
+     coremap/not-dumbvm.t
+not-dumbvm-vm
+     vm/not-dumbvm-vm.t
+proc
+     stability/faulter.t
+procsyscalls
+     syscalls/add.t
+     syscalls/argtest.t
+     syscalls/bigexec.t
+     syscalls/factorial.t
+     syscalls/forktest.t
+     syscalls/shell.t
+rwlocks
+     synch/rwt1.t
+     synch/rwt2.t
+     synch/rwt3.t
+     synch/rwt4.t
+     synch/rwt5.t
+sbrk
+     vm/sbrk-badcall.t
+     vm/sbrktest.t
+semaphores
+     synch/sem1.t
+shell
+     syscalls/shell.t
+stability
+     stability/badcall/badcall-close.t
+     stability/badcall/badcall-dup2.t
+     stability/badcall/badcall-execv.t
+     stability/badcall/badcall-lseek.t
+     stability/badcall/badcall-open.t
+     stability/badcall/badcall-read.t
+     stability/badcall/badcall-waitpid.t
+     stability/badcall/badcall-write.t
+     stability/crash/crash-allS.t
+     stability/forkbomb.t
+     stability/forktest-stability.t
+     stability/randcall.t
+stability-vm
+     vm/stability/forkbomb.t
+     vm/stability/vm-stability.t
+synch
+     synch/cvt1.t
+     synch/cvt2.t
+     synch/cvt3.t
+     synch/cvt4.t
+     synch/cvt5.t
+     synch/lt1.t
+     synch/lt2.t
+     synch/lt3.t
+     synch/rwt1.t
+     synch/rwt2.t
+     synch/rwt3.t
+     synch/rwt4.t
+     synch/rwt5.t
+     synch/sem1.t
+synchprobs
+     synchprobs/sp1.t
+     synchprobs/sp2.t
+sys_close
+     syscalls/closetest.t
+sys_dup2
+     syscalls/redirect.t
+sys_exec
+     syscalls/add.t
+     syscalls/argtest.t
+     syscalls/bigexec.t
+     syscalls/factorial.t
+sys_fork
+     syscalls/forktest.t
+sys_lseek
+     syscalls/sparsefile.t
+sys_open
+     syscalls/opentest.t
+sys_read
+     syscalls/readwritetest.t
+sys_write
+     syscalls/readwritetest.t
+syscalls
+     syscalls/add.t
+     syscalls/argtest.t
+     syscalls/bigexec.t
+     syscalls/closetest.t
+     syscalls/factorial.t
+     syscalls/fileonlytest.t
+     syscalls/forktest.t
+     syscalls/opentest.t
+     syscalls/readwritetest.t
+     syscalls/redirect.t
+     syscalls/shell.t
+     syscalls/sparsefile.t
+threads
+     threads/tt1.t
+     threads/tt2.t
+     threads/tt3.t
+vm
+     vm/bigfork.t
+     vm/ctest.t
+     vm/matmult.t
+     vm/not-dumbvm-vm.t
+     vm/palin.t
+     vm/parallelvm.t
+     vm/quinthuge.t
+     vm/quintmat.t
+     vm/quintsort.t
+     vm/sort.t
+     vm/stacktest.t
+     vm/zero.t
+

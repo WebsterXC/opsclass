@@ -460,11 +460,11 @@ sys_sbrk(int shift, int *retval){
 // LOCK_ACQUIRE
 	if( shift == 0 ){
 		*retval = addrsp->as_heap_end;
-		//lock_release();
 		return 0;
 	}else if( (shift%4) != 0 ){
 		// Pointer-align the number of bytes
-		shift += (4 - (shift%4) );
+		//shift += (4 - (shift%4) );
+		return EINVAL;
 	}	
 
 	// Ensure our address space has been properly prepared for a heap
@@ -475,14 +475,13 @@ sys_sbrk(int shift, int *retval){
 	if( (shift%PAGE_SIZE) != 0 ){
 		num_pages++;
 	}
-
+	
 	// Check which way to move the heap breakpoint
 	if( shift > 0 ){
 		KASSERT(num_pages > 0);
 		// Increase heap size
 		// Check to make sure we don't collide with stack.
 		if( (addrsp->as_heap_end + shift) > (USERSTACK - (ADDRSP_STACKSIZE * PAGE_SIZE)) ){
-			//lock_release();
 			*retval = -1;
 			return ENOMEM;
 		}
@@ -502,7 +501,6 @@ sys_sbrk(int shift, int *retval){
 			entry->next = NULL;
 
 			if(entry->paddr == 0){
-				//lock_release()
 				kfree(entry);
 				return ENOMEM;
 			}
@@ -523,13 +521,13 @@ sys_sbrk(int shift, int *retval){
 			addrsp->as_heap_end += PAGE_SIZE;
 		}
 	}else{					// Decrease heap size
-		KASSERT(num_pages < 0);
 		num_pages *= -1;
-		
+		KASSERT(num_pages > 0);
+	
+		int heapcheck = addrsp->as_heap_end + shift;
 		// Ensure we're not completely deleting the heap.
-		if( (addrsp->as_heap_end + shift) < addrsp->as_heap_start ){
+		if( (addrsp->as_heap_end + shift) < addrsp->as_heap_start || heapcheck < 0 ){
 			*retval = -1;
-			//lock_release();
 			return EINVAL;
 		}
 
@@ -560,7 +558,8 @@ sys_sbrk(int shift, int *retval){
 				tail->next = NULL;
 				kfree(heapdel);
 			}
-		}	
+		}
+		//vm_tlbshootdown_all();	
 	}	
 
 // LOCK_RELEASE

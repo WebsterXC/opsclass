@@ -116,14 +116,16 @@ add_table_entries(struct area *segment, vaddr_t start, unsigned int add){
 }
 
 /* Copy all pages in an already initialized segment and prepare it for addition to a linked list. */
-static void
+static int
 seg_copy(struct area **out, struct area *src){
 	
 	struct pentry *copyable;
 
 	struct area *dest;
 	dest = (struct area *)kmalloc(sizeof(*dest));
-	
+	if(dest == NULL){
+		return ENOMEM;	
+	}
 	// Copy over segment information
 	dest->vstart = src->vstart;
 	dest->pagecount = src->pagecount;
@@ -139,10 +141,9 @@ seg_copy(struct area **out, struct area *src){
 	copyable = src->pages;
 	while(copyable != NULL){
 		struct pentry *newpage;
-		newpage = (struct pentry *)kmalloc(sizeof(*newpage));
-		
+		newpage = (struct pentry *)kmalloc(sizeof(*newpage));	
 		if(newpage == NULL){
-			panic("Out of memory trying to copy segments.\n");
+			return ENOMEM;
 		}
 		
 		/* I had to compile over 150+ times to recognize that you can't transfer information
@@ -150,6 +151,10 @@ seg_copy(struct area **out, struct area *src){
 		 * page maps to a kernel virtual address, we need to convert it for copying.
 		 */
 		newpage->paddr = alloc_ppages(1);
+		if(newpage->paddr == 0){
+			kfree(newpage);
+			return ENOMEM;
+		}
 		memmove((void *)PADDR_TO_KVADDR(newpage->paddr), (const void *)PADDR_TO_KVADDR(copyable->paddr), PAGE_SIZE);
 		// Copy over the rest of the struct info
 		newpage->vaddr = copyable->vaddr;
@@ -172,7 +177,7 @@ seg_copy(struct area **out, struct area *src){
 	}
 
 	*out = dest;
-	return;
+	return 0;
 }
 /* Copy an address space. This is really the heart of the VM assignment, excluding
  * the vm_fault function. Personally, I think as_copy is the more difficult of the 
@@ -223,7 +228,10 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 	while( oldseg != NULL ){
 		struct area *newseg;	
 	
-		seg_copy(&newseg, oldseg);
+		result = seg_copy(&newseg, oldseg);
+		if(result){
+			return ENOMEM;
+		}
 		KASSERT(newseg->pages != NULL);	
 
 		newseg->next = NULL;
