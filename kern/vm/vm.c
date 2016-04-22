@@ -92,8 +92,6 @@ vm_bootstrap(void){
 		first += PAGE_SIZE;
 	}
 		
-	// Paging initialized. Kmalloc should work now.
-
 	stay_strapped = true;
 	return;
 }
@@ -190,7 +188,6 @@ alloc_ppages(unsigned npages){
 	total_page_allocs += npages;
 	spinlock_release(&coremap_lock);
 
-	//kprintf("PPage: 0x%x\n", allocation);
 	return allocation;
 }
 
@@ -214,7 +211,6 @@ alloc_kpages(unsigned npages){
  * (3) Change internal values of all cores, up to and including the tail core.
  * (4) Release spinlock and return.
  */
-
 void
 free_kpages(vaddr_t addr){
 
@@ -244,10 +240,9 @@ free_kpages(vaddr_t addr){
 	return;
 }
 
-/* I'm not sure I fully understand the relationship between kernel vaddr's
- * and paddr's, so I had to add this function to correctly free coremap
- * pages. It's used by sbrk() to free physical pages in the heap, as well
- * as as_destroy() to correctly free pages on an addrspace exit.
+/* Override function to correctly free a single coremap page. It's used by sbrk() to 
+ * free physical pages in the heap, as well as as_destroy() to correctly free pages 
+ * on an addrspace exit.
  */
 void
 free_ppage(paddr_t addr){
@@ -297,6 +292,7 @@ vaddr_to_vpn(vaddr_t vaddr){
 	return vaddr;
 }
 
+// Invalidate all TLB entries. Used in as_activate()
 void
 vm_tlbshootdown_all(void){	
 	
@@ -309,6 +305,7 @@ vm_tlbshootdown_all(void){
 	return;
 }
 
+// Invalidate a single TLB entry. Used by sbrk(-).
 void
 vm_tlbshootdown(const struct tlbshootdown *ts){
 	(void)ts;
@@ -316,13 +313,19 @@ vm_tlbshootdown(const struct tlbshootdown *ts){
 	return;
 }
 
-/* This occurs when there is a page fault: a user process tried to access
- * a coremap page that is not allocated or not in memory. We need to:
- * (1) Ensure the fault address is a valid address.
- * (1) Determine the fault type. It could be: VM_FAULT_READONLY, VM FAULT_READ
- * 	or VM_FAULT_WRITE.
- * (2)  READ/WRITE: Insert the page to the TLB.
- * (3)  READONLY: Invalid access. Return nonzero.
+/* The user tried to access an address that isn't already in the TLB.
+ * A page fault occurs when the page that the memory address belongs to
+ * isn't allocated or isn't in main memory.
+ *
+ * Note: Don't kprintf in this method. Just don't do it...
+ *
+ * (1) Ensure the fault address lies in a valid segment. This could be
+ * a region from as_define region, the stack, or heap.
+ * (2) Align the fault address to determine what page we want.
+ * (3) Find the pentry it belongs to, if it's paddr is 0, this is the
+ * first access at that address and we need to allocate a page. (On-Demand Paging)
+ * (4) TURN OFF INTERRUPTS!
+ * (5) Load the entry to the TLB and reenable interrupts.
  */
 int vm_fault(int faulttype, vaddr_t faultaddress){
 	
@@ -330,10 +333,11 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 
 	// NULL pointer
 	if( faultaddress <= (vaddr_t)10 ){
+		//kprintf("Null pointer exception. This is fatal.\n");
 		return EFAULT;
 	}
 
-	// Check the fault type
+	// Check the fault type.
 	switch(faulttype){
 		case VM_FAULT_READONLY:
 			// Danger: Insufficient access permissions.
@@ -341,16 +345,13 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 			return EFAULT;
 		
 		case VM_FAULT_READ:
-			//kprintf("VM_FAULT_READ at 0x%x\n", faultaddress);
 			break;
 
 		case VM_FAULT_WRITE:
-			//kprintf("VM_FAULT_WRITE at 0x%x\n", faultaddress);
 			break;
 
 		default:
 			return EINVAL;
-
 	}
 	
 	// Ensure we're in a valid user process & address space is set up.
@@ -380,22 +381,22 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 		useg = addrsp->segments;
 		while( useg != NULL ){
 			if( faultaddress >= useg->vstart && faultaddress < (useg->vstart + useg->bytesize) ){
-				is_valid_faultaddr = true;
+				is_valid_faultaddr = true; //(1)
 				load_page = useg->pages;
 				break;
 			}
 			useg = useg->next;
 		}
 	}
+
 	// Check yoself b4 u rek yoself
 	if(!is_valid_faultaddr){
-		panic("Tried to access an invalid memory region: 0x%x.\n", faultaddress);
-		//return EFAULT;
+		//panic("Tried to access an invalid memory region: 0x%x.\n", faultaddress);
+		return EFAULT;
 	}
 
-	bool page_fault = true;
 
-	vaddr_t rawaddr = faultaddress;	
+	bool page_fault = true;
 	faultaddress &= PAGE_FRAME;	
 	
 	// Walk the segment's page table to see if the page is allocated already
@@ -410,8 +411,8 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 	}
 
 	if(load_page == NULL){
-		kprintf("Unaligned fault addr: 0x%x\n", rawaddr);
-		panic("Couldn't find a page searching for 0x%x\n", faultaddress);
+		//panic("Couldn't find a page searching for 0x%x\n", faultaddress);
+		return EFAULT;
 	}
 
 	// If the physical page isn't assigned, we need to allocate one
@@ -447,18 +448,6 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
  * (ii) Argument is positive. Ensure it can %4; allocate more pages and extend heap_end
  * (iii) Argument is negative. Ensure it can %4; free pages and retract heap_end
  *
- * We can accomplish (ii) by:
- * (1) Ensure our argument can %4
- * (2) Check to make sure we don't collide with our stack.
- * (3) Allocate the number of pages needed, rounded up.
- * (4) Add these pages to the addrspace's page table.
- *
- * We can accomplish (iii) by:
- * (1) Ensure our argument can %4
- * (2) Check to make sure the decreased heap size isn't less than the heap_start.
- * (3) Free the designated number of pages???? 
- * (4) Remove the pages from the end of the heap????
- * !!! Remember, we don't actually know which pages in the addrspace are heap pages...
  */
 int
 sys_sbrk(int shift, int *retval){
@@ -510,7 +499,6 @@ sys_sbrk(int shift, int *retval){
 		
 			entry->vaddr = addrsp->as_heap_end;
 			entry->paddr = alloc_ppages(1);
-			entry->options = 28;		//RWX
 			entry->next = NULL;
 
 			if(entry->paddr == 0){

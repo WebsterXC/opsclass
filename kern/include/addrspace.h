@@ -50,9 +50,6 @@ struct pentry{
 	vaddr_t vaddr;		// Virtual page number
 	paddr_t paddr;		// Physical number we represent	
 	
-	unsigned int options : 5;	//Bitfield size 5
-	// MSB->LSB || read | write | execute | valid | referenced |
-
 	struct pentry *next;
 };
 
@@ -62,8 +59,6 @@ struct area{
 	size_t pagecount;	// Num pages (size is page-aligned)
 	size_t bytesize;	// Size of area in bytes
 	
-	unsigned int options : 3;	// R,W,X Permissions
-
 	struct pentry *pages;	// User pages that represent the entire region
 	struct area *next;
 };

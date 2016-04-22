@@ -42,11 +42,19 @@
 /* ADDRESS SPACE IMPLEMENTATION */
 
 /* Written by: William Burgin (waburgin) */
+/* Being an ex-FrozenCPU employee, I love making metaphors based on the
+ * daily processes we had there because it was so defined and clear-cut.
+ * In fact, establishing an address space closesly resembles any retail/
+ * warehouse environment! For an address space, I use a metaphor of carrying
+ * out a purchase order.
+ */
 
-
-/* To create an address space, we need to:
+/* Our purchase order request has been recieved! Clean the packing
+ * station for the items that are to come.
+ *
+ * To create an address space, we need to:
  * (1) Allocate an addrspace using kmalloc
- * (2) Initialize struct variables to 0
+ * (2) Initialize struct variables to 0 or NULL
  */
 struct addrspace *
 as_create(void)
@@ -69,9 +77,11 @@ as_create(void)
 	return as;
 }
 
+/* Function assists in creating page table entries and adding them to the segment's linked list.
+ * Note that this function applies only to segments, and not to the stack or heap page tables.
+ */
 static void
-add_table_entries(struct area *segment, vaddr_t start, unsigned int add, unsigned int seg_options, 
-				unsigned int option_valid, unsigned int option_ref){
+add_table_entries(struct area *segment, vaddr_t start, unsigned int add){
 	
 	// Make pentries for the number of pages needed
 	for(unsigned int i = 0; i < add; i++){
@@ -80,11 +90,10 @@ add_table_entries(struct area *segment, vaddr_t start, unsigned int add, unsigne
 		if(entry == NULL){
 			return;
 		}
-		//entry->vaddr = vaddr_to_vpn(start);
+	
+		// Initialize struct variables with the information we have so far
 		entry->vaddr = start;
-		kprintf("New page table entry: 0x%x\n", start);
 		entry->paddr = 0;
-		entry->options = (seg_options<<2) & (option_valid<<1) & option_ref;
 		entry->next = NULL;
 
 		if(segment->pages == NULL){			// First page in table
@@ -106,7 +115,7 @@ add_table_entries(struct area *segment, vaddr_t start, unsigned int add, unsigne
 	return;
 }
 
-/* Copy all pages in an already created segment and prepare it for addition to a linked list. */
+/* Copy all pages in an already initialized segment and prepare it for addition to a linked list. */
 static void
 seg_copy(struct area **out, struct area *src){
 	
@@ -115,14 +124,18 @@ seg_copy(struct area **out, struct area *src){
 	struct area *dest;
 	dest = (struct area *)kmalloc(sizeof(*dest));
 	
+	// Copy over segment information
 	dest->vstart = src->vstart;
 	dest->pagecount = src->pagecount;
 	dest->bytesize = src->bytesize;
-	dest->options = 7;
 	dest->next = NULL;
 	dest->pages = NULL;
 	
-	// Copy pages
+	/* Copy all pages in the segment. Copying a page is more than just transferring struct
+	 * variables, we need to be an EXACT copy of the src, so we need to use memmove to transfer
+	 * bytes to the dest. It's important to use memmove, as memcpy has the potential of stepping
+	 * on memory.
+	 */
 	copyable = src->pages;
 	while(copyable != NULL){
 		struct pentry *newpage;
@@ -131,21 +144,18 @@ seg_copy(struct area **out, struct area *src){
 		if(newpage == NULL){
 			panic("Out of memory trying to copy segments.\n");
 		}
-
-		KASSERT(copyable->paddr != 0);
+		
+		/* I had to compile over 150+ times to recognize that you can't transfer information
+		 * unless the physical memory for dest has already been set aside. Since each physical
+		 * page maps to a kernel virtual address, we need to convert it for copying.
+		 */
 		newpage->paddr = alloc_ppages(1);
-		//kprintf("memmove from 0x%x to 0x%x\n", copyable->paddr, newpage->paddr);
-		//memcpy((void *)newpage->vaddr, (void *)copyable->vaddr, PAGE_SIZE);
-		//memmove((void *)physical, (const void *)copyable->paddr, PAGE_SIZE);
-		//memcpy((void *)newpage->paddr, (const void *)copyable->paddr, PAGE_SIZE);
 		memmove((void *)PADDR_TO_KVADDR(newpage->paddr), (const void *)PADDR_TO_KVADDR(copyable->paddr), PAGE_SIZE);
-		//kprintf("Pagegen: 0x%x\n", newpage->vaddr);
+		// Copy over the rest of the struct info
 		newpage->vaddr = copyable->vaddr;
-		//kprintf("Copy page phys: 0x%x virt: 0x%x\n", newpage->paddr, newpage->vaddr);
-		newpage->options = 31;
 		newpage->next = NULL;
 
-		// Add to new segment pages
+		// Add the page table entry to the new segment's pages
 		if(dest->pages == NULL){
 			dest->pages = newpage;
 		}else{
@@ -164,11 +174,16 @@ seg_copy(struct area **out, struct area *src){
 	*out = dest;
 	return;
 }
-/* Copy an address space. Needs to be loaded into memory */
+/* Copy an address space. This is really the heart of the VM assignment, excluding
+ * the vm_fault function. Personally, I think as_copy is the more difficult of the 
+ * two. If you don't understand MIPS memory mappings now, better learn quick! :-)
+ */
 /* (1) Create a new address space "object"
- * (2) Copy segments using as_define_region 
- * (3) Copy pages using as_prepare_load - identical segment info will generate the same pages
- * (4) Copy the data from the old address space pages to the new ones
+ * (2) Copy each segment that was generated in as_define_region
+ * (3) Foreach segment, copy each page as well as the raw bytes from each page.
+ * (4) Generate a new stack for the new addrspace and copy over raw bytes.
+ * (5) If a heap exists (without sbrk(), it won't), copy pages and raw bytes.
+ * (6) Set the heap breakpoints equal to the old addrspace's breakpoints.
  */
 int
 as_copy(struct addrspace *old, struct addrspace **ret)
@@ -247,42 +262,39 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 	oldstack = old->stack;
 	newstack = newas->stack;
 
-/*
-	struct pentry *printstack;
-	printstack = old->stack;
-	while(printstack != NULL){
-		kprintf("0x%x\n", printstack->paddr);
-		printstack = printstack->next;
-	}
-	panic("Stop.\n");
-*/
+	/* Here we copy over the stack information. Memmove is like sudo; it will
+	 * do whatever you ask it to do, regardless of if you know what you're doing.
+	 * The if-statement ensures were only copying over stack pages that have been
+	 * allocated by our on-demand pager in vm_fault. Without it, memmove would try
+	 * to copy from address 0x0 and just sit there and hang.
+	 */
 	while( oldstack != NULL ){
-		//memcpy( (void *)newstack, (void *)oldstack, PAGE_SIZE );
-		//memmove( (void *)newstack->vaddr, (void *)oldstack->vaddr, PAGE_SIZE );
-		//memmove( (void *)newstack->paddr, (const void *)oldstack->paddr, PAGE_SIZE );
 		if(oldstack->paddr != 0){
 			newstack->paddr = alloc_ppages(1);
 			memmove((void *)PADDR_TO_KVADDR(newstack->paddr), (const void *)PADDR_TO_KVADDR(oldstack->paddr), PAGE_SIZE);
 		}
-		//kprintf("0x%x | 0x%x\n", oldstack->vaddr, newstack->vaddr);
+
 		oldstack = oldstack->next;
 		newstack = newstack->next;
 	}
 
-	// Copy the heap
+	// Copy the heap. If malloc() hasn't been called in userspace, this loop is skipped.
 	struct pentry *oldheap;
 	struct pentry *newheap;
 
 	oldheap = old->heap;
 	newheap = newas->heap;
 	while( oldheap != NULL ){
-		memmove( (void *)newheap->vaddr, (void *)oldheap->vaddr, PAGE_SIZE );
-		//memmove( (void *)newheap->paddr, (const void *)oldheap->paddr, PAGE_SIZE );
+		if(oldheap->paddr != 0){
+			newheap->paddr = alloc_ppages(1);
+			memmove((void *)PADDR_TO_KVADDR(newheap->paddr), (const void *)PADDR_TO_KVADDR(oldheap->paddr), PAGE_SIZE);
+		}		
 
 		oldheap = oldheap->next;
 		newheap = newheap->next;
 	}
 	
+	// Set heap breakpoints from old addrspace
 	newas->as_heap_start = old->as_heap_start;
 	newas->as_heap_end = old->as_heap_end;
 	
@@ -291,10 +303,14 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 	return 0;
 }
 
-/* We need to free memory for 3 distinct addrspace "parts":
- * (1) Page Table + Pages
- * (2) Segments/Regions
- * (3) The actual addrspace "object"
+/* The customer messed up and wants to cancel the order. We need to put
+ * all the items back on the shelf...
+ *
+ * We need to free memory for 4 distinct addrspace "parts":
+ * (1) Segments (from as_define_region)
+ * (2) Stack
+ * (3) Heap
+ * (4) The actual addrspace "object".
  */
 void
 as_destroy(struct addrspace *as)
@@ -327,18 +343,45 @@ as_destroy(struct addrspace *as)
 		seg = move;
 	}
 
+	// Free all stack pages
+	struct pentry *freestack;
+
+	freestack = as->stack;
+	while(freestack != NULL){
+		struct pentry *temp;
+
+		temp = freestack->next;
+		free_ppage(freestack->paddr);
+		kfree(freestack);
+		freestack = temp;
+	}	
+
+	// Free all heap pages
+	struct pentry *freeheap;
+
+	freeheap = as->heap;
+	while(freeheap != NULL){
+		struct pentry *temp;
+
+		temp = freeheap->next;
+		free_ppage(freeheap->paddr);
+		kfree(freeheap);
+		freeheap = temp;
+	}	
+
 	// Just to be safe
 	as->as_heap_start = 0;
 	as->as_heap_end = 0;
 
 	kfree(as);
-	//kprintf("as_destroy\n");
 	return;	
 }
 /* Bring the current address space into the environment. The customer
  * has recieved their product!
- * 
- * Note: If you kprintf in this method, you're gonna have a bad time...
+ *
+ * All we need to do is flush the TLB entries from existence. A new
+ * address space maps different vaddrs to paddrs, and the mappings
+ * already stored aren't relevant.
  */
 void
 as_activate(void)
@@ -354,11 +397,15 @@ as_activate(void)
 		return;
 	}
 
-	// Shoot down all TLB Entries. This is from DUMBVM.
+	// Shoot down all TLB Entries. See vm.c.
 	vm_tlbshootdown_all();
 	return;
 }
 
+/* This doesn't really fit into my metaphor...
+ * See below. Based on my implementation, I didn't
+ * need to implement this.
+ */
 void
 as_deactivate(void)
 {
@@ -384,22 +431,30 @@ as_deactivate(void)
  * This function DEFINES the sections of an address
  * space including code areas ( but NOT stack and heap!). This
  * function does not allocate memory for the address space
- * regions just yet. Think of it as a purchase order for a 
- * specific address space that hasn't been fulfilled.
+ * regions just yet.
+ *
+ * Our purchase order is ready to be run. Suppose that it's very
+ * large and requires multiple employees to complete successfully;
+ * we're giving assignments to each employee so they know what items
+ * to grab.
  */
 
-/* We need to:
- * (1) Initialize a new area struct for the segment.
- * (2) Compute the number of pages after page alignment.
- * (3) Update internal information, like permissions.
+/* Note that I use the terms segment and region interchangeably:
+ * (1) Align the memsize and vaddr with the page size. Recall that
+ * the entire point of paging was so that all information fits inside
+ * of pages. This logic can be found in arch/mips/dumbvm.c
+ * (2) Initialize a new segment "object" for the segment.
+ * (3) Fill the segment struct information.
  * (4) Add the new area to the linked list.
- * (5) Update heap information based on vaddr and memsize
  */
-
 int
 as_define_region(struct addrspace *as, vaddr_t vaddr, size_t memsize,
 		 int readable, int writeable, int executable)
 {
+	(void)readable;
+	(void)writeable;
+	(void)executable;
+
 	if(as == NULL || vaddr == 0){
 		return EFAULT;
 	}
@@ -407,30 +462,23 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t memsize,
 	struct area *newarea;
 	unsigned int npages;
 	
-
-	kprintf("Unaligned: 0x%x with size %u |", vaddr, memsize);
 	// Page-alignment (rounding to the nearest page) -> from dumbvm.c
 	memsize += vaddr & ~(vaddr_t)PAGE_FRAME;
 	vaddr &= PAGE_FRAME;
 	memsize = (memsize + PAGE_SIZE - 1) & PAGE_FRAME;
 	npages = memsize / PAGE_SIZE;
-	kprintf(" Aligned: 0x%x with size %u\n", vaddr, memsize);
+	
 	// Create a new segment
 	newarea = kmalloc(sizeof(struct area));
 	if(newarea == NULL){
 		return ENOMEM;
 	}
 	newarea->vstart = vaddr;
-	kprintf("New region vstart: 0x%x\n", newarea->vstart);
 	newarea->pagecount = npages;
-	newarea->next = NULL;
 	newarea->bytesize = memsize;
-	newarea->options = 0;		// Start fresh just in case
 	newarea->pages = NULL;
-	
-	// Bitpack options
-	newarea->options = (readable<<2) & (writeable<<1) & (executable);
-	
+	newarea->next = NULL;
+		
 	// Add to linked list
 	if(as->segments == NULL){		// First area is linked list head
 		as->segments = newarea;
@@ -448,14 +496,15 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t memsize,
 	return 0;
 }
 
-/* Steps:
+/* All of our employees have gotten their assignments from as_define_region
+ * and come back with all the items necessary to fulfill the order. We haven't
+ * removed any of the items from stock yet though!
+ */
+
+/* We need to:
  * (1) Kmalloc pentry's for each region based on area->pagecount
- * (2) Actually reserve the pages. Need to use alloc_ppages() for pentry->paddr
- * (3) Bitpack each pentry's options. 
- * (4) Update each pentry information set.
- * (5) Add each pentry to the addrspace's page table
- * (6) Reserve pages for the user stack. Preprocessor statement defines defualt stack pages.
- * (7) Reserve pages for the user heap. Preprocessor statement defines default heap size.
+ * (2) Update each pentry's struct variables, like RWX options.
+ * (3) Add each pentry to the addrspace's page table
  */
 int
 as_prepare_load(struct addrspace *as)
@@ -467,46 +516,27 @@ as_prepare_load(struct addrspace *as)
 	struct area *current;
 	current = as->segments;
 
+	// Trying to load an address space with no static code region makes no sense.
 	KASSERT(as->segments != NULL);
 
 	while(current != NULL){
 		// Generate pentries for required pages. Pages aren't reserved until a Page Fault.
-		add_table_entries(current, current->vstart, current->pagecount, current->options, 1, 0);
+		add_table_entries(current, current->vstart, current->pagecount);
+		
+		// The heap begins immdidiately after the last segment, but has size 0 initially.
 		as->as_heap_start = current->vstart + (current->pagecount * PAGE_SIZE);
 		as->as_heap_end = as->as_heap_start;
 
 		current = current->next;
 	}
 	
-	//add_table_entries(as, current->vstart, current->pagecount, current->options, 1, 0);
-
-	/* Set the location of the heap for the addrspace. The user can call as_define_stack
-	 * an "unlimited" number of times so we need to account for that. Since the heap
-	 * begins immidiately after the last region, we bump the heap_start back each time
-	 * this method is called.
-	 */
-	//as->as_heap_start = current->vstart + (current->pagecount * PAGE_SIZE);
-	//as->as_heap_end = as->as_heap_start;
-
-/* This stuff needs to be moved to sbrk()
-	vaddr_t heap_begin = current->vstart + (current->pagecount * PAGE_SIZE);
-	as->as_heap_start = 0;
-	as->as_heap_end = 0;
-	as->as_heappbase = 0;
-	result = add_table_entries(as, heap_begin, ADDRSP_HEAP_PAGES, 1, 1);
-	if(!result){
-		return ENOMEM;	
-	}else if(as->as_heap_start == 0 || as->as_heap_end == 0 || as->as_heappbase == 0){
-		panic("Critical failure: unable to generate a heap for addrspace.\n");
-	}
-*/
+	KASSERT(as->as_heap_start != 0 && as->as_heap_end != 0);
 
 	return 0;
 }
 
-/* Continuing with my metaphor, this is pretty much shipping out/fulfulling
- * the purchase order. We're done loading information into our pages, so reset
- * their permissions to the original permissions.
+/* If I was actually using the options field of my address space, I'd reset
+ * the options to their original values.
  */
 int
 as_complete_load(struct addrspace *as)
@@ -545,7 +575,6 @@ as_define_stack(struct addrspace *as, vaddr_t *stackptr)
 		}
 		newpage->vaddr = vaddr_to_vpn(stack_begin);
 		newpage->paddr = 0;
-		newpage->options = 28;	// RWX
 		newpage->next = NULL;
 
 		if( as->stack == NULL ){
@@ -560,11 +589,6 @@ as_define_stack(struct addrspace *as, vaddr_t *stackptr)
 		}
 	
 		stack_begin += PAGE_SIZE;
-
-		//if( i >= ADDRSP_STACKSIZE-5 ){
-		//	kprintf("StackDef: 0x%x\n", newpage->vaddr);
-		//}
-
 	}
 	
 	*stackptr = USERSTACK;
