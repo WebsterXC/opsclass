@@ -34,7 +34,6 @@ static struct core *coremap;				// Pointer to coremap
  */
 
 static struct spinlock coremap_lock = SPINLOCK_INITIALIZER;	// Synchro primitive for coremap
-static struct spinlock tlb_lock = SPINLOCK_INITIALIZER;		// Synchro primitive for tlb access
 
 void
 vm_bootstrap(void){
@@ -191,7 +190,7 @@ alloc_ppages(unsigned npages){
 	total_page_allocs += npages;
 	spinlock_release(&coremap_lock);
 
-
+	//kprintf("PPage: 0x%x\n", allocation);
 	return allocation;
 }
 
@@ -205,7 +204,6 @@ alloc_kpages(unsigned npages){
 	if(allocation == 0){
 		return 0;
 	}
-
 	return PADDR_TO_KVADDR(allocation);
 }
 
@@ -227,7 +225,7 @@ free_kpages(vaddr_t addr){
 			// page.
 			int incr = 0;
 			while(coremap[i+incr].istail == false){
-				coremap[i+incr].state = COREMAP_FREE;				
+				coremap[i+incr].state = COREMAP_FREE;
 				incr++;
 				total_page_allocs--;
 			}
@@ -235,6 +233,7 @@ free_kpages(vaddr_t addr){
 			coremap[i+incr].state = COREMAP_FREE;
 			coremap[i+incr].istail = false;
 			total_page_allocs--;
+	
 			
 			break;
 		}	
@@ -420,11 +419,11 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 		paddr_t ppage = alloc_ppages(1);
 		load_page->paddr = paddr_to_ppn(ppage);		
 	}
-
+	
 	// Finally, update the TLB with the new physical page
-	spinlock_acquire(&tlb_lock);
 	uint32_t ehi = faultaddress;
 	uint32_t elo = load_page->paddr | TLBLO_DIRTY | TLBLO_VALID;
+
 
 	int off = splhigh();
 	int index = tlb_probe(ehi, 0);
@@ -437,7 +436,6 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 
 	splx(off);
 
-	spinlock_release(&tlb_lock);
 	return 0;
 }
 

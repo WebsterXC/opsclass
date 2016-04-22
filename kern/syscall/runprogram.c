@@ -269,7 +269,6 @@ sys_fork(struct trapframe *frame, int32_t *childpid){
 	// Return with child's PID
 	*childpid = proc_getpid(childproc);
 
-	kprintf("Parent exit.\n");
 	lock_release(gpll_lock);
 	
 	return 0;

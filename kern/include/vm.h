@@ -38,6 +38,7 @@
 
 
 #include <machine/vm.h>
+#include <synch.h>
 
 /* Fault-type arguments to vm_fault() */
 #define VM_FAULT_READ        0    /* A read was attempted */
@@ -49,7 +50,7 @@
 #define COREMAP_CLEAN	     2
 #define COREMAP_FREE	     3
 
-
+struct lock *vm_lockout;
 
 /* Coremap is made of cores (ha!) */
 struct core{

@@ -82,6 +82,7 @@ add_table_entries(struct area *segment, vaddr_t start, unsigned int add, unsigne
 		}
 		//entry->vaddr = vaddr_to_vpn(start);
 		entry->vaddr = start;
+		kprintf("New page table entry: 0x%x\n", start);
 		entry->paddr = 0;
 		entry->options = (seg_options<<2) & (option_valid<<1) & option_ref;
 		entry->next = NULL;
@@ -120,21 +121,29 @@ seg_copy(struct area **out, struct area *src){
 	dest->options = 7;
 	dest->next = NULL;
 	dest->pages = NULL;
-
+	
 	// Copy pages
 	copyable = src->pages;
 	while(copyable != NULL){
 		struct pentry *newpage;
 		newpage = (struct pentry *)kmalloc(sizeof(*newpage));
+		
 		if(newpage == NULL){
 			panic("Out of memory trying to copy segments.\n");
 		}
+
+		KASSERT(copyable->paddr != 0);
+		newpage->paddr = alloc_ppages(1);
+		//kprintf("memmove from 0x%x to 0x%x\n", copyable->paddr, newpage->paddr);
+		//memcpy((void *)newpage->vaddr, (void *)copyable->vaddr, PAGE_SIZE);
+		//memmove((void *)physical, (const void *)copyable->paddr, PAGE_SIZE);
+		//memcpy((void *)newpage->paddr, (const void *)copyable->paddr, PAGE_SIZE);
+		memmove((void *)PADDR_TO_KVADDR(newpage->paddr), (const void *)PADDR_TO_KVADDR(copyable->paddr), PAGE_SIZE);
+		//kprintf("Pagegen: 0x%x\n", newpage->vaddr);
 		newpage->vaddr = copyable->vaddr;
+		//kprintf("Copy page phys: 0x%x virt: 0x%x\n", newpage->paddr, newpage->vaddr);
 		newpage->options = 31;
 		newpage->next = NULL;
-
-		memmove((void *)newpage->vaddr, (void *)copyable->vaddr, PAGE_SIZE);
-		//kprintf("Pagegen: 0x%x\n", newpage->vaddr);		
 
 		// Add to new segment pages
 		if(dest->pages == NULL){
@@ -166,11 +175,12 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 {	
 	int result;
 	struct addrspace *newas;
-	
+
 	// Basic argument checking
 	if(old == NULL || ret == NULL){
 		return EFAULT;
 	}
+
 
 	/* Check the integrity of our arguments. Although in some
 	 * cases, copying an addrspace before calling as_define_region
@@ -193,7 +203,7 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 	 * in question, all page information must be copied over too.
 	 */
 	struct area *oldseg;
-	
+	KASSERT(old->segments != NULL);
 	oldseg = old->segments;
 	while( oldseg != NULL ){
 		struct area *newseg;	
@@ -230,14 +240,30 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 		return EFAULT;
 	}
 
+	
 	struct pentry *oldstack;
 	struct pentry *newstack;
-
+	
 	oldstack = old->stack;
 	newstack = newas->stack;
-	while( oldstack != NULL && newstack != NULL ){
+
+/*
+	struct pentry *printstack;
+	printstack = old->stack;
+	while(printstack != NULL){
+		kprintf("0x%x\n", printstack->paddr);
+		printstack = printstack->next;
+	}
+	panic("Stop.\n");
+*/
+	while( oldstack != NULL ){
 		//memcpy( (void *)newstack, (void *)oldstack, PAGE_SIZE );
-		memmove( (void *)newstack->vaddr, (void *)oldstack->vaddr, PAGE_SIZE );
+		//memmove( (void *)newstack->vaddr, (void *)oldstack->vaddr, PAGE_SIZE );
+		//memmove( (void *)newstack->paddr, (const void *)oldstack->paddr, PAGE_SIZE );
+		if(oldstack->paddr != 0){
+			newstack->paddr = alloc_ppages(1);
+			memmove((void *)PADDR_TO_KVADDR(newstack->paddr), (const void *)PADDR_TO_KVADDR(oldstack->paddr), PAGE_SIZE);
+		}
 		//kprintf("0x%x | 0x%x\n", oldstack->vaddr, newstack->vaddr);
 		oldstack = oldstack->next;
 		newstack = newstack->next;
@@ -251,6 +277,7 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 	newheap = newas->heap;
 	while( oldheap != NULL ){
 		memmove( (void *)newheap->vaddr, (void *)oldheap->vaddr, PAGE_SIZE );
+		//memmove( (void *)newheap->paddr, (const void *)oldheap->paddr, PAGE_SIZE );
 
 		oldheap = oldheap->next;
 		newheap = newheap->next;
@@ -258,6 +285,7 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 	
 	newas->as_heap_start = old->as_heap_start;
 	newas->as_heap_end = old->as_heap_end;
+	
 
 	*ret = newas;
 	return 0;
@@ -274,6 +302,7 @@ as_destroy(struct addrspace *as)
 	if(as == NULL){
 		return;
 	}
+
 
 	struct area *seg;
 	struct area *move;
@@ -303,6 +332,8 @@ as_destroy(struct addrspace *as)
 	as->as_heap_end = 0;
 
 	kfree(as);
+	//kprintf("as_destroy\n");
+	return;	
 }
 /* Bring the current address space into the environment. The customer
  * has recieved their product!
@@ -376,22 +407,21 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t memsize,
 	struct area *newarea;
 	unsigned int npages;
 	
-	kprintf("Region start 0x%x size %u.\n", vaddr, memsize);
 
+	kprintf("Unaligned: 0x%x with size %u |", vaddr, memsize);
 	// Page-alignment (rounding to the nearest page) -> from dumbvm.c
 	memsize += vaddr & ~(vaddr_t)PAGE_FRAME;
 	vaddr &= PAGE_FRAME;
 	memsize = (memsize + PAGE_SIZE - 1) & PAGE_FRAME;
 	npages = memsize / PAGE_SIZE;
-
-	kprintf("Create %u pages for it.\n", npages);
-
+	kprintf(" Aligned: 0x%x with size %u\n", vaddr, memsize);
 	// Create a new segment
 	newarea = kmalloc(sizeof(struct area));
 	if(newarea == NULL){
 		return ENOMEM;
 	}
 	newarea->vstart = vaddr;
+	kprintf("New region vstart: 0x%x\n", newarea->vstart);
 	newarea->pagecount = npages;
 	newarea->next = NULL;
 	newarea->bytesize = memsize;
@@ -439,7 +469,7 @@ as_prepare_load(struct addrspace *as)
 
 	KASSERT(as->segments != NULL);
 
-	while(current != NULL){	 
+	while(current != NULL){
 		// Generate pentries for required pages. Pages aren't reserved until a Page Fault.
 		add_table_entries(current, current->vstart, current->pagecount, current->options, 1, 0);
 		as->as_heap_start = current->vstart + (current->pagecount * PAGE_SIZE);
