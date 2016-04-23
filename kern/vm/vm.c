@@ -185,6 +185,12 @@ alloc_ppages(unsigned npages){
 		}
 	}
 
+	/* It's important to fill the new page with zeros or else data from
+	 * a previous deallocation could, and probably does exist, in
+	 * the page.
+ 	 */
+	bzero((void *)PADDR_TO_KVADDR(allocation), PAGE_SIZE);
+
 	total_page_allocs += npages;
 	spinlock_release(&coremap_lock);
 

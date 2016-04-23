@@ -504,6 +504,24 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t memsize,
 	return 0;
 }
 
+
+/* Used to "zero" an entire segment. This is required for parallelvm to pass. */
+void
+as_zero_segment(struct area *seg){
+
+	struct pentry *zero;
+	zero = seg->pages;
+
+	while(zero != NULL){
+		if(zero->paddr != 0){
+			bzero((void *)PADDR_TO_KVADDR(zero->paddr), PAGE_SIZE);
+		}
+		zero = zero->next;
+	}
+
+	return;
+}
+
 /* All of our employees have gotten their assignments from as_define_region
  * and come back with all the items necessary to fulfill the order. We haven't
  * removed any of the items from stock yet though!
