@@ -47,7 +47,7 @@ struct vnode;
 
 /* Page table and entries. Forward traversing linked list format. */
 struct pentry{
-	vaddr_t vaddr;		// Virtual page number
+	vaddr_t vaddr	: 20;		// Virtual page number
 	paddr_t paddr;		// Physical number we represent	
 	
 	struct pentry *next;

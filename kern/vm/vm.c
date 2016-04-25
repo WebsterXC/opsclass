@@ -64,8 +64,7 @@ vm_bootstrap(void){
 	
 	// Convert paddr to a kernel virtual address where coremap starts
 	coremap = (struct core *)PADDR_TO_KVADDR(first);
-	kprintf("Num Pages %d at %u\n", num_cores, first);	
-	
+	kprintf("Num Pages %d from 0x%x to ", num_cores, first);	
 	// Set all coremap cores to fixed state, others to free
 	for(unsigned int i = 0; i < num_cores; i++){
 		// If coremap lies on this core, it's fixed in place
@@ -91,7 +90,8 @@ vm_bootstrap(void){
 		//Manually increment by bytes to next page for the next iteration's paddr
 		first += PAGE_SIZE;
 	}
-		
+	kprintf("0x%x\n", first);	
+
 	stay_strapped = true;
 	return;
 }
@@ -256,7 +256,7 @@ free_ppage(paddr_t addr){
 		return;
 	}
 	spinlock_acquire(&coremap_lock);
-	
+
 	for(unsigned int i = 0; i < corecount; i++){
 		if(coremap[i].paddr == addr){
 			if(coremap[i].istail == false){
@@ -264,6 +264,7 @@ free_ppage(paddr_t addr){
 			}else{
 				coremap[i].state = COREMAP_FREE;
 				total_page_allocs--;
+				found = true;
 			}
 			break;
 		}
@@ -284,19 +285,33 @@ coremap_used_bytes(){
 }
 
 /****************************************************/
-
-// Chop virtual and physical addresses to VPN/PPN
+/* These functions save cruicial memory space by taking advantage
+ * of page alignment and only storing siginificant bits in structs
+ */
 inline unsigned int
 paddr_to_ppn(paddr_t paddr){
-	//return paddr>>3;
 	return paddr;
+	//return paddr / PAGE_SIZE;
+}
+
+inline paddr_t
+ppn_to_paddr(paddr_t ppn){
+	return ppn;
+	//return ppn * PAGE_SIZE;
 }
 
 inline unsigned int
 vaddr_to_vpn(vaddr_t vaddr){
-	//return vaddr>>3;
-	return vaddr;
+	//return vaddr;
+	return vaddr / PAGE_SIZE;
 }
+
+inline vaddr_t
+vpn_to_vaddr(vaddr_t vpn){
+	//return vpn;
+	return vpn * PAGE_SIZE;
+}
+/****************************************************/
 
 // Invalidate all TLB entries. Used in as_activate()
 void
@@ -407,8 +422,8 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 	
 	// Walk the segment's page table to see if the page is allocated already
 	while( load_page != NULL ){
-		if( load_page->vaddr == vaddr_to_vpn(faultaddress) ){
-			if(load_page->paddr != 0){
+		if( vpn_to_vaddr(load_page->vaddr) == faultaddress ){
+			if(ppn_to_paddr(load_page->paddr) != 0){
 				page_fault = false;
 			}	
 			break;
@@ -423,8 +438,7 @@ int vm_fault(int faulttype, vaddr_t faultaddress){
 
 	// If the physical page isn't assigned, we need to allocate one
 	if(page_fault){
-		paddr_t ppage = alloc_ppages(1);
-		load_page->paddr = paddr_to_ppn(ppage);		
+		load_page->paddr = paddr_to_ppn( alloc_ppages(1) );
 	}
 	
 	// Finally, update the TLB with the new physical page
@@ -502,8 +516,8 @@ sys_sbrk(int shift, int *retval){
 				return ENOMEM;
 			}
 		
-			entry->vaddr = addrsp->as_heap_end;
-			entry->paddr = alloc_ppages(1);
+			entry->vaddr = vaddr_to_vpn(addrsp->as_heap_end);
+			entry->paddr = paddr_to_ppn(alloc_ppages(1));
 			entry->next = NULL;
 
 			if(entry->paddr == 0){
@@ -552,7 +566,7 @@ sys_sbrk(int shift, int *retval){
 
 			tail = addrsp->heap;
 			if( tail->next == NULL ){		// Heap has 1 page
-				free_ppage(tail->paddr);
+				free_ppage( ppn_to_paddr(tail->paddr) );
 				addrsp->heap = NULL;
 				kfree(tail);
 			}else{					// Heap has 2 or more pages
@@ -560,7 +574,7 @@ sys_sbrk(int shift, int *retval){
 					tail = tail->next;
 				}
 				heapdel = tail->next;
-				free_ppage(heapdel->paddr);
+				free_ppage( ppn_to_paddr(heapdel->paddr) );
 				tail->next = NULL;
 				kfree(heapdel);
 			}

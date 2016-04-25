@@ -92,7 +92,9 @@ void free_kpages(vaddr_t addr);
 unsigned int coremap_used_bytes(void);
 
 unsigned int paddr_to_ppn(paddr_t);
+unsigned int ppn_to_paddr(paddr_t);
 unsigned int vaddr_to_vpn(vaddr_t);
+unsigned int vpn_to_vaddr(vaddr_t);
 
 /* TLB shootdown handling called from interprocessor_interrupt */
 void vm_tlbshootdown_all(void);

@@ -92,7 +92,7 @@ add_table_entries(struct area *segment, vaddr_t start, unsigned int add){
 		}
 	
 		// Initialize struct variables with the information we have so far
-		entry->vaddr = start;
+		entry->vaddr = vaddr_to_vpn(start);
 		entry->paddr = 0;
 		entry->next = NULL;
 
@@ -150,12 +150,14 @@ seg_copy(struct area **out, struct area *src){
 		 * unless the physical memory for dest has already been set aside. Since each physical
 		 * page maps to a kernel virtual address, we need to convert it for copying.
 		 */
-		newpage->paddr = alloc_ppages(1);
+		newpage->paddr = paddr_to_ppn(alloc_ppages(1));
 		if(newpage->paddr == 0){
 			kfree(newpage);
 			return ENOMEM;
 		}
-		memmove((void *)PADDR_TO_KVADDR(newpage->paddr), (const void *)PADDR_TO_KVADDR(copyable->paddr), PAGE_SIZE);
+		memmove((void *)PADDR_TO_KVADDR(ppn_to_paddr(newpage->paddr)), 
+			(const void *)PADDR_TO_KVADDR(ppn_to_paddr(copyable->paddr)), PAGE_SIZE);
+
 		// Copy over the rest of the struct info
 		newpage->vaddr = copyable->vaddr;
 		newpage->next = NULL;
@@ -278,8 +280,9 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 	 */
 	while( oldstack != NULL ){
 		if(oldstack->paddr != 0){
-			newstack->paddr = alloc_ppages(1);
-			memmove((void *)PADDR_TO_KVADDR(newstack->paddr), (const void *)PADDR_TO_KVADDR(oldstack->paddr), PAGE_SIZE);
+			newstack->paddr = paddr_to_ppn(alloc_ppages(1));
+			memmove((void *)PADDR_TO_KVADDR(ppn_to_paddr(newstack->paddr)), 
+				(const void *)PADDR_TO_KVADDR(ppn_to_paddr(oldstack->paddr)), PAGE_SIZE);
 		}
 
 		oldstack = oldstack->next;
@@ -294,8 +297,9 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 	newheap = newas->heap;
 	while( oldheap != NULL ){
 		if(oldheap->paddr != 0){
-			newheap->paddr = alloc_ppages(1);
-			memmove((void *)PADDR_TO_KVADDR(newheap->paddr), (const void *)PADDR_TO_KVADDR(oldheap->paddr), PAGE_SIZE);
+			newheap->paddr = paddr_to_ppn(alloc_ppages(1));
+			memmove((void *)PADDR_TO_KVADDR(ppn_to_paddr(newheap->paddr)), 
+				(const void *)PADDR_TO_KVADDR(ppn_to_paddr(oldheap->paddr)), PAGE_SIZE);
 		}		
 
 		oldheap = oldheap->next;
@@ -330,7 +334,7 @@ as_destroy(struct addrspace *as)
 
 	struct area *seg;
 	struct area *move;
-	
+
 	// Free all segments
 	seg = as->segments;
 	while(seg != NULL){
@@ -341,7 +345,7 @@ as_destroy(struct addrspace *as)
 		upages = seg->pages;
 		while(upages != NULL){
 			temp = upages->next;
-			free_ppage(upages->paddr);
+			free_ppage( ppn_to_paddr(upages->paddr) );
 			kfree(upages);
 			upages = temp;
 		}	
@@ -353,26 +357,26 @@ as_destroy(struct addrspace *as)
 
 	// Free all stack pages
 	struct pentry *freestack;
-
+	
 	freestack = as->stack;
 	while(freestack != NULL){
 		struct pentry *temp;
 
 		temp = freestack->next;
-		free_ppage(freestack->paddr);
+		free_ppage( ppn_to_paddr(freestack->paddr) );
 		kfree(freestack);
 		freestack = temp;
 	}	
 
 	// Free all heap pages
 	struct pentry *freeheap;
-
+	
 	freeheap = as->heap;
 	while(freeheap != NULL){
 		struct pentry *temp;
 
 		temp = freeheap->next;
-		free_ppage(freeheap->paddr);
+		free_ppage( ppn_to_paddr(freeheap->paddr) );
 		kfree(freeheap);
 		freeheap = temp;
 	}	
@@ -514,7 +518,7 @@ as_zero_segment(struct area *seg){
 
 	while(zero != NULL){
 		if(zero->paddr != 0){
-			bzero((void *)PADDR_TO_KVADDR(zero->paddr), PAGE_SIZE);
+			bzero((void *)PADDR_TO_KVADDR(ppn_to_paddr(zero->paddr)), PAGE_SIZE);
 		}
 		zero = zero->next;
 	}
@@ -597,6 +601,7 @@ as_define_stack(struct addrspace *as, vaddr_t *stackptr)
 		struct pentry *newpage;
 		newpage = kmalloc(sizeof(*newpage));
 		if(newpage == NULL){
+			kprintf("Pentry kmalloc fail.\n");
 			return ENOMEM;
 		}
 		newpage->vaddr = vaddr_to_vpn(stack_begin);
@@ -613,7 +618,7 @@ as_define_stack(struct addrspace *as, vaddr_t *stackptr)
 			}
 			traverse->next = newpage;
 		}
-	
+		
 		stack_begin += PAGE_SIZE;
 	}
 	

@@ -195,9 +195,11 @@ runprogram(char *progname)
 	return EINVAL;
 }
 
-/* Wrapper for the child process.
- * Data1: Pointer to forkable trapframe
- * Data2: Unused.
+/* Function for thread_fork to operate off of. Recall that fork clones the
+ * current process EXACTLY at the point where fork() was called, so we need
+ * to pass the trapframe to the child process. This consists of registers and
+ * other ultra-low-level processor information to be loaded by the child when
+ * it takes over.
  */
 void
 child(void *tf, long unsigned int data2){
@@ -216,6 +218,12 @@ child(void *tf, long unsigned int data2){
 
 }
 
+/* Fork the current process. Forking dictates that the child is an exact copy
+ * of the current process exactly where fork is called. The only important
+ * argument is the trapframe, which is a struct of processor registers, including
+ * the general purpose regs, program counter, etc. This allows the child to
+ * load the exact state of the processor when it takes control of execution.
+ */
 int
 sys_fork(struct trapframe *frame, int32_t *childpid){
 
@@ -381,6 +389,19 @@ sys__exit(int exitcode){
 	return 0;
 }
 
+/* Exec takes a program written by the user, loads it and then proceeds to execute it.
+ * This is now shell works, as well as all the userland tests and allows arguments to
+ * be passed. However, it would be dangerous to just simply let the user pass any
+ * argument pointer they want into the kernel space, so we use copyin/copyout functions
+ * protected by setjmp/longjmp to do so. It's important that the algorithm for copying
+ * user arguments uses as little memory as possible.
+ *
+ * The number of arguments is unlimited; it would be a serious limitation to limit these
+ * and not really be a true execv. Instead, the max amount of arguments is set by the size
+ * of those arguments: 64K.
+ *
+ * NOTE: execv is ultra sensitive to memory usage.
+ */
 int
 sys_execv(char *program, userptr_t **args, int *retval){
 	struct addrspace *as;
@@ -388,7 +409,6 @@ sys_execv(char *program, userptr_t **args, int *retval){
 	vaddr_t entrypoint, stackptr;
 	int result;
 	size_t pr_length;
-	size_t arg_maxsize;
 
 	// Check to make sure program & arg pointers aren't null.
 	if(program == NULL){
@@ -409,34 +429,26 @@ sys_execv(char *program, userptr_t **args, int *retval){
 		lock_release(gpll_lock);
 		return EFAULT;
 	}
-		
-	//lock_acquire(gpll_lock);
-
+	
+	// Allocate space for the program name. This is a max of 255 chars.	
 	char *pr_name;
 	pr_name = kmalloc(PATH_MAX * sizeof(char));
 	
-
+	// Lookahead to see how many args we have to deal with
 	int num_args = 0;
 	while( args[num_args] != NULL ){
 		num_args++;
 	}
 
+	// Allocate a kernel-side storage place for the user arguements
 	char **bigbuffer = (char **)kmalloc(sizeof(char *) * num_args);	
 	if( bigbuffer == NULL ){
 		*retval = -1;
+		kprintf("BigBuffer\n");
 		lock_release(gpll_lock);
 		return ENOMEM;
 	}
 	
-	/* Algorithm for memory reduction */
-	/* Find argc. The size of the arguments isn't greater than 64K so
-	 * depending on argc, we have our maximum array size per arg */
-	if(num_args > 1){
-		arg_maxsize = ARG_MAX / (num_args-1);
-	}else{
-		arg_maxsize = PATH_MAX;
-	}
-
 	// Get program name
 	result = copyinstr((userptr_t)program, pr_name, PATH_MAX, &pr_length);
 	if(result){
@@ -449,29 +461,43 @@ sys_execv(char *program, userptr_t **args, int *retval){
 		return EINVAL;
 	}
 	
-	/* Copy user arguments to the kernel, using a safe method (copyinstr) */
+	/* Copy user arguments to the kernel, using a safe method. It's very easy to
+	 * run out of memory here, so we need to see the length of the argument that
+	 * were about to copy in, before actually copying. */
 	int argcounter = 0;
-	while(args[argcounter] != NULL && argcounter < 4999){
+	while(args[argcounter] != NULL && argcounter < num_args+1 ){
 		size_t inlength;	// Input length from copyinstr()	
 		char *tempstr;
 		
+/*
 		if(argcounter == 0){
 			tempstr = kmalloc(sizeof(char) * PATH_MAX);
 		}else{
 			tempstr = kmalloc(sizeof(char) * arg_maxsize);
 		}
 		if(tempstr == NULL){
+			kprintf("%s\n", (char *)args[argcounter]);
 			lock_release(gpll_lock);
 			return ENOMEM;
 		}		
+*/
+		// Kmalloc only enough to fit the argument and it's NULL terminator.
+		unsigned int arglen = strlen((char *)args[argcounter]) + 1;
+		tempstr = kmalloc( arglen * sizeof(char) );		
+		if(tempstr == NULL){
+			kprintf("%s\n", (char *)args[argcounter]);	
+			lock_release(gpll_lock);
+			return ENOMEM;
+		}
 
-		// Copy string from userspace, update length; ALL RESULTS INCLUDE NULL TERMINATOR
+		// Copy string from userspace. Returned length includes the null terminator.
 		result = copyinstr((const_userptr_t)args[argcounter], tempstr, ARG_MAX, &inlength);
 		if(result){
 			lock_release(gpll_lock);
 			return EFAULT;
 		}
-
+		KASSERT(inlength == arglen);
+		
 		bigbuffer[argcounter] = tempstr;
 		argcounter++;
 	}
@@ -497,7 +523,7 @@ sys_execv(char *program, userptr_t **args, int *retval){
 	/* Switch to it and activate it. */
 	proc_setas(as);
 	as_activate();
-
+	///////////////////////////////////////////////////////
 	/* Load the executable. */
 	result = load_elf(v, &entrypoint);
 	if (result) {
@@ -515,12 +541,17 @@ sys_execv(char *program, userptr_t **args, int *retval){
 		/* p_addrspace will go away when curproc is destroyed */
 		return result;
 	}
-
+	///////////////////////////////////////////////////////
 	argcounter = 0;
 
 	// Array to keep stackpointer values in	
 	vaddr_t *stacksonstacks;
 	stacksonstacks = (vaddr_t *)kmalloc(sizeof(vaddr_t) * num_args);
+	if(stacksonstacks == NULL){
+		lock_release(gpll_lock);
+		return ENOMEM;
+	}
+
 	/* Copy arguments to new stack; aligned by 4 */
 	while(bigbuffer[argcounter] != NULL){
 		size_t outlen;
@@ -563,7 +594,7 @@ sys_execv(char *program, userptr_t **args, int *retval){
 		result = copyout(&stacksonstacks[i-1], (userptr_t)stackptr, 4);
 	}
 	*retval = 0;
-		
+	
 	// Cleanup
 	kfree(stacksonstacks);
 	kfree(bigbuffer);	
