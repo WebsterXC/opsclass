@@ -291,19 +291,36 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 
 	// Copy the heap. If malloc() hasn't been called in userspace, this loop is skipped.
 	struct pentry *oldheap;
-	struct pentry *newheap;
 
 	oldheap = old->heap;
-	newheap = newas->heap;
 	while( oldheap != NULL ){
-		if(oldheap->paddr != 0){
-			newheap->paddr = paddr_to_ppn(alloc_ppages(1));
-			memmove((void *)PADDR_TO_KVADDR(ppn_to_paddr(newheap->paddr)), 
-				(const void *)PADDR_TO_KVADDR(ppn_to_paddr(oldheap->paddr)), PAGE_SIZE);
-		}		
+		KASSERT(oldheap->paddr != 0);
 
+		struct pentry *newheap;
+		newheap = kmalloc(sizeof(struct pentry));
+		if(newheap == NULL){
+			return ENOMEM;
+		}
+		
+		newheap->paddr = paddr_to_ppn(alloc_ppages(1));
+		memmove((void *)PADDR_TO_KVADDR(ppn_to_paddr(newheap->paddr)), 
+			(const void *)PADDR_TO_KVADDR(ppn_to_paddr(oldheap->paddr)), PAGE_SIZE);
+
+		newheap->vaddr = oldheap->vaddr;
+		newheap->next = NULL;
+
+		if(newas->heap == NULL){
+			newas->heap = newheap;
+		}else{
+			struct pentry *traverse;
+			traverse = newas->heap;
+			while(traverse->next != NULL){
+				traverse = traverse->next;
+			}
+			traverse->next = newheap;
+		}
+		
 		oldheap = oldheap->next;
-		newheap = newheap->next;
 	}
 	
 	// Set heap breakpoints from old addrspace

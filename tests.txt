@@ -1,0 +1,172 @@
+
+badcall
+     stability/badcall/badcall-close.t
+     stability/badcall/badcall-dup2.t
+     stability/badcall/badcall-execv.t
+     stability/badcall/badcall-lseek.t
+     stability/badcall/badcall-open.t
+     stability/badcall/badcall-read.t
+     stability/badcall/badcall-waitpid.t
+     stability/badcall/badcall-write.t
+boot
+     boot.t
+console
+     syscalls/consoletest.t
+coremap
+     coremap/coremap-loose.t
+     coremap/coremap-tight.t
+     coremap/km1.t
+     coremap/km2.t
+     coremap/km3.t
+     coremap/km4.t
+     coremap/not-dumbvm.t
+crash
+     stability/crash/crash-allS.t
+cvs
+     synch/cvt1.t
+     synch/cvt2.t
+     synch/cvt3.t
+     synch/cvt4.t
+     synch/cvt5.t
+filesyscalls
+     syscalls/closetest.t
+     syscalls/fileonlytest.t
+     syscalls/opentest.t
+     syscalls/readwritetest.t
+     syscalls/redirect.t
+     syscalls/sparsefile.t
+kleaks
+     synch/cvt1.t
+     synch/cvt2.t
+     synch/cvt5.t
+     synch/lt1.t
+     synch/rwt1.t
+     synch/rwt2.t
+     synch/sem1.t
+locks
+     synch/lt1.t
+     synch/lt2.t
+     synch/lt3.t
+not-dumbvm
+     coremap/not-dumbvm.t
+not-dumbvm-vm
+     vm/not-dumbvm-vm.t
+proc
+     stability/faulter.t
+procsyscalls
+     syscalls/add.t
+     syscalls/argtest.t
+     syscalls/bigexec.t
+     syscalls/factorial.t
+     syscalls/forktest.t
+     syscalls/shell.t
+rwlocks
+     synch/rwt1.t
+     synch/rwt2.t
+     synch/rwt3.t
+     synch/rwt4.t
+     synch/rwt5.t
+sbrk
+     vm/sbrk-badcall.t
+     vm/sbrktest.t
+semaphores
+     synch/sem1.t
+shell
+     syscalls/shell.t
+stability
+     stability/badcall/badcall-close.t
+     stability/badcall/badcall-dup2.t
+     stability/badcall/badcall-execv.t
+     stability/badcall/badcall-lseek.t
+     stability/badcall/badcall-open.t
+     stability/badcall/badcall-read.t
+     stability/badcall/badcall-waitpid.t
+     stability/badcall/badcall-write.t
+     stability/crash/crash-allS.t
+     stability/forkbomb.t
+     stability/forktest-stability.t
+     stability/randcall.t
+stability-vm
+     vm/stability/forkbomb.t
+     vm/stability/vm-stability.t
+swap
+     vm/swap/bigfork-32.t
+     vm/swap/bigfork.t
+     vm/swap/matmult.t
+     vm/swap/parallelvm-32.t
+     vm/swap/parallelvm.t
+     vm/swap/quinthuge.t
+     vm/swap/quintmat.t
+     vm/swap/quintsort.t
+     vm/swap/sort.t
+swap-basic
+     vm/swap/matmult.t
+     vm/swap/sort.t
+synch
+     synch/cvt1.t
+     synch/cvt2.t
+     synch/cvt3.t
+     synch/cvt4.t
+     synch/cvt5.t
+     synch/lt1.t
+     synch/lt2.t
+     synch/lt3.t
+     synch/rwt1.t
+     synch/rwt2.t
+     synch/rwt3.t
+     synch/rwt4.t
+     synch/rwt5.t
+     synch/sem1.t
+synchprobs
+     synchprobs/sp1.t
+     synchprobs/sp2.t
+sys_close
+     syscalls/closetest.t
+sys_dup2
+     syscalls/redirect.t
+sys_exec
+     syscalls/add.t
+     syscalls/argtest.t
+     syscalls/bigexec.t
+     syscalls/factorial.t
+sys_fork
+     syscalls/forktest.t
+sys_lseek
+     syscalls/sparsefile.t
+sys_open
+     syscalls/opentest.t
+sys_read
+     syscalls/readwritetest.t
+sys_write
+     syscalls/readwritetest.t
+syscalls
+     syscalls/add.t
+     syscalls/argtest.t
+     syscalls/bigexec.t
+     syscalls/closetest.t
+     syscalls/factorial.t
+     syscalls/fileonlytest.t
+     syscalls/forktest.t
+     syscalls/opentest.t
+     syscalls/readwritetest.t
+     syscalls/redirect.t
+     syscalls/shell.t
+     syscalls/sparsefile.t
+threads
+     threads/tt1.t
+     threads/tt2.t
+     threads/tt3.t
+vm
+     vm/bigfork.t
+     vm/ctest.t
+     vm/matmult.t
+     vm/not-dumbvm-vm.t
+     vm/palin.t
+     vm/parallelvm.t
+     vm/quinthuge.t
+     vm/quintmat.t
+     vm/quintsort.t
+     vm/sort.t
+     vm/stacktest.t
+     vm/zero.t
+
