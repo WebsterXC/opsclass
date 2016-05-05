@@ -264,7 +264,6 @@ free_ppage(paddr_t addr){
 			}else{
 				coremap[i].state = COREMAP_FREE;
 				total_page_allocs--;
-				found = true;
 			}
 			break;
 		}
