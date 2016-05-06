@@ -246,7 +246,9 @@ sys_fork(struct trapframe *frame, int32_t *childpid){
 	result = proc_fork(&childproc);
 	if(result){
 		lock_release(gpll_lock);
-		sys__exit(1);
+		if(curproc->parent != NULL || proc_getpid(curproc->parent) != -1){	
+			sys__exit(1);
+		}
 		return ENOMEM;
 	}
 
@@ -254,7 +256,7 @@ sys_fork(struct trapframe *frame, int32_t *childpid){
 	if(result){
 		proc_destroy(childproc);
 		lock_release(gpll_lock);
-		if(curproc->parent != NULL){
+		if(curproc->parent != NULL || proc_getpid(curproc->parent) != -1){
 			sys__exit(1);
 		}
 		return ENOMEM;
@@ -265,7 +267,7 @@ sys_fork(struct trapframe *frame, int32_t *childpid){
 	if(result){
 		proc_destroy(childproc);
 		lock_release(gpll_lock);
-		if(curproc->parent != NULL){
+		if(curproc->parent != NULL || proc_getpid(curproc->parent) != -1){
 			sys__exit(1);
 		}
 		return ENOMEM;
@@ -273,6 +275,7 @@ sys_fork(struct trapframe *frame, int32_t *childpid){
 
 	result = filetable_copy(curproc->p_filetable, &childproc->p_filetable);
 	if(result){
+		kprintf("FTERROR\n");
 		proc_destroy(childproc);
 		lock_release(gpll_lock);
 		return ENOMEM;
@@ -292,7 +295,6 @@ int
 sys_waitpid(pid_t pid, int *status, int options, int *childpid){
 	(void)options;
 
-
 	/* Semaphore = 20 Bytes */
 	/* Lock      = 24 Bytes */
 	/* Condition = 16 Bytes */
@@ -300,6 +302,8 @@ sys_waitpid(pid_t pid, int *status, int options, int *childpid){
 
 	if( pid < __PID_MIN || pid > __PID_MAX ){
 		return ESRCH;
+	}else if( pid == proc_getpid(curproc) ){
+		return EFAULT;
 	}
 	if( options != 0 ){
 		return EINVAL;
@@ -324,17 +328,22 @@ sys_waitpid(pid_t pid, int *status, int options, int *childpid){
 	/* Get process to wait on and it's respective pnode in the GPLL */
 	waiterprocess = proc_getptr(pid);
 	childnode = proc_get_pnode(waiterprocess);
+
+	
+	//childnode->busy = pid;
 	
 	/* Determine if waiter process exists */
 	if( waiterprocess == NULL || childnode == NULL ){
 		lock_release(gpll_lock);
 		return ECHILD;	
+	}else if( pid == childnode->busy ){
+		lock_release(gpll_lock);
+		return EFAULT;
 	}
 
 	// Controls whether or not _exit() destroys the process. In this
 	// case, we will manually destroy it after waiting.
 	waiterprocess->parent = curproc;
-	childnode->busy = true;
 
 	lock_release(gpll_lock);
 
@@ -365,12 +374,10 @@ sys__exit(int exitcode){
 		return -1;
 	}	
 
-	//lock_acquire(gpll_lock);
-
 	/* Generate the current process' exit code and increment the
 	 * exit semaphore to let waitpid() know curproc has exited.
 	 */
-	current->busy = false;
+	current->busy = 0;
 	current->retcode = _MKWAIT_EXIT(exitcode);
 	V(current->exitsem);	
 
@@ -378,10 +385,6 @@ sys__exit(int exitcode){
 	if( curproc->parent == NULL ){
 		proc_destroy(curproc);
 	}
-
-	// Signal the GPLL CV to let it know memory has been freed for more forks.
-	//cv_signal(gpll_cv, gpll_lock);
-	//lock_release(gpll_lock);
 
 	// Actually exit the process
 	thread_exit();
@@ -420,12 +423,16 @@ sys_execv(char *program, userptr_t **args, int *retval){
 	}
 
 	lock_acquire(gpll_lock);
-	
+
+	void *testptr = kmalloc(2);
 	// Check args pointer for validity.
 	if((void **)args < (void **)(USERSTACK - 450000)){
 		lock_release(gpll_lock);
 		return EFAULT;
 	}else if( (void **)args == (void **)(0x80000000) ){
+		lock_release(gpll_lock);
+		return EFAULT;
+	}else if( copyin( (const_userptr_t)args[0], testptr, 1 ) ){
 		lock_release(gpll_lock);
 		return EFAULT;
 	}
@@ -481,6 +488,10 @@ sys_execv(char *program, userptr_t **args, int *retval){
 			return ENOMEM;
 		}		
 */
+		if( (void *)args[argcounter] == (void *)0x40000000 ){
+			lock_release(gpll_lock);
+			return EFAULT;
+		}
 		// Kmalloc only enough to fit the argument and it's NULL terminator.
 		unsigned int arglen = strlen((char *)args[argcounter]) + 1;
 		tempstr = kmalloc( arglen * sizeof(char) );		

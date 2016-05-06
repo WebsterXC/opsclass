@@ -47,7 +47,7 @@ struct pnode{
 	pid_t pid_parent;
 	struct semaphore *exitsem;
 
-	bool busy;
+	int busy;
 	int retcode;	// Exit code here. HEAD contains 32766, TAIL contains 32767
 
 	/* Pointer to next node in table. */
