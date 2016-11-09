@@ -18,7 +18,7 @@ to build other synchronization primitives from it. They included: locks, conditi
 variables, and read/write locks.
 
 See files:
-	/kern/thread/synch.c
+*	/kern/thread/synch.c
 
 This repository does not have a working Read/Write lock.
 
@@ -36,9 +36,9 @@ needed to support inter-process communication.
 
 
 See files:
-	/kern/proc
-	/kern/thread/thread.c
-	/kern/syscall/proc_syscalls.c	
+*	/kern/proc
+*	/kern/thread/thread.c
+*	/kern/syscall/proc_syscalls.c	
 
 If I recall correctly, my execv implementation leaks memory (or runs out of it when system < 768kB).
 
@@ -53,8 +53,8 @@ With virtual memory implemented, we were required to write the sbrk() syscall an
 it's implementation, malloc().
 
 See files:
-	/kern/vm.c
-	/kern/addrspace.c
+*	/kern/vm.c
+*	/kern/addrspace.c
 
 My virtual memory implementation doesn't pass all tests with 100%. I plan on redesigning
 my process subsystem entirely in Spring 2016 and I expect the virtual memory to operate
