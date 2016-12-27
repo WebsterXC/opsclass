@@ -57,5 +57,5 @@ See files:
 *	/kern/addrspace.c
 
 My virtual memory implementation doesn't pass all tests with 100%. I plan on redesigning
-my process subsystem entirely in Spring 2016 and I expect the virtual memory to operate
-more reliably.
+my process subsystem entirely in Spring 2017 along with making my virtual memory system
+more robust, and implementing swapping to disk.
